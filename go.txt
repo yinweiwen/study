@@ -1,0 +1,161 @@
+
+# interface{}
+任意的类型都实现了空interface(我们这样定义：interface{})，也就是包含0个method的interface
+
+# go中chan 的使用
+正确
+func main() {
+	done := make(chan error)
+	go func() { done <- nil }()
+	fmt.Println(<-done)
+}
+错误
+func main() {
+	done := make(chan error)
+	//这里改成（make(chan err ,1)就不抱错了,这个什么情况?）
+	done <- nil
+	fmt.Println(<-done)
+}
+解释：
+make(chan error)是一个无缓冲的队列，make(chan err ,1)这是一个长度为1有缓冲的队列
+无缓冲队列下，执行到done<-nil时阻塞此例中唯一的goroutine即main 所以程序报错fatal error: all goroutines are asleep - deadlock!
+
+# goroutine调用
+小鼹鼠搬砖的goroutine任务调度的解释，见 http://studygolang.com/wr?u=http%3a%2f%2fskoo.me%2fgo%2f2013%2f11%2f29%2fgolang-schedule
+M	-	地鼠
+P	-	小车
+G	-	转(Goroutine)
+Sched	-	工厂管理员
+
+# 访问权限
+大写 - public
+小谢 - private
+
+
+# go defere
+defer理解为 后进先出的栈空间，在函数结束后调用该栈
+常用来做资源回收，>> java中catch/final >> c++中析构
+
+# go 异常处理
+go不鼓励将异常与控制代码混为一谈，不鼓励使用异常
+
+defer func(){
+	if err:=recover();err!=nil{
+		handler(err)
+	}
+}()
+// do something
+panic(xx)
+
+# go channel
+go-feature => 网络、并发    并发feature => channel routine
+channel是goroutine之间通信的一种方式，它与Unix中管道类似
+channel是类型相关的，一个channel只能传递一种类型
+go中有四种引用类型：slice/map/channel/interface
+
+var ch chan int
+
+var ch1 chan<- int  //ch1只能写
+
+var ch2 <-chan int  //ch2只能读
+
+ci := make(chan int)            // unbuffered channel of integers
+
+cj := make(chan int, 0)         // unbuffered channel of integers
+
+cs := make(chan *os.File, 100)  // buffered channel of pointers to Files
+
+超时实现
+for{
+	select {
+		case i := <-c:
+			fmt.Println(i)
+		case <-time.After(time.Duration(3) * time.Second):    //设置超时时间为３ｓ，如果channel　3s钟没有响应，一直阻塞，则报告超时，进行超时处理．
+			fmt.Println("timeout")
+			o <- true
+			break
+	}
+}
+
+# go 同步控制
+sync包
+type Once
+	func (o *Once) Do(f func())						-- Once是只执行一次动作的对象
+type Cond											-- 
+    func NewCond(l Locker) *Cond					-- 
+    func (c *Cond) Broadcast()						-- 
+    func (c *Cond) Signal()							-- 
+    func (c *Cond) Wait()							-- 
+type Mutex											-- 
+    func (m *Mutex) Lock()							-- 
+    func (m *Mutex) Unlock()						-- 	
+type Once											-- 
+    func (o *Once) Do(f func())						-- 
+type Pool											-- 
+    func (p *Pool) Get() interface{}				-- 
+    func (p *Pool) Put(x interface{})				-- 
+type RWMutex										-- 
+    func (rw *RWMutex) Lock()						-- 
+    func (rw *RWMutex) RLock()						-- 
+    func (rw *RWMutex) RLocker() Locker				-- 
+    func (rw *RWMutex) RUnlock()					--	
+    func (rw *RWMutex) Unlock()						-- 
+type WaitGroup
+    func (wg *WaitGroup) Add(delta int)
+    func (wg *WaitGroup) Done()
+    func (wg *WaitGroup) Wait()
+	
+## WaitGroup
+func main() {
+    var wg sync.WaitGroup
+    var urls = []string{
+            "http://www.golang.org/",
+            "http://www.google.com/",
+            "http://www.baiyuxiong.com/",
+    }
+    for _, url := range urls {
+            // Increment the WaitGroup counter.
+            wg.Add(1)
+            // Launch a goroutine to fetch the URL.
+            go func(url string) {
+                    // Decrement the counter when the goroutine completes.
+                    defer wg.Done()
+                    // Fetch the URL.
+                    http.Get(url)
+            fmt.Println(url);
+            }(url)
+    }
+    // Wait for all HTTP fetches to complete.
+    wg.Wait()
+    fmt.Println("over");
+}
+
+
+# go defer 和 return执行关系	（http://studygolang.com/articles/4809）
+defer、return、返回值三者的执行逻辑应该是：return最先执行，return负责将结果写入返回值中；接着defer开始执行一些收尾工作；最后函数携带当前返回值退出。
+func main(){ fmt.Println("return:",b())}	// 打印结果为 return: 2
+func b() (i int){ //有名返回
+	defer func(){i++; fmt.Println("defer2:",i)}()
+	defer func(){i++; fmt.Println("defer1:",i)}()
+	return i // 或者直接 return 效果相同
+}
+
+# go atomic -原子操作；操作系统底层硬件支持的锁操作
+atomic.CAS   atomic.add  atomic.store   atomic.load
+
+# go Signal
+http://tonybai.com/2012/09/21/signal-handling-in-go/
+处理进程关闭时系统信号
+ 
+# go 数字和字符串互转
+strconv.Itoa	strconv.Atoi
+fmt.Sprintf("%d", i)  
+
+$ go time	http://studygolang.com/articles/736
+time.Now  time.Unix(1389058332)  time.Date(2017,1,1)
+time.format
+
+# go struct{}
+var s struct{} 声明就能使用
+
+# 

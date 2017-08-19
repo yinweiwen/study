@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- SQL XML created by WWW SQL Designer, http://code.google.com/p/wwwsqldesigner/ -->
+<!-- Active URL: http://10.8.30.25:8000/dbd/ -->
+<sql>
+<datatypes db="mssql">
+	<group label="Integer" color="rgb(238,238,170)">
+		<type label="TinyInt" length="0" sql="tinyint" re="INT" quote="" bytes="1" note="Integer data: 0 to 255"/>
+		<type label="SmallInt" length="0" sql="smallint" re="INT" quote="" bytes="2" note="Integer data: -32,768 to 32,767"/>
+		<type label="Int" length="0" sql="int" re="INT" quote="" bytes="4" note="Integer data: -2,147,483,648 to 2,147,483,647"/>
+		<type label="BigInt" length="0" sql="bigint" re="INT" quote="" bytes="8" note="Integer data: -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807"/>
+	</group>
+
+	<group label="Monetary" color="rgb(238,238,170)">
+		<type label="Money" length="0" sql="money" re="FLOAT" quote="" bytes="8" note="Integer data: -922,337,203,685,477.5808 to 922,337,203,685,477.5807"/>
+		<type label="SmallMoney" length="0" sql="smallmoney" re="FLOAT" quote="" bytes="4" note="-214,748.3648 to 214,748.3647"/>
+	</group>
+
+	<group label="Numeric" color="rgb(238,238,170)">
+		<type label="Real" length="0" sql="real" re="FLOAT" quote="" bytes="4" note="Floating precision number data: -3.402823E+38 to 3.402823E+38"/>
+		<type label="Float" length="0" sql="float" re="FLOAT" quote="" bytes="8" note="Floating precision number data: -4.94E+324 to 4.94E+324"/>
+		<type label="Decimal" length="1" sql="decimal" re="DEC" quote="" bytes="n*" note="Fixed precision and scale numeric data: -10^38 +1 to 10^38 -1 (decimal and numeric are synonyms)"/>
+		<type label="Numeric" length="1" sql="numeric" re="DEC" quote="" bytes="n*" note="Fixed precision and scale numeric data: -10^38 +1 to 10^38 -1 (decimal and numeric are synonyms)"/>
+	</group>
+
+	<group label="Character" color="rgb(255,200,200)">
+		<type label="Char" length="0" sql="char" quote="'" bytes="n" note="Fixed-length character data with a maximum length of 8,000 characters"/>
+		<type label="Varchar" length="1" sql="varchar" quote="'" bytes="m &lt;= n" note="Variable-length data with a maximum of 8,000 characters"/>
+		<type label="Text" length="1" sql="text" quote="'" bytes="&lt;= 2,147,483,647" note="Variable-length data with a maximum length of 2,147,483,647 characters"/>
+		<type label="XML" length="0" sql="xml" quote="'" bytes="n" note="XML"/>
+	</group>
+
+	<group label="Unicode Character" color="rgb(255,200,200)">
+		<type label="nChar" length="0" sql="nchar" quote="'" bytes="n" note="Fixed-length Unicode data with a maximum length of 4,000 characters"/>
+		<type label="nVarchar" length="1" sql="nvarchar" quote="'" bytes="m &lt;= n" note="Variable-length Unicode data with a maximum length of 4,000 characters"/>
+		<type label="nText" length="1" sql="ntext" quote="'" bytes="&lt;= 2,147,483,647" note="Variable-length Unicode data with a maximum length of 1,073,741,823 characters"/>
+	</group>
+
+
+	<group label="Date &amp; Time" color="rgb(200,255,200)">
+		<type label="Datetime" length="0" sql="datetime" quote="" bytes="8" note="Jan 1, 1753 to Dec 31, 9999"/>
+		<type label="SmallDateTime" length="0" sql="smalldatetime" quote="" bytes="4" note="Jan 1, 1900 to Dec 31, 2079"/>
+	</group>
+
+	<group label="Binary" color="rgb(200,200,255)">
+		<type label="Binary" length="0" sql="binary" quote="'" bytes="n" note="Fixed-length binary data with a maximum length of 8,000 bytes"/>
+		<type label="Varbinary" length="1" sql="varbinary" quote="'" bytes="m &lt;= n" note="Variable-length binary data with a maximum length of 8,000 bytes"/>
+	</group>
+
+	<group label="Miscellaneous" color="rgb(200,220,255)">
+		<type label="Bit" length="0" sql="bit" quote="" bytes="1" note="Boolean: 1 or 0"/>
+		<type label="Image" length="1" sql="image" re="BLOB" quote="" bytes="0 to 2,147,483,647" note="Variable-length binary data with a maximum length of 2,147,483,647 bytes"/>
+		<type label="Timestamp" length="0" sql="timestamp" quote="" bytes="8" note="Locally unique binary number updated as a row gets updated"/>
+		<type label="SQL Variant" length="1" sql="sql_variant" quote="" bytes="" note="Stores any datatype except text, ntext, image, timestamp"/>
+		<type label="Uniqueidentifier" length="1" sql="uniqueidentifier" quote="" bytes="16" note="GUID"/>
+	</group>
+</datatypes><table x="937" y="504" name="设备">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="name" null="0" autoincrement="0">
+<datatype>varchar(50)</datatype>
+<default>'NULL'</default></row>
+<row name="uuid" null="1" autoincrement="0">
+<datatype>uniqueidentifier</datatype>
+<default>NULL</default><relation table="device" row="id" />
+</row>
+<row name="deviceMetaId" null="1" autoincrement="0">
+<datatype>uniqueidentifier</datatype>
+<default>NULL</default><relation table="deviceMeta" row="id" />
+<relation table="原型数据库(K-V、预加载、变更通知)" row="deviceMetaId" />
+</row>
+<row name="isDeleted" null="1" autoincrement="0">
+<datatype>binary</datatype>
+<default>NULL</default></row>
+<row name="enable" null="1" autoincrement="0">
+<datatype>binary</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1709" y="10" name="公式">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="name" null="0" autoincrement="0">
+<datatype>varchar(50)</datatype>
+</row>
+<row name="expression" null="0" autoincrement="0">
+<datatype>varchar(100)</datatype>
+</row>
+<row name="description" null="1" autoincrement="0">
+<datatype>varchar(255)</datatype>
+<default>NULL</default></row>
+<row name="params" null="1" autoincrement="0">
+<datatype>sql_variant</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1393" y="502" name="阈值">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="subfac_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="level" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="up" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="low" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1739" y="473" name="分组">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="group_type" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="group_name" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1387" y="781" name="合理值">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="subfac_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="up" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="low" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1608" y="974" name="factorMeta">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="name" null="0" autoincrement="0">
+<datatype>varchar(50)</datatype>
+</row>
+<row name="parent" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1533" y="617" name="传感器分组">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="group_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="分组" row="id" />
+</row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="params" null="1" autoincrement="0">
+<datatype>sql_variant</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1543" y="366" name="量程">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="subfac_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="up" null="1" autoincrement="0">
+<datatype>numeric</datatype>
+<default>NULL</default></row>
+<row name="low" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="997" y="247" name="结构物">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="uuid" null="1" autoincrement="0">
+<datatype>uniqueidentifier</datatype>
+<default>NULL</default><relation table="thing" row="id" />
+</row>
+<row name="name" null="1" autoincrement="0">
+<datatype>varchar</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1360" y="179" name="公式配置">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="formula_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="公式" row="id" />
+</row>
+<row name="params" null="1" autoincrement="0">
+<datatype>sql_variant</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="143" y="389" name="device">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>varchar</datatype>
+<default>NULL</default></row>
+<row name="properties" null="1" autoincrement="0">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<row name="thingId" null="1" autoincrement="0">
+<datatype>text</datatype>
+<default>NULL</default><relation table="thing" row="id" />
+</row>
+<row name="deviceMetaId" null="1" autoincrement="0">
+<datatype>text</datatype>
+<default>NULL</default><relation table="deviceMeta" row="id" />
+</row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="115" y="208" name="deviceMeta">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<row name="model" null="1" autoincrement="0">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="145" y="662" name="thing">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="99" y="846" name="Dimension">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="108" y="96" name="interfaceMeta">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="80" y="153" name="deviceMetaInterface">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="357" y="81" name="protocolMeta">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="411" y="127" name="capabilityCategory">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="364" y="183" name="capabilityMeta">
+<row name="id" null="1" autoincrement="1">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1354" y="1009" name="监测因素-设备">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="factor_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="factorMeta" row="id" />
+</row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="475" y="417" name="原型数据库(K-V、预加载、变更通知)">
+<row name="deviceMetaId" null="0" autoincrement="0">
+<datatype>text</datatype>
+<default>'NULL'</default></row>
+<row name="deviceMeta" null="1" autoincrement="0">
+<datatype>text</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>deviceMetaId</part>
+</key>
+</table>
+<table x="186" y="981" name="最新数据">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="data" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="acqtime" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="381" y="978" name="原始数据">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="data" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="acqtime" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="565" y="975" name="主题数据">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="data" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="acqtime" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="744" y="977" name="聚集统计数据">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="data" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="acqtime" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1698" y="822" name="factorMetaDeviceMeta">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="factorMetaId" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="factorMeta" row="id" />
+</row>
+<row name="deviceMetaId" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1696" y="784" name="监测因素设备类型关系表">
+<key type="PRIMARY" name="">
+</key>
+</table>
+<table x="976" y="977" name="告警数据">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="time" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="content" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="level" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="1664" y="221" name="滑窗配置">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="设备" row="id" />
+</row>
+<row name="subfac_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="method_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="window_size" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="params" null="1" autoincrement="0">
+<datatype>sql_variant</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="998" y="91" name="测点">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="764" y="143" name="测点-设备">
+<row name="id" null="1" autoincrement="1">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="struct_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default></row>
+<row name="station_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="测点" row="id" />
+</row>
+<row name="device_id" null="1" autoincrement="0">
+<datatype>tinyint</datatype>
+<default>NULL</default><relation table="device" row="id" />
+</row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+</sql>

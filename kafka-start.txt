@@ -1,0 +1,53 @@
+
+  bin/zkServer.sh start-foreground
+  #windows zkServer.cmd (不要start)
+  
+ 
+  bin/kafka-server-start.sh config/server.properties
+  #windows>>  bin/windows/kafka-server-start ../../config/server.properties
+ 
+  ./http_server -addr ":8011" -brokers "10.8.30.173:9092"
+  
+  #创建topic
+  bin/kafka-topics.sh --create --zookeeper localhost:2182 --replication-factor 1 --partitions 1 --topic important
+ 
+  bin/kafka-console-producer.sh --broker-list localhost:9092 --topic important
+
+  bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic important --from-beginning
+  // on windows
+	I:\WorkSpace\@JAVA\kafka_2.11-0.11.0.0\bin\windows>kafka-console-consumer.bat --bootstrap-server 10.8.30.117:9092 --topic important --from-beginning
+  SPARK 
+  启动master	./sbin/start-master.sh
+  启动slaves	./sbin/start-slave.sh <worker#> <master-spark-URL>
+  启动shell		./bin/spark-shell --master spark://IP:PORT
+		count.saveAsTextFile("README.md")  不带file://的话，默认保存到hdfs中
+		
+		
+Eclipse
+
+Windows——>Preferences——>Java-->Editor-->Content Asist，在Auto activation triggers for Java后面的文本框里只有一个“.”。现在你将其改为“.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ”即可
+
+
+windows下部署hadoop
+Error: JAVA_HOME is incorrectly set.
+解决方法： JAVA_HOME不能包含空格
+找不到hadoop和yarn文件
+解决方法：hadooponwindows-master.zip解压替换hadoop中bin目录 （http://blog.csdn.net/antgan/article/details/52067441）
+http://localhost:50070
+
+
+linq<==>scala
+Select is map, 
+Aggregate is reduce (or fold),
+ SelectMany is flatMap,
+ Where is filter or withFilter, 
+ orderBy is sort or sortBy or sortWith,
+ and there are zip, take and takeWhile
+ First is find
+ 
+ Spark Stream中 Partitioner是个什么鬼？？？
+ 
+ 
+ 
+ postgres备份
+ pg_dump -h host1 dbname | psql -h host2 dbname  

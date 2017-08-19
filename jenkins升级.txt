@@ -1,0 +1,19 @@
+1. jenkins.xml 
+	设置java路径，最大内存和端口
+	<arguments>-Xrs -Xmx2048m -XX:MaxPermSize=2048m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\jenkins.war" --httpPort=8080</arguments>
+2. config.xml
+	slave、job视图分组等配置项
+3. credentials.xml
+	证书配置
+4. hudson.tasks.Mailer.xml
+	邮件推送相关信息
+	(根目录下包含所有插件的配置 xxx.xml), 
+	
+同步SLAVE：
+1. 复制config.xml中slaves节点信息
+2. 复制node目录下内容
+3. Jenkins系统设置-读取设置
+
+关闭Jenkins；
+http://10.8.30.25:8080/exit
+try posting

@@ -1,0 +1,38 @@
+10.8.30.35      anxin-server
+10.8.30.36      anxin-node36
+10.8.30.37      anxin-node37
+
+配置HOSTS
+
+第一个是ambari-server
+后面两个做集群，但是也是混装的datanode/namenode混合
+
+HDFS配置下:
+Block Replication <=node节点数
+
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbsgNSYEo+rEwS1FZRnvFlQI6YYjdD06kstFtlBQvKFLOiV+CyNGEralDyLilkliZPoi0o3LS39XZHMFXoGCYONzkN4J0kE8SEtO6ouYTjIFaDB4ktEVNE+/ETHpIG0jnDCIcMGITnpJoYjDNJ0B2Ue4fgXrHjYJive0x2yXvXWVyWRwe4HP7fnxsDIHo/QKgj4yD8o5c/BCSUJ6gA5NRbM6H2di4sNiTRUCg/ldtqfhg/iGPIh+10kyt236Ox14ODLtjMy7PkUM62gQB7s2D3fYZGu2FljbC16DE1pg8rK8NkQR12f7jmhb0TeAc1/k7qhobPGQSEyB1SvKR0uW1P root@anxin-server
+
+
+kafka 2.11
+
+
+
+安装ubuntu16.04
+anxin root123
+设置IP地址 10.8.30.35 255.255.255.0 10.8.30.1  dns 114.114.114.114,8.8.8.8
+sudo su
+apt-get update
+apt-get upgrade
+apt-get install openssh-server
+apt-get install openjdk-8-jdk
+	安装pg9.6
+	https://www.postgresql.org/download/linux/ubuntu/
+	Create the file /etc/apt/sources.list.d/pgdg.list
+		deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main
+	wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+	sudo apt-key add -
+	sudo apt-get update
+apt-get install postgresql-9.6
+apt-get install apache2
+
+搭建本地ambari仓库***

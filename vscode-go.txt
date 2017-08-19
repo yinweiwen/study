@@ -1,0 +1,51 @@
+安装GO
+添加GOPATH
+
+vscode中插件
+go get -u -v github.com/nsf/gocode
+go get -u -v github.com/rogpeppe/godef
+go get -u -v github.com/golang/lint/golint
+go get -u -v github.com/lukehoban/go-find-references
+go get -u -v github.com/lukehoban/go-outline
+go get -u -v sourcegraph.com/sqs/goreturns
+go get -u -v golang.org/x/tools/cmd/gorename
+go get -u -v github.com/tpng/gopkgs
+go get -u -v github.com/newhook/go-symbols
+
+无法下载的到；
+http://www.golangtc.com/download/package
+下载复制到$GOPATH/src
+go install .....
+
+
+md %GOPATH%\src\github.com\golang
+cd %GOPATH%\src\github.com\golang
+git clone https://github.com/golang/tools.git tools
+md %GOPATH%\src\golang.org\x\tools
+xcopy /s /e %GOPATH%\src\github.com\golang\tools
+
+go install github.com/nsf/gocode
+go install sourcegraph.com/sqs/goreturns
+go install github.com/golang/lint/golint
+go install github.com/newhook/go-symbols
+go install golang.org/x/tools/cmd/guru
+go install golang.org/x/tools/cmd/gorename
+go install github.com/rogpeppe/godef
+go install github.com/lukehoban/go-outline
+
+
+go的一些语法：
+*数组
+数组是内置(build-in)类型,是一组同类型数据的集合，它是值类型，通过从0开始的下标索引访问元素值。在初始化后长度是固定的，无法修改其长度。当作为方法的入参传入时将复制一份数组而不是引用同一指针。数组的长度也是其类型的一部分，通过内置函数len(array)获取其长度。
+*切片
+数组的长度不可改变，在特定场景中这样的集合就不太适用，Go中提供了一种灵活，功能强悍的内置类型Slices切片,与数组相比切片的长度是不固定的，可以追加元素，在追加时可能使切片的容量增大。切片中有两个概念：一是len长度，二是cap容量，长度是指已经被赋过值的最大下标+1，可通过内置函数len()获得。容量是指切片目前可容纳的最多元素个数，可通过内置函数cap()获得。切片是引用类型，因此在当传递切片时将引用同一指针，修改值将会影响其他的对象。
+
+异常管理：
+defer panic
+
+defer[推迟，延期]
+类似C++中析构函数概念，不过GO语言中析构的不是对象，而是函数，defer就是用来[添加]函数结束时执行的语句
+defer可以多次，这样形成一个defer栈，后defer的语句在函数返回时将先被调用
+
+panic[恐慌]
+recover[恢复]

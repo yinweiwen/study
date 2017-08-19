@@ -1,0 +1,188 @@
+http://blog.itpub.net/10527166/viewspace-683275/
+
+rem 显示hello world,并记录到文件
+echo "hello world" > a.txt
+
+rem >> 追加到文件
+echo "hello world" >> a.txt
+
+rem 打开或关闭回显
+::也有rem的功能
+echo off
+echo on
+
+pause 暂停等待输入
+call 执行外部批处理
+start 执行DOS命令和命令行程序
+
+goto lable
+:lable
+goto end
+
+set命令：显示、设置和删除变量
+
+set或set s 前者显示批处理中当前已定义的变量及其值，后者显示以s开头的
+set aa=abc 设置
+set aa= 删除
+
+符号说明：
+@ 关闭回显
+> 与 >> 将输出信息重定向到指定的设备或文件。系统默认输出到显示器。
+< 将输入信息来源重定向为指定的设备或文件。系统默认从显示器读取输入信息.
+| 管道符号，将管道符号前面命令的输出结果重定向输出到管道符号后面的命令中去
+^ 转义符 
+& 它的作用是用来连接n个DOS命令，并把这些命令按顺序执行，而不管是否有命令执行失败；
+&& 当&&前面的命令成功执行时，执行&&后面的命令，否则不执行；
+|| 当||前面的命令失败时，执行||后面的命令，否则不执行。
+
+常用DOS：
+	【 文件夹管理 】
+　　cd 显示当前目录名或改变当前目录。
+　　md 创建目录。
+　　rd 删除一个目录。
+　　dir 显示目录中的文件和子目录列表。
+　　tree 以图形显示驱动器或路径的文件夹结构。
+　　path 为可执行文件显示或设置一个搜索路径。
+　　xcopy 复制文件和目录树。
+　　【 文件管理 】
+　　type 显示文本文件的内容。
+　　copy 将一份或多份文件复制到另一个位置。
+　　del 删除一个或数个文件。
+　　move 移动文件并重命名文件和目录。(Windows XP Home Edition中没有)
+　　ren 重命名文件。
+　　replace 替换文件。
+　　attrib 显示或更改文件属性。
+　　find 搜索字符串。
+　　fc 比较两个文件或两个文件集并显示它们之间的不同
+　　【 网络命令 】
+　　ping 进行网络连接测试、名称解析
+　　ftp 文件传输
+　　net 网络命令集及用户管理
+　　telnet 远程登陆
+　　ipconfig显示、修改TCP/IP设置
+　　msg 给用户发送消息
+　　arp 显示、修改局域网的IP地址-物理地址映射列表
+　　【 系统管理 】
+　　at 安排在特定日期和时间运行命令和程序
+　　shutdown立即或定时关机或重启
+　　tskill 结束进程
+　　taskkill结束进程(比tskill高级，但WinXPHome版中无该命令)
+　　tasklist显示进程列表(Windows XP Home Edition中没有)
+　　sc 系统服务设置与控制
+　　reg 注册表控制台工具
+　　powercfg控制系统上的电源设置
+
+if语句：
+	set /p choice=是否显示当前时间？(y/n)
+　　if /i not %choice% EQU n echo 当前时间是：%date% %time%
+　　pause>nul
+	:: /i 不区分大小写
+	
+	存在判断的功能是判断文件或文件夹是否存在。其命令格式为：
+　　IF [NOT] EXIST filename command1 [else command2]
+
+	定义判断的功能是判断变量是否存在，即是否已被定义。其命令格式为：
+　　IF [not] DEFINED variable command1 [else command2]
+
+for语句:
+FOR %%variable IN (set) DO command
+FOR /L %%variable IN (start,step,end) DO command
+FOR /F ["options"] %%variable IN (set) DO command 
+	ptions是(eol=c、skip=n、delims=xxx、tokens=x,y,m-n、usebackq)中的一个或多个的组合
+
+
+	
+关于“延迟变量”：
+@echo off 
+set a=4 
+set a=5&echo %a% 
+pause
+输出结果是4；因为批处理是按行读取的
+变量延迟的启动语句是“setlocal enabledelayedexpansion”，
+
+%用法：
+%a% 变量引用
+%%i for语句中特有变量(仅在批处理中)
+批处理预留参数：%1,%2,...,%9
+for语句中扩展
+%~ 扩充删除任何引号
+%~nx ::n文件名 ::x扩展名
+
+！用在变量延迟中取代% （注意：在启用Setlocal EnableDelayedExpansion后，所有的"!"都将被视为“取变量值”的特殊符号，除非使用setlocal disabledelayedexpansion关闭）
+@echo off
+setlocal enabledelayedexpansion    ::注意这里
+set str=test
+if %str%==test (
+    set str=another test
+    echo !str!      ::注意这里	输出another test
+    echo %str%  ::区别 输出test
+)
+!在set /a中代表逻辑非运算
+
+字符串操作：
+截取：%s:~-5% ::截取后5个字符	%s:~-14,5% ::截取倒数第14个字符开始，截取5个字符
+替换：%aa:中国=中华人民共和国%
+拼接：%aa%%bb%
+扩充：(对路径字符串进行特殊处理) 
+	echo %~dp0  显示当前批处理文件所在文件夹路径  %~dI驱动器号 %~pI路径
+	echo %~nx0	显示当前批处理文件的文件名和扩展名 %~nI文件名 %~xI扩展名
+
+数值计算：
+批处理中只能进行整型计算
+set /a expression
+
+　===============================================
+　　@echo off
+　　setlocal enabledelayedexpansion
+　　set var=aCdehiM,?mnrstW y
+　　echo %var%
+　　call :deal
+　　setlocal disabledelayedexpansion
+　　set var=%var:?=!%
+　　echo %var%
+　　pause>nul
+　　exit
+　　:deal
+　　set tm=!var!
+　　set var=
+　　for %%i in (6,3,11,11,16,15,1,4,11,5,12,13,9,0,12,7,15,14,5,10,2,16,18,8) do (
+　　set var=!var!!tm:~%%i,1!
+　　)
+　　goto :eof
+　　===============================================
+	goto :eof类似c中return
+	
+返回值：
+errorlevel
+	===============================================
+　　@echo off
+　　reg add HKCU /v try /f>nul
+　　reg delete HKCU /v try /f
+　　if errorlevel 0 (echo  删除成功！) else (echo 删除失败！)
+　　reg delete HKCU /v try /f
+　　if %errorlevel%==0 (echo 删除成功！) else (echo 删除失败！)
+　　pause>nul
+　　===============================================
+
+
+　　===============================================
+	@echo off 
+	setlocal enableDelayedExpansion
+	for %%m in (*) do (
+		if not "%%m"=="%~nx0" (
+			set /a num+=1
+			ren "%%m" "!num!%%~xm"
+		)
+	)
+	echo 改名完毕！！！！
+	pause
+　　===============================================
+
+
+
+
+
+
+
+
+
