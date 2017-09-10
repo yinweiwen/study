@@ -1,0 +1,23 @@
+dstream.foreachRDD { rdd =>
+  rdd.foreachPartition { partitionOfRecords =>
+    val connection = createNewConnection()
+    partitionOfRecords.foreach(record => connection.send(record))
+    connection.close()
+  }
+}
+
+dstream.foreachRDD { rdd =>
+  rdd.foreachPartition { partitionOfRecords =>
+    // ConnectionPool is a static, lazily initialized pool of connections
+    val connection = ConnectionPool.getConnection()
+    partitionOfRecords.foreach(record => connection.send(record))
+    ConnectionPool.returnConnection(connection)  // return to the pool for future reuse
+  }
+}
+
+updateStateByKey
+mapWithState
+
+http://www.cnblogs.com/bourneli/p/4394271.html
+
+http://www.cnblogs.com/haozhengfei/p/e353daff460b01a5be13688fe1f8c952.html
