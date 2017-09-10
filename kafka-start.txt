@@ -48,6 +48,8 @@ Aggregate is reduce (or fold),
  orderBy is sort or sortBy or sortWith,
  and there are zip, take and takeWhile
  First is find
+ Any is exists
+ All is forall
  
  Spark Stream中 Partitioner是个什么鬼？？？
 

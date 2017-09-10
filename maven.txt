@@ -1,0 +1,181 @@
+mvn打包成可执行jar的方法：
+http://blog.csdn.net/xiao__gui/article/details/47341385
+
+mvn执行测试用例
+http://www.cnblogs.com/qyf404/p/5013694.html
+
+使用时可能的错误：
+Unable to generate classpath: org.apache.maven.artifact.resolver.MultipleArtifactsNotFoundException
+有个jar包可能下载时出错了，到rep目录下删除这个目录，重新下载
+
+mvn 使用特定的jdk版本
+1. You can set the JAVA_HOME parameter just before you start maven (and change it back afterwards if need be).
+2. You could also go into your mvn(non-windows)/mvn.bat(windows) and set your java version explicitly there.
+注意：
+- 25机器上jdk默认安装在了system32上，导致修改JAVA_HOME后还是老版本； 修改Path，JAVA_HOME\bin放到System32前面即可
+- where命令类似 linux下whereis
+- 配置jdk CLASSPATH    .\;%JAVA_HOME%\lib\dt.jar;%JAVA_HOME%\lib\tools.jar
+
+** 构建scala项目不需要scala SDK？？？  不需要
+
+1. POM文件
+pom作为项目对象模型。通过xml表示maven项目，使用pom.xml来实现。主要描述了项目：包括配置文件；开发者需要遵循的规则，缺陷管理系统，组织和licenses，项目的url，项目的依赖性，以及其他所有的项目相关因素
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+<!--maven2.0必须是这样写，现在是maven2唯一支持的版本-->
+  <!-- 基础设置 -->
+  <groupId>...</groupId>
+  <artifactId>...</artifactId>
+  <version>...</version>
+  <packaging>...</packaging>	pom,jar,。。。
+
+  <name>...</name> 描述 无关紧要
+
+  <url>...</url> 开发者网页 无关紧要
+  <dependencies>...</dependencies> 
+				 <dependency>
+				  <groupId>junit</groupId>
+				  <artifactId>junit</artifactId>
+				  <version>4.0</version>
+				  <type>jar</type>
+				  <scope>test</scope> maven 的依赖范围 http://blog.csdn.net/zhuxinhua/article/details/5789278
+				  <optional>true</optional> 子项目依赖
+				  <exclusions>	// 排除依赖引用
+					<exclusion>
+						<artifactId>org.slf4j.slf4j-api</artifactId>
+						<groupId>com.alibaba.external</groupId>
+					</exclusion>
+				  <exclusions>
+				</dependency>
+  <parent>...</parent>  父项目 (multi-modules)
+				<groupId>org.codehaus.mojo</groupId> 
+				<artifactId>my-parent</artifactId> 
+				<version>2.0</version> 
+				<relativePath>../my-parent</relativePath>  本地相对路径，（可选）
+  <dependencyManagement>...</dependencyManagement>
+  <modules>...</modules> 多模块
+  <properties>...</properties> 属性，POM对象其他地方可以直接引用
+
+  <!--构建设置 -->
+  <build>...</build>
+				<defaultGoal> jar
+				<directory> 默认 ${basedir}/target
+				<filename> 默认 ${artifactId}-${version}
+				<filters>  filter属性文件位置
+				<resources> 描述工程中资源位置
+								<resource> 
+								<targetPath>META-INF/plexus</targetPath>  目标目录
+								<filtering>false</filtering>   filters文件定义的属性是否有效
+								<directory>${basedir}/src/main/plexus</directory> 默认的directory是${basedir}/src/main/resources
+								<includes> 
+								  <include>configuration.xml</include> 
+								</includes> 
+								<excludes> 
+								  <exclude>**/*.properties</exclude> 
+								</excludes> 
+								</resource>
+								
+	  <plugin> 		apache maven plugins仓库 https://repo.maven.apache.org/maven2/org/apache/maven/plugins/
+			<groupId>org.apache.maven.plugins</groupId> 
+			<artifactId>maven-jar-plugin</artifactId> 
+			<version>2.0</version> 
+			<extensions>false</extensions> 是否要load这个plugin的extensions
+			<inherited>true</inherited> 是否让子pom继承
+			<configuration> 
+			  <classifier>test</classifier> 
+			</configuration> 
+			<dependencies>...</dependencies> plugin的dependencies，同pom上
+			<executions>...</executions> 
+							<execution> 
+							<id>echodir</id> 
+							<goals> goals元素
+							  <goal>run</goal> 
+							</goals> 
+							<phase>verify</phase> goals执行的时期
+							<inherited>false</inherited> 
+							<configuration> 
+							  <tasks> 
+								<echo>Build Dir: ${project.build.directory}</echo> 
+							  </tasks> 
+							</configuration> 
+						    </execution> 
+		  </plugin>
+  <reporting>...</reporting>
+  
+
+  <!-- 更多项目信息 -->
+  <name>...</name>
+  <description>...</description>
+  <url>...</url>
+  <inceptionYear>...</inceptionYear>
+  <licenses>...</licenses>
+  <organization>...</organization>
+  <developers>...</developers>
+  <contributors>...</contributors>
+
+  <!-- 环境设置-->
+  <issueManagement>...</issueManagement>
+  <ciManagement>...</ciManagement>
+  <mailingLists>...</mailingLists> 
+  <scm>...</scm>
+  <prerequisites>...</prerequisites>
+  <repositories>...</repositories> 个性化仓库设置
+  <pluginRepositories>...</pluginRepositories> 插件仓库设置
+  <distributionManagement>...</distributionManagement>  分发管理
+  <profiles>...</profiles> 根据environment来修改设置的能力
+</project>
+
+
+pluginManagement
+	声明插件，(amven不会加载该插件)声明的插件可以在子项目中直接通过groupId和artifactId引用（统一管理插件（版本））
+plugins
+	加载插件
+dependencyManagement
+dependencies
+
+值占位符：
+	env.X：操作系统环境变量，比如${env.PATH}
+	project.x：pom文件中的属性，比如：<project><version>1.0</version></project>，引用方式：${project.version}
+	settings.x：settings.xml文件中的属性，比如：<settings><offline>false</offline></settings>，引用方式：${settings.offline}
+	Java System Properties：java.lang.System.getProperties()中的属性，比如java.home，引用方式：${java.home}
+	自定义：在pom文件中可 以：<properties><installDir>c:/apps/cargo-installs< /installDir></properties>，引用方式：${installDir}
+
+2. mvn 命令操作
+
+mvn 支持scala编译
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>2.15.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+执行命令：
+	mvn  clean scala:compile compile package
+
+项目打包: mvn  package
+	target目录
+	编译了代码
+	编译了测试代码
+	使用junit测试并生成的报告
+	生成代码的jar文件
+	运行 java -cp  target\helloworld-1.0-SNAPSHOT.jar com.easymorse.App
+编译源程序 mvn compile
+编译并测试 mvn test
+清空生成的文件 mvn clean
+
+package和install区别： package打包到当期项目target目录下，install将包发布到本地(或远端)mvn仓库
+
+2. settings 文件节点配置详解
+http://www.cnblogs.com/avivaye/p/5336647.html

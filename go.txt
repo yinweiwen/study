@@ -31,6 +31,8 @@ Sched	-	工厂管理员
 大写 - public
 小谢 - private
 
+# go iota使用
+http://studygolang.com/articles/2192
 
 # go defere
 defer理解为 后进先出的栈空间，在函数结束后调用该栈
@@ -154,8 +156,49 @@ fmt.Sprintf("%d", i)
 $ go time	http://studygolang.com/articles/736
 time.Now  time.Unix(1389058332)  time.Date(2017,1,1)
 time.format
+时间差   time.Sub() <time.Duration>   time.since
+
 
 # go struct{}
 var s struct{} 声明就能使用
 
-# 
+# go import
+import . "github.com/onsi/ginkgo"   ->>  调用省略前缀的包名
+import f "fmt"	-->> 别名
+import "database/sql" _  ->> 仅执行该包的init()方法 
+引入包过程 ->> 包内引用包导入 ->> 包内变量常量声明，init(如果有)函数执行
+
+
+# go unit test  https://github.com/astaxie/build-web-application-with-golang/blob/master/zh/11.3.md
+_test.go结尾   
+import testing
+func TestXxx (t *testing.T)   通过调用testing.T的Error, Errorf, FailNow, Fatal, FatalIf方法，说明测试不通过，调用Log方法用来记录测试的信息
+go test -v
+压力测试
+func Benchmark_TimeConsumingFunction(b *testing.B) {
+	b.StopTimer() //调用该函数停止压力测试的时间计数
+
+	//做一些初始化的工作,例如读取文件数据,数据库连接之类的,
+	//这样这些时间不影响我们测试函数本身的性能
+
+	b.StartTimer() //重新开始时间
+	for i := 0; i < b.N; i++ {
+		Division(4, 5)
+	}
+}
+go test -file webbench_test.go -test.bench=".*"
+
+# go 构造函数
+不支持 ->> NewXX方法
+默认参数 ->> 不支持
+
+# go vet 检查
+By package, from the go tool:	->> go vet package/path/name
+By files:		->>	go tool vet source/directory/*.go
+By directory:	->>	go tool vet source/directory
+
+# go 坑
+The defer only defers the function call. The field and method are accessed immediately. （https://stackoverflow.com/questions/16280176/go-panic-runtime-error-invalid-memory-address-or-nil-pointer-dereference）
+
+ multiple-value strconv.ParseInt() in single-value context   返回值有多个，但只有一个接受变量
+
