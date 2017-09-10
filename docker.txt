@@ -1,1 +1,40 @@
 docker pull jenkinsci/jenkins:lts
+docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins
+镜像存储在 /var/lib/docker
+安装docker：
+1. apt-get remove docker docker-engine docker.io
+2. http://www.cnblogs.com/ksir16/p/6530433.html 
+
+1. get intall
+apt intall docker
+
+2. docker --version
+docker run hello-world
+
+build a app:
+ Dockerfile
+ requirement.txt -- 
+ app.py
+ 
+ docker build -t friendlyhello .
+ 
+ docker images
+ 
+ docker run -d -p 4000:80 friendlyhello
+ -d 后台  -p 端口映射
+ docker container ls
+ docker stop 1fa4ab2cf395
+ 
+ 搭建私有仓库 Docker Trusted Registry (DTR)
+ sudo docker pull registry
+ sudo docker run -d -p 5000:5000 -v /opt/data/registry:/tmp/registry registry
+ 
+ 配置CDN(mirror)
+ https://1f3mevbc.mirror.aliyuncs.com
+ 阿里云 - 开发者平台
+ http://www.cnblogs.com/anliven/p/6218741.html
+ 官方中国区加速镜像：（不好用）
+ --registry-mirror=https://registry.docker-cn.com
+ 163（不好用）
+sudo echo "DOCKER_OPTS=\"--registry-mirror=http://hub-mirror.c.163.com\"" >> /etc/default/docker
+service docker restart
