@@ -1,0 +1,6 @@
+1. 使用nvm管理node版本
+https://github.com/creationix/nvm/blob/master/README.md
+https://github.com/coreybutler/nvm-windows  （windows）
+
+nvm install 8.4.0
+

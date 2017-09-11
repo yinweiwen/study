@@ -1,0 +1,109 @@
+1. 确保所有主题存在
+./kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic data
+./kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic alarm
+./kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic vbData
+
+2.常见错误
+>> NoNodeAvailableException[None of the configured nodes are available: 
+ES 错误
+>>spark 54:39 INFO yarn.Client: Application report for application_1505131453769_0004 (state: ACCEPTED)
+内存不足，任务提交失败
+查看Slave上的nodemanager是否启动(查看resource manager日志)
+
+
+3. 启动http-server
+
+	http_server.exe -addr 10.8.30.117:8082 -brokers 127.0.0.1:9092
+	
+	-addr 监听地址(和iota规则引擎配置对应)
+	-brokers kafka代理地址
+	
+4. 环境环境
+		sudo apt install openjdk-8-jre
+		top 资源管理器
+		vmstat 10 
+		free -m  查看内存使用情况 -m M -g G
+		/etc/profile 
+				export JAVA_HOME=/usr
+				export CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/jre/lib:$CLASSPATH
+				export PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
+				export HADOOP_HOME=/home/yww/tes/hadoop-2.7.4
+				export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+		source /etc/profile
+		执行权限 chmod -R +x ../bin
+		关闭防火墙 sudo ufw disable
+		jps 查看后台进程
+		HDFS http://localhost:50070/
+		Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+					重新编译   http://www.ercoppa.org/posts/how-to-compile-apache-hadoop-on-ubuntu-linux.html
+		hdfs namenode -format
+		hdfs dfs -mkdir /test
+		sbin/start-all.sh
+		
+		./elasticsearch -d
+		ps aux|grep elasticsearch
+		
+		./zkServer.sh start
+		nohup ./kafka-server-start.sh ../config/server.properties 1>/dev/null 2>&1 &
+		
+		
+		[1] Spark on Yarn 环境搭建 [http://www.jianshu.com/p/b1ac056f8a3a]
+		[2] Hadoop集群环境搭建（三台） [http://www.jianshu.com/p/bb7ce32a1920]
+		[3] hadoop分布式集群部署步骤总结 [http://blog.csdn.net/u010330043/article/details/51235373]
+		* 关闭 ES -> kill -9 22158
+		
+5. spark提交的集中方式
+	[http://www.th7.cn/system/lin/201705/214258.shtml]
+	1. 单机模式(Standalone)
+	./bin/spark-submit  --class   org.apache.spark.examples.SparkPi  --master   local  examples/jars/spark-examples_2.11-2.1.1.jar
+	2. 使用独立的Spark集群模式提交任务
+	3. 使用spark+Hadoop集群
+		3.1 yarn-client模式执行
+			./bin/spark-submit   --class  org.apache.spark.examples.SparkPi  --master  yarn-client    examples/jars/spark-examples_2.11-2.1.1.jar
+		3.2 yarn-cluster模式执行
+			When running with master 'yarn-client' either HADOOP_CONF_DIR or YARN_CONF_DIR must be set in the environment
+		
+		[Spark:Yarn-cluster和Yarn-client区别与联系][https://www.iteblog.com/archives/1223.html]
+			
+./bin/spark-submit  --master yarn-cluster  /home/yww/tes/et/et-1.0-SNAPSHOT-jar-with-dependencies.jar 
+
+..,,info:
+	tracking URL: http://dragon-Q:8088/proxy/application_1505118534669_0001/
+	change host 10.8.30.199 -> dragon-Q
+	
+	查看yarn日志 yarn logs -applicationId 
+	日志聚集 yarn.log-aggregation-enable
+	日志在hadoop安装目录下(yarn.nodemanager.log-dirs) /home/yww/tes/hadoop-2.7.4/logs/userlogs/application_1505118534669_0001
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+<start-all.sh>
+
+### start et in 10.8.30.99, script work dir is /home/yww/tes
+### 20170911
+echo <zookeeper>
+./zookeeper-3.4.10/bin/zkServer.sh start
+
+echo <kafka>
+nohup ./kafka_2.11-0.11.0.0/bin/kafka-server-start.sh ./kafka_2.11-0.11.0.0/config/server.properties 1>/dev/null 2>&1 &
+# ./kafka_2.11-0.11.0.0/bin/kafka-server-start.sh  -daemon  ./kafka_2.11-0.11.0.0/config/server.propertie
+## ssh-keygen -t rsa -P ""
+## cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
+ssh localhost
+cd tes
+echo <hadoop>
+./hadoop-2.7.4/sbin/start-all.sh
+
+echo <ES>
+./elasticsearch-5.5.2/bin/elasticsearch start -d
+
+echo <ET>
+./spark-2.1.1/bin/spark-submit --master yarn-cluster ./et/et-1.0-SNAPSHOT-jar-with-dependencies.jar 
