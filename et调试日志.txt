@@ -5,10 +5,40 @@
 
 2.常见错误
 >> NoNodeAvailableException[None of the configured nodes are available: 
-ES 错误
+	ES 错误
 >>spark 54:39 INFO yarn.Client: Application report for application_1505131453769_0004 (state: ACCEPTED)
-内存不足，任务提交失败
-查看Slave上的nodemanager是否启动(查看resource manager日志)
+	内存不足，任务提交失败
+	查看Slave上的nodemanager是否启动(查看resource manager日志)  tail -n 1000 ./hadoop-2.7.4/logs/yarn-anxin-resourcemanager-node35.log
+
+>> GOPATH entry is relative; must be absolute path: "".
+	系统路径后的分号去掉
+
+>>  When running with master 'yarn-cluster' either HADOOP_CONF_DIR or YARN_CONF_DIR must be set in the environment
+	SPark-env.sh中增加 HADOOP_CONF_DIR or YARN_CONF_DIR
+
+>> Required executor memory (1024+384 MB) is above the max threshold (1024 MB) of this cluster! Please check the values of 'yarn.scheduler.maximum-allocation-mb' and/or 'yarn.nodemanager.resource.memory-mb'.
+	hadoop中yarn-site.xml 中修改yarn.nodemanager.resource.memory-mb 为4096
+
+>>  org.apache.hadoop.security.AccessControlException: Permission denied: user=root, access=WRITE, inode="/":anxin:supergroup:drwxr-xr-x
+	在hdfs-site.xml中
+	<pre name="code" class="html"><span style="font-size:18px;"> <property>  
+		<name>dfs.permissions</name>  
+		<value>false</value>  
+	</property></span>
+  
+
+>> yarn.Client: Application report for application_1505465474108_0001 (state: ACCEPTED)  一直提示这条信息，表示spark接受了请求的job，但集群式没有足够的资源来运行它
+	http://node35:8088/cluster/apps  yarn cluster manager
+	yarn application -kill application_1505466266369_0004 杀掉其他应用 (未成功)
+	
+>> 日志区分(保留进程Info日志,去除)
+	Spark/conf 目录 log4j
+	log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=WARN
+	log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=WARN
+	log4j.logger.org.apache.spark=WARN (++important)
+
+>> [WARN]Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+	可以忽略； 否则重新编译   http://www.ercoppa.org/posts/how-to-compile-apache-hadoop-on-ubuntu-linux.html
 
 
 3. 启动http-server
@@ -19,26 +49,27 @@ ES 错误
 	-brokers kafka代理地址
 	
 4. 环境环境
-		sudo apt install openjdk-8-jre
-		top 资源管理器
-		vmstat 10 
-		free -m  查看内存使用情况 -m M -g G
-		/etc/profile 
-				export JAVA_HOME=/usr
-				export CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/jre/lib:$CLASSPATH
-				export PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
-				export HADOOP_HOME=/home/yww/tes/hadoop-2.7.4
-				export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
-		source /etc/profile
-		执行权限 chmod -R +x ../bin
-		关闭防火墙 sudo ufw disable
-		jps 查看后台进程
-		HDFS http://localhost:50070/
-		Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-					重新编译   http://www.ercoppa.org/posts/how-to-compile-apache-hadoop-on-ubuntu-linux.html
+		>> Linux 操纵
+			sudo apt install openjdk-8-jre
+			top 资源管理器
+			vmstat 10 
+			free -m  查看内存使用情况 -m M -g G
+			/etc/profile 
+					export JAVA_HOME=/usr
+					export CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/jre/lib:$CLASSPATH
+					export PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
+					export HADOOP_HOME=/home/yww/tes/hadoop-2.7.4
+					export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+			source /etc/profile
+			执行权限 chmod -R +x ../bin
+			关闭防火墙 sudo ufw disable
+			jps 查看后台进程
+			ps -ef | grep pname     kill -pid pid/ppid (kill -TERM PPID)    killall pname     kill -HUP pid 进程重启    kill -9 PID 强制
+		
 		hdfs namenode -format
 		hdfs dfs -mkdir /test
 		sbin/start-all.sh
+			or sbin/start-dfs  sbin/start-yarn (***如果使用独立的spark集群提交et，无需启动yarn)
 		
 		./elasticsearch -d
 		ps aux|grep elasticsearch
@@ -46,14 +77,16 @@ ES 错误
 		./zkServer.sh start
 		nohup ./kafka-server-start.sh ../config/server.properties 1>/dev/null 2>&1 &
 		
+		spark/sbin/start-all.sh
+			or /sbin"/start-master.sh  /sbin"/start-slaves.sh
+		
 		
 		[1] Spark on Yarn 环境搭建 [http://www.jianshu.com/p/b1ac056f8a3a]
 		[2] Hadoop集群环境搭建（三台） [http://www.jianshu.com/p/bb7ce32a1920]
 		[3] hadoop分布式集群部署步骤总结 [http://blog.csdn.net/u010330043/article/details/51235373]
 		* 关闭 ES -> kill -9 22158
 		
-5. spark提交的集中方式
-	[http://www.th7.cn/system/lin/201705/214258.shtml]
+5. spark提交的几种方式	[http://www.th7.cn/system/lin/201705/214258.shtml]
 	1. 单机模式(Standalone)
 	./bin/spark-submit  --class   org.apache.spark.examples.SparkPi  --master   local  examples/jars/spark-examples_2.11-2.1.1.jar
 	2. 使用独立的Spark集群模式提交任务
@@ -64,8 +97,6 @@ ES 错误
 			When running with master 'yarn-client' either HADOOP_CONF_DIR or YARN_CONF_DIR must be set in the environment
 		
 		[Spark:Yarn-cluster和Yarn-client区别与联系][https://www.iteblog.com/archives/1223.html]
-			
-./bin/spark-submit  --master yarn-cluster  /home/yww/tes/et/et-1.0-SNAPSHOT-jar-with-dependencies.jar 
 
 ..,,info:
 	tracking URL: http://dragon-Q:8088/proxy/application_1505118534669_0001/
@@ -75,15 +106,43 @@ ES 错误
 	日志聚集 yarn.log-aggregation-enable
 	日志在hadoop安装目录下(yarn.nodemanager.log-dirs) /home/yww/tes/hadoop-2.7.4/logs/userlogs/application_1505118534669_0001
 	
+	spark-submit从conf/spark-defaults.conf读取配置
+	
+	1) 失败
+./spark-2.2.0-bin-hadoop2.7/bin/spark-submit --master yarn-cluster ./et/et-1.0-SNAPSHOT-jar-with-dependencies.jar 
+	2) 失败
+./spark-2.2.0-bin-hadoop2.7/bin/spark-submit --master yarn --deploy-mode cluster --driver-memory 1g --executor-memory 1g ./et/et-1.0-SNAPSHOT-jar-with-dependencies.jar 
+	3) 失败
+./spark-2.2.0-bin-hadoop2.7/bin/spark-submit --class anxin.et.main --master yarn --deploy-mode cluster --driver-memory 1g --executor-memory 1g hdfs://10.8.30.35:9000/user/anxin/code/et/	et-1.0-SNAPSHOT-jar-with-dependencies.jar
+	4) 失败
+	
+>> 提交到spark集群
+	5) 成功(client模式)
+./spark-2.2.0-bin-hadoop2.7/bin/spark-submit --master spark://10.8.30.35:7077 ./et/et-1.0-SNAPSHOT-jar-with-dependencies.jar 
+	6) 成功 (so...)
+./spark-2.2.0-bin-hadoop2.7/bin/spark-submit --class anxin.et.main --master spark://10.8.30.35:6066 --deploy-mode cluster hdfs://10.8.30.35:9000/user/anxin/code/et/et-1.0-SNAPSHOT-jar-with-dependencies.jar
 	
 	
+6. 控制台(Default Port)
+	spark管理界面 [http://10.8.30.35:8080/]
+		work node 36 [http://10.8.30.36:8081]
+		work node 37 [http://10.8.30.37:8081]
 	
+			URL: spark://node35:7077
+			REST URL: spark://node35:6066 (cluster mode)
+			
+	HDFS http://node35:50070/
 	
+	HADOOP yarn (暂未用)
+		http://node35:8088
 	
-	
+6.extra -- 提高spark可靠性
+	master存在单节点错误
+	1. zookeeper
+		
 
 	
-	
+7. 附录	
 	
 <start-all.sh>
 
@@ -106,4 +165,34 @@ echo <ES>
 ./elasticsearch-5.5.2/bin/elasticsearch start -d
 
 echo <ET>
+# not use anymore
 ./spark-2.1.1/bin/spark-submit --master yarn-cluster ./et/et-1.0-SNAPSHOT-jar-with-dependencies.jar 
+
+
+
+
+log4j配置
+$SPARK_HOME/conf/log4j.properties
+
+# Set everything to be logged to the console
+log4j.rootCategory=WARN, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.target=System.err
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+# Set the default spark-shell log level to WARN. When running the spark-shell, the
+# log level for this class is used to overwrite the root logger's log level, so that
+# the user can have different defaults for the shell and regular Spark apps.
+log4j.logger.org.apache.spark.repl.Main=WARN
+
+# Settings to quiet third party logs that are too verbose
+log4j.logger.org.spark_project.jetty=WARN
+log4j.logger.org.spark_project.jetty.util.component.AbstractLifeCycle=ERROR
+log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=WARN
+log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=WARN
+log4j.logger.org.apache.parquet=ERROR
+log4j.logger.parquet=ERROR
+log4j.logger.org.apache.spark=WARN
+
+

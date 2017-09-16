@@ -36,5 +36,8 @@ build a app:
  官方中国区加速镜像：（不好用）
  --registry-mirror=https://registry.docker-cn.com
  163（不好用）
-sudo echo "DOCKER_OPTS=\"--registry-mirror=http://hub-mirror.c.163.com\"" >> /etc/default/docker
+sudo echo "DOCKER_OPTS=\"--registry-mirror=https://1f3mevbc.mirror.aliyuncs.com\"" >> /etc/default/docker
 service docker restart
+
+
+docker exec -it 29d42d8696aa /bin/bash

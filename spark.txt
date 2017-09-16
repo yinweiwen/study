@@ -1,3 +1,57 @@
+./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn --deploy-mode cluster --executor-memory 1G --num-executors /path/to/examples.jar 1000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 dstream.foreachRDD { rdd =>
   rdd.foreachPartition { partitionOfRecords =>
     val connection = createNewConnection()

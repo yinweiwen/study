@@ -1,3 +1,6 @@
+************
+slice[m:n] 索引从m到n（不包含），长度 n-m
+
 
 # interface{}
 任意的类型都实现了空interface(我们这样定义：interface{})，也就是包含0个method的interface
