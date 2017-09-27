@@ -79,6 +79,15 @@
 		
 		spark/sbin/start-all.sh
 			or /sbin"/start-master.sh  /sbin"/start-slaves.sh
+			
+			
+		nvm和nodejs
+		wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.4/install.sh | bash
+			export NVM_DIR="$HOME/.nvm"
+			[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+			[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+		nvm install 8.4.0
+		npm install -g pm2
 		
 		
 		[1] Spark on Yarn 环境搭建 [http://www.jianshu.com/p/b1ac056f8a3a]
@@ -121,7 +130,12 @@
 ./spark-2.2.0-bin-hadoop2.7/bin/spark-submit --master spark://10.8.30.35:7077 ./et/et-1.0-SNAPSHOT-jar-with-dependencies.jar 
 	6) 成功 (so...)
 ./spark-2.2.0-bin-hadoop2.7/bin/spark-submit --class anxin.et.main --master spark://10.8.30.35:6066 --deploy-mode cluster hdfs://10.8.30.35:9000/user/anxin/code/et/et-1.0-SNAPSHOT-jar-with-dependencies.jar
+	7) 成功 (with zookeeper HA)
+./spark-2.2.0-bin-hadoop2.7/bin/spark-submit --class anxin.et.main --master spark://node35:6066,node36:6066,node37:6066 --deploy-mode cluster hdfs://node35:9000/user/anxin/code/et.jar
 	
+	*提交文件到HDFS
+	 hdfs dfs -rm hdfs://node35:9000/user/anxin/code/et.jar
+	 hdfs dfs -put ./et.jar hdfs://node35:9000/user/anxin/code/et.jar
 	
 6. 控制台(Default Port)
 	spark管理界面 [http://10.8.30.35:8080/]
@@ -136,11 +150,28 @@
 	HADOOP yarn (暂未用)
 		http://node35:8088
 	
-6.extra -- 提高spark可靠性
-	master存在单节点错误
-	1. zookeeper
+6.extra -- HA
+	master存在单节点错误 
+	实现基于zookeeper的HA
+	spark-env.sh中添加
+		export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=node35:2181,node36:2181,node37:2181 -Dspark.deploy.zookeeper.dir=/spark"
+	scp ./spark-2.2.0-bin-hadoop2.7/conf/spark-env.sh anxin@node36:/home/anxin/spark-2.2.0-bin-hadoop2.7/conf
+	scp ./spark-2.2.0-bin-hadoop2.7/conf/spark-env.sh anxin@node37:/home/anxin/spark-2.2.0-bin-hadoop2.7/conf
 		
+		anxin@node35:~$ ./spark-2.2.0-bin-hadoop2.7/sbin/start-all.sh
+		anxin@node36:~$ ./spark-2.2.0-bin-hadoop2.7/sbin/start-master.sh
+		anxin@node37:~$ ./spark-2.2.0-bin-hadoop2.7/sbin/start-master.sh
 
+		试验：
+		http://node35:8080/  Status: ALIVE
+		http://node36:8080/  Status: STANDBY
+		http://node37:8080/  Status: STANDBY
+		关闭node35上master
+		anxin@node35:~$ ./spark-2.2.0-bin-hadoop2.7/sbin/stop-master.sh
+		http://node35:8080/  Cannot access
+		http://node36:8080/  Status: STANDBY
+		http://node37:8080/  Status: ALIVE
+		
 	
 7. 附录	
 	
@@ -173,13 +204,12 @@ echo <ET>
 
 log4j配置
 $SPARK_HOME/conf/log4j.properties
-
 # Set everything to be logged to the console
-log4j.rootCategory=WARN, console
+log4j.rootCategory=INFO, console
 log4j.appender.console=org.apache.log4j.ConsoleAppender
 log4j.appender.console.target=System.err
 log4j.appender.console.layout=org.apache.log4j.PatternLayout
-log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} [ %t:%r ] %p %c{1}: %m%n
 
 # Set the default spark-shell log level to WARN. When running the spark-shell, the
 # log level for this class is used to overwrite the root logger's log level, so that
@@ -194,5 +224,33 @@ log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=WARN
 log4j.logger.org.apache.parquet=ERROR
 log4j.logger.parquet=ERROR
 log4j.logger.org.apache.spark=WARN
+log4j.logger.org.apache.zookeeper=WARN
+log4j.logger.kafka=WARN
+log4j.logger.org.I0Itec.zkclient=WARN
+
+# SPARK-9183: Settings to avoid annoying messages when looking up nonexistent UDFs in SparkSQL with Hive support
+log4j.logger.org.apache.hadoop.hive.metastore.RetryingHMSHandler=FATAL
+log4j.logger.org.apache.hadoop.hive.ql.exec.FunctionRegistry=ERROR
 
 
+
+调试条件“
+I:\WorkSpace\@JAVA\zookeeper-3.4.10\bin\zkServer.cmd
+
+
+cd /d I:\FS-SavoirCloud\trunk\codes\services\go\src\anxin\recv
+http_server.exe -addr 10.8.30.117:8073 -brokers node35:9092,node36:9092,node37:9092
+cd /d I:\FS-SavoirCloud\trunk\codes\services\go\src\anxin\recv
+λ http_server.exe -addr 10.8.30.117:8071 -brokers localhost:9092
+
+kibana
+http://10.8.30.37:5601
+Iota
+https://console.theiota.cn/
+iota Doc
+https://doc.theiota.cn
+spark ui
+http://10.8.30.35:8080/
+Savoir
+http://10.8.30.35:8081/signin
+test  tester 123456

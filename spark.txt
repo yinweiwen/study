@@ -1,23 +1,33 @@
 ./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn --deploy-mode cluster --executor-memory 1G --num-executors /path/to/examples.jar 1000
 
+Spark 集群模式概述[http://colobu.com/2014/12/09/spark-cluster-overview/]
+
+术语	意义
+Application	建立在Spark上的应用. 包括一个驱动程序和集群上的executor.
+Application jar	一个包含用户Spark application的jar文件. 某些情况下用户可能会把一些依赖同应用都打进一个jar文件中， 但是这个jar文件不应包含Hadoop 或者 Spark 库, 在运行时它们会被加上.
+Driver program	运行应用的main()函数的进程， 并创建SparkContext
+Cluster manager	在集群上分配资源的外部服务(如 standalone manager, Mesos, YARN)
+Deploy mode	区分驱动进程是怎样运行的. 在cluster模式下，框架会在集群中启动驱动，在client模式下, 提交者在集群外部启动驱动
+Worker node	集群中运行应用代码的节点
+Executor	在worker节点上为应用启动的进程, 运来运行任务task， 在内存或磁盘上中保存数据。 每个应用都有它自己的executor
+Task	发送给一个executor的工作单元
+Job	包含多个task的一个并行计算。根据Spark action(如 save, collect)而创建。可以在驱动的log日志中看到此术语
+Stage	每个job被分成一撮task， 称之为stage。 (类似MapReduce的map/reduce stage); 可以在驱动的log日志中看到此术语. gets divided into smaller sets of tasks called stages that depend on each other (similar to the map and reduce stages in MapReduce); you'll see this term used in the driver's logs.
 
 
 
 
+Spark-Shell 实例
+
+./bin/spark-shell
+sc.parallelize(1 to 100000 , 15)
+sc.setCheckpointDir("/iteblog")
+data.checkpoint
+data.count
+data.count
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+/home/anxin/spark-2.2.0-bin-hadoop2.7/jars
 
 
 

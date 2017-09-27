@@ -1,0 +1,93 @@
+>> WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+	need recompile HADOOP library
+	https://stackoverflow.com/questions/44659993/hadoop-unable-to-load-native-hadoop-library-for-your-platform-using-builtin-ja
+	https://stackoverflow.com/questions/19943766/hadoop-unable-to-load-native-hadoop-library-for-your-platform-warning
+	（暂未解决）
+
+>> ERROR SparkUncaughtExceptionHandler: Uncaught exception in thread Thread[Executor task launch worker for task 56208,5,main]
+java.lang.OutOfMemoryError: unable to create new native thread
+	ulimit -u 查看当前用户允许的进程数
+	w 查看当前活跃用户
+	while true;do ps -u anxin -L | wc -l;sleep 1;done
+	ulimit -a
+		core file size          (blocks, -c) 0
+		data seg size           (kbytes, -d) unlimited
+		scheduling priority             (-e) 0
+		file size               (blocks, -f) unlimited
+		pending signals                 (-i) 31450
+		max locked memory       (kbytes, -l) 64
+		max memory size         (kbytes, -m) unlimited
+		open files                      (-n) 1024
+		pipe size            (512 bytes, -p) 8
+		POSIX message queues     (bytes, -q) 819200
+		real-time priority              (-r) 0
+		stack size              (kbytes, -s) 8192
+		cpu time               (seconds, -t) unlimited
+		max user processes              (-u) 31450
+		virtual memory          (kbytes, -v) unlimited
+		file locks                      (-x) unlimite
+	
+	vim /etc/security/limits.conf  中修改
+	
+	https://plumbr.eu/outofmemoryerror/unable-to-create-new-native-thread
+	jvm调试工具
+	http://blog.csdn.net/fenglibing/article/details/6411953
+	https://dzone.com/articles/how-analyze-java-thread-dumps
+	https://www.slideshare.net/jcmia1/a-beginners-guide-on-troubleshooting-spark-applications
+	
+	cache和checkpoint的解释
+	https://github.com/JerryLead/SparkInternals/blob/master/markdown/6-CacheAndCheckpoint.md
+	
+>> Parse json err:	{"userId":"ce2d7eb2-e56e-422e-8bbe-95dfa18e32f8","thingId":"f09a8fd3-ae1f-4684-a5fd-098ec951f64b","dimensionId":"db168784-54fe-4922-b407-da20f9e76e83","dimCapId":"8ea17eb6-1087-487c-8f3a-cf487c47c968","deviceId":"4c09887e-c8fc-4ee6-b67c-5d01dfac4cb9","scheduleId":"dfc46e22-7d0e-4244-b35e-ab16f2c7e202","taskId":"39742d0f-1625-417e-9963-6459aeee028c","jobId":3,"jobRepeatId":1,"triggerTime":"2017-09-20T10:58:55.0449647+08:00","finishTime":"2017-09-20T10:58:55.0589655+08:00","seq":0,"result":{"code":1001,"msg":"Invalid Msg, len"},"data":{"data":null,"result":null,"type":1}}
+	
+	代码故障：parse err：json get err  null的选项映射为Option对象
+	
+>> iota device f09a8fd3-ae1f-4684-a5fd-098ec951f64b 895f3b6b-41a4-439a-bff6-5576f7a04454 not found
+	所有设备提示not found
+	代理地址不能用localhost,用IP地址
+	@TODO 查询接口错误提示
+
+>>
+{"userId":"ce2d7eb2-e56e-422e-8bbe-95dfa18e32f8","thingId":"f09a8fd3-ae1f-4684-a5fd-098ec951f64b","dimensionId":"db168784-54fe-4922-b407-da20f9e76e83","dimCapId":"fc606bab-bed8-4598-9d8a-12cb2bdd5619","deviceId":"895f3b6b-41a4-439a-bff6-5576f7a04454","scheduleId":"dfc46e22-7d0e-4244-b35e-ab16f2c7e202","taskId":"d640b031-87ca-41e2-aaf4-721b601586b8","jobId":6,"jobRepeatId":1,"triggerTime":"2017-09-21T13:54:55.0927623+08:00","finishTime":"2017-09-21T13:54:55.1077631+08:00","seq":0,"result":null,"data":{"data":[{"force":0,"frequency":1075.0184326171875,"temp":16.712003707885742}],"result":null,"type":1}}
+
+>>
+WARN DStreamCheckpointData: Error deleting old checkpoint file 'hdfs://10.8.30.35:9000/user/anxin/check-point/884d7575-64f8-4189-9946-a3c849d573e6/rdd-25660' for time 1506063350000 ms
+java.io.IOException: Filesystem closed
+
+	解决方法：(??) $HADOOP_HOME/etc/hadoop/core-site.xml 增加
+	<property>
+      <name>fs.hdfs.impl.disable.cache</name>
+      <value>true</value>
+	</property>
+	
+	http://blog.csdn.net/posa88/article/details/41018031
+
+>> 
+Can't read Kafka version from MANIFEST.MF
+
+>> Spark运行过程理解 1
+Any Spark application consists of a single Driver process and one or more Executor processes. The Driver process will run on the Master node of your cluster and the Executor processes run on the Worker nodes. You can increase or decrease the number of Executor processes dynamically depending upon your usage but the Driver process will exist throughout the lifetime of your application.
+--SPARK进程包含一个Driver进程和多个Executor进程。Driver进程运行在主节点上，Executor运行在各个Worker节点上。你可以根据你的使用动态的增加或减少执行器的个数，但是Driver会伴随你应用程序的整个生命周期
+
+The Driver process is responsible for a lot of things including directing the overall control flow of your application, restarting failed stages and the entire high level direction of how your application will process the data.
+--Driver的职责包括应用程序整体流程控制，重启失败的阶段（stages），应用程序将如何处理数据的整个高级方向
+
+Coding your application so that more data is processed by Executors falls more under the purview of optimising your application so that it processes data more efficiently/faster making use of all the resources available to it in the cluster. In practice, you do not really need to worry about making sure that more of your data is being processed by executors.
+-- 对应用程序进行编码，以便执行程序处理更多的数据更多地处于优化应用程序的范围之内，从而更有效/更快地处理数据，从而利用集群中可用的所有资源。实际上，您不需要担心确保执行程序正在处理更多的数据。
+
+That being said, there are some Actions, which when triggered, necessarily involve shuffling around of data. If you call the collect action on an RDD, all the data is brought to the Driver process and if your RDD had a sufficiently large amount of data in it, an Out Of Memory error will be triggered by the application, as the single machine running the Driver process will not be able to hold all the data.
+--话虽如此，有一些动作，当被触发时，必然涉及数据的混乱。如果您在RDD上调用采集操作，则将所有数据都带到驱动程序进程，并且如果您的RDD中有足够大的数据量，那么应用程序会触发内存不足错误，因为单个机器运行驱动程序进程将无法保存所有数据
+
+Keeping the above in mind, Transformations are lazy and Actions are not. Transformations basically transform one RDD into another. But calling a transformation on an RDD does not actually result in any data being processed anywhere, Driver or Executor. All a transformation does is that it adds to the DAG's lineage graph which will be executed when an Action is called.
+--记住以上几点，变革是懒惰的，行动不是。转换基本上将一个RDD转换为另一个RDD。但是在RDD上调用转换实际上并不会导致在任何地方处理任何数据，Driver或Executor。所有的转换都是添加到DAG的行为图，当Action被调用时，它将被执行
+
+So the actual processing happens when you call an Action on an RDD. The simplest example is that of calling collect. As soon as an action is called, Spark gets to work and executes the previously saved DAG computations on the specified RDD, returning the result back. Where these computations are executed depends entirely on your application.
+--因此，当您在RDD上调用Action时，会发生实际处理。最简单的例子是调用收集。一旦调用了一个动作，Spark就可以在指定的RDD上工作并执行先前保存的DAG计算，返回结果。执行这些计算完全取决于您的应用程序。
+
+>> spark中cache和CheckPoint区别
+	https://github.com/JerryLead/SparkInternals/blob/master/markdown/6-CacheAndCheckpoint.md
+
+>> 	
+插播 Nuget错误  "无法初始化 PowerShell 主机。如果将你的 PowerShell 执行策略设置设置为 AllSigned，请先打开 Package Manager Console 以初始化该主机。"
+1 Set-ExecutionPolicy AllSigned  XXX
+2 Set-ExecutionPolicy RemoteSigned -Force  XXX
