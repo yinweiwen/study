@@ -1,0 +1,86 @@
+record @notepadqq
+
+docker First example:
+Dockerfile
+		FROM python:2.7-slim
+		WORKDIR /app
+		ADD . /app
+		RUN pip install -r requirements.txt
+		EXPOSE 80
+		ENV NAME world
+		CMD ["python","app.py"]
+app.py
+		from flask import Flask
+		from redis import Redis, RedisError
+		import os
+		import socket
+
+		# Connect to Redis
+		redis = Redis(host="redis", db=0, socket_connect_timeout=2, socket_timeout=2)
+
+		app = Flask(__name__)
+
+		@app.route("/")
+		def hello():
+			try:
+				visits = redis.incr("counter")
+			except RedisError:
+				visits = "<i>cannot connect to Redis, counter disabled</i>"
+
+			html = "<h3>Hello {name}!</h3>" \
+				   "<b>Hostname:</b> {hostname}<br/>" \
+				   "<b>Visits:</b> {visits}"
+			return html.format(name=os.getenv("NAME", "world"), hostname=socket.gethostname(), visits=visits)
+
+		if __name__ == "__main__":
+			app.run(host='0.0.0.0', port=80)
+requirements.txt
+		Flask
+		Redis
+		
+docker build -t friendlyhello .
+docker images (docker image ls)
+docker run  -p 4000:80 friendlyhello
+-p 端口映射
+-d 后台运行
+docker container ls （显示正在运行的container） (-a 显示所有) （-q仅显示containerId）
+docker stop $containerId 优雅停止
+docker kill $cid	杀死
+docker container rm $cid 删除容器
+远程仓库
+$ docker login (yinweiwen 3571***)
+$ docker tag local-image:tagname new-repo:tagname
+$ docker push new-repo:tagname
+
+
+chapter 3: scale service
+docker-compose.yml
+		version: "3"
+		services:
+		  web:
+			image: yinweiwen/friendlyhello:1.0
+			deploy:
+			  replicas: 5
+			  resources:
+				limits:
+				  cpus: "0.1"
+				  memory: 50M
+			  restart_policy:
+				condition: on-failure
+			ports:
+			  - "80:80"
+			networks:
+			  - webnet
+		networks:
+		  webnet:
+			
+
+docker swarn init 初始化集群环境
+docker stack ls 查看stack列表
+docker stack deploy -c <composefile> <appname>  运行
+docker service ls	查看service列表
+docker service ps <service>	列举指定service下的tasks
+docker inspect <task or container>
+docker stack rm <appname> 删除指定stack	
+docker node ls   查看集群中节点列表
+docker swarm leave --force 当前节点退出集群
