@@ -53,6 +53,9 @@ java.lang.OutOfMemoryError: unable to create new native thread
 >>
 WARN DStreamCheckpointData: Error deleting old checkpoint file 'hdfs://10.8.30.35:9000/user/anxin/check-point/884d7575-64f8-4189-9946-a3c849d573e6/rdd-25660' for time 1506063350000 ms
 java.io.IOException: Filesystem closed
+||
+Error in attempt 1 of writing checkpoint to 'hdfs://10.8.30.35:9000/user/anxin/check-point/checkpoint-1506342030000'
+java.io.IOException: Filesystem closed
 
 	解决方法：(??) $HADOOP_HOME/etc/hadoop/core-site.xml 增加
 	<property>

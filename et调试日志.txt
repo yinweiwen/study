@@ -237,11 +237,18 @@ log4j.logger.org.apache.hadoop.hive.ql.exec.FunctionRegistry=ERROR
 µ÷ÊÔÌõ¼þ¡°
 I:\WorkSpace\@JAVA\zookeeper-3.4.10\bin\zkServer.cmd
 
+cd /d I:\WorkSpace\@JAVA\kafka_2.11-0.11.0.0
+RD /S /Q I:\tmp\kafka-logs 
+.\bin\windows\kafka-server-start.bat .\config\server.properties
+
+cd /d I:\FS-SavoirCloud\trunk\codes\services\iota-proxy
+npm start
 
 cd /d I:\FS-SavoirCloud\trunk\codes\services\go\src\anxin\recv
 http_server.exe -addr 10.8.30.117:8073 -brokers node35:9092,node36:9092,node37:9092
+
 cd /d I:\FS-SavoirCloud\trunk\codes\services\go\src\anxin\recv
-¦Ë http_server.exe -addr 10.8.30.117:8071 -brokers localhost:9092
+http_server.exe -addr 10.8.30.117:8071 -brokers localhost:9092
 
 kibana
 http://10.8.30.37:5601
@@ -254,3 +261,4 @@ http://10.8.30.35:8080/
 Savoir
 http://10.8.30.35:8081/signin
 test  tester 123456
+
