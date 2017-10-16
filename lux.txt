@@ -14,3 +14,15 @@ x ：通常与 a 这个参数一起使用，可列出较完整信息。
 l ：较长、较详细的将该 PID 的的信息列出；
 j ：工作的格式 (jobs format)
 -f ：做一个更为完整的输出。
+
+
+step by step
+1. rufus-2.15.exe 制作 ubuntu-16.04
+2. sudo apt-get install openssh-server
+3. sudo apt-get install openjdk-8-jdk
+
+
+挂载网络磁盘(Samba服务)
+mkdir -p localdir
+apt install cifs-utils
+mount -t cifs //10.8.30.163/versions /var/jenkins-version -o rw

@@ -29,6 +29,7 @@ java.lang.OutOfMemoryError: unable to create new native thread
 	
 	vim /etc/security/limits.conf  中修改
 	
+	http://blog.csdn.net/bluishglc/article/details/50705052
 	https://plumbr.eu/outofmemoryerror/unable-to-create-new-native-thread
 	jvm调试工具
 	http://blog.csdn.net/fenglibing/article/details/6411953

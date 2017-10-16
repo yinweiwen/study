@@ -6,7 +6,7 @@ docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins
 2. http://www.cnblogs.com/ksir16/p/6530433.html 
 
 1. get intall
-apt intall docker
+apt intall docker.io
 
 2. docker --version
 docker run hello-world
@@ -41,3 +41,72 @@ service docker restart
 
 
 docker exec -it 29d42d8696aa /bin/bash
+
+Cannot connect to the Docker daemon. Is the docker daemon running on this host?.
+>> run as sudo
+
+
+docker 199 jenkins容器实练
+sudo docker run -p 8080:8080 -p 50000:50000 -v /home/anxin/jenkins:/var/jenkins_home -v /home/anxin/version:/var/jenkins/version jenkins
+
+nsenter 进入容器 （http://blog.csdn.net/u010397369/article/details/41045251）
+$ wget https://www.kernel.org/pub/linux/utils/util-linux/v2.24/util-linux-2.24.tar.gz
+$ tar -xzvf util-linux-2.24.tar.gz
+$ cd util-linux-2.24/
+$ ./configure --without-ncurses
+$ make nsenter
+$ sudo cp nsenter /usr/local/bin
+
+$ sudo docker ps
+
+$ sudo docker inspect -f {{.State.Pid}} 44fc0f0582d9
+
+$ sudo nsenter --target 3326 --mount --uts --ipc --net --pid
+
+mount -t cifs //10.8.30.163/versions /var/jenkins-version -o rw
+
+example 0.1: <docker 安装apach打开网站 保存例子> 
+docker run -i -t fedora bash
+yum update
+yum install httpd
+exit // 退出容器tty
+docker ps -a
+docker commit c16378f943fe fedora-httpd
+docker images
+nano Dockerfile
+		FROM fedora-httpd
+		ADD mysite.tar /tmp/
+		RUN mv /tmp/mysite/* /var/www/html
+		EXPOSE 80
+		ENTRYPOINT [ "/usr/sbin/httpd" ]
+		CMD [ "-D", "FOREGROUND" ]
+docker build -rm -t mysite .
+docker run -d -P mysite
+
+♥♥
+简单介绍下Docker命令：
+Docker version / Docker info 查看基本信息，遇到使用问题或者BUG，可以到社区里报告，记得带着这些信息哈。
+Docker pull 拉取镜像。
+Docker run 从镜像创建一个容器并运行指定的命令常用参数-i -d，建议用—-name命名这个容器，命名后可以使用容器名访问这个容器。
+Docker attach（不推荐使用）。
+Docker exec -ti CONTAINER /bin/bash 连接到容器上运行bash
+Docker logs CONTAINER 查看日志，如run命令后的运行结果，Docker logs -f 查看实时的日志。
+Docker kill 杀死Docker容器进程，你可以使用Docker kill $(Docker ps -aq)杀死所有的Docker进程，后者打印出所有的容器的容器id（包括正在运行的，和没有运行的）。
+Docker rm CONTAINER 删除一个容器，记得要先停止正在运行的容器，再去删除它。
+Docker exec -it <container_id> bash -c 'cat > /path/to/container/file' < /path/to/host/file/容器外向容器内复制文件（也可以用挂载的形式哦）。
+Docker commit -a “mike” -m “镜像的一些改动” CONTAINER 当你在容器内做了某种操作后，如增加了一个文件，你可以用这个命令把修改提交，重新打包为镜像。
+Docker push 推送镜像。。到这里是不是觉得跟Git的模式已经有点像了呢。
+Docker history IMAGES 查看镜像的修改历史。
+Docker ps -a | grep "Exited" | awk '{print $1 }'| xargs Docker rm 删除exited的容器。
+Docker rmi $(Docker images | awk '/^<none>/ {print $3}') 删除tag为NONE的容器。
+Dockerfile基础
+Dokcerfile，是的，你还是要稍微掌握下Dockerfile的写法。
+From 每个Dockerfile镜像的构建都会基于一个基础镜像，这是你一来的基础镜像name:tag，git。
+MAINTAINER （不用记，作者签名）。
+ENV 配置环境变量。
+COPY 复制本地。
+EXPOSE 暴露容器的端口。
+WORKDIR 后续命令的执行路径。
+RUN important！，执行相应的命令，这一步是在容器构建这一步中执行的命令，一般用作安装软件，操作的结果是持久化在容器里面保存下来的。
+Tips：每次执行RUN的时候都是再默认路径执行的，如果要到固定路径下执行命令请在之前加WORKDIR，或者使用RUN (cd workpath && echo "mike")这样把cd命令跟相应的执行命令用括号括起来。
+ENTRYPOINT 容器启动后执行的命令。

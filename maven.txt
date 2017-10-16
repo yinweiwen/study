@@ -179,3 +179,44 @@ package和install区别： package打包到当期项目target目录下，install将包发布到本地(
 
 2. settings 文件节点配置详解
 http://www.cnblogs.com/avivaye/p/5336647.html
+
+
+
+
+maven项目中根据production和development区分代码块：
+<profiles>
+        <profile>
+            <id>development</id>
+            <properties>
+                <profiles.active>development</profiles.active>
+                <spark.streaming.scope>compile</spark.streaming.scope>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>production</id>
+            <properties>
+                <profiles.active>production</profiles.active>
+                <spark.streaming.scope>provided</spark.streaming.scope>
+            </properties>
+        </profile>
+    </profiles>
+	
+https://stackoverflow.com/questions/3697449/retrieve-version-from-maven-pom-xml-in-code
+Assuming you're using Java, you can
+
+Create a .properties file in (most commonly) your src/main/resources directory (but in step 4 you could tell it to look elsewhere).
+Set the value of some property in your .properties file using the standard Maven property for project version:  foo.bar=${project.version}
+In your Java code, load the value from the properties file as a resource from the classpath (google for copious examples of how to do this, but here's an example for starters).
+In Maven, enable resource filtering - this will cause Maven to copy that file into your output classes and translate the resource during that copy, interpreting the property. You can find some info here but you mostly just do this in your pom:
+    <build>
+      <resources>
+        <resource>
+          <directory>src/main/resources</directory>
+          <filtering>true</filtering>
+        </resource>
+      </resources>   
+    </build>
+You can also get to other standard properties like project.name, project.description, or even arbitrary properties you put in your pom <properties>, etc. Resource filtering, combined with Maven profiles, can give you variable build behavior at build time. When you specify a profile at runtime with -PmyProfile, that can enable properties that then can show up in your build.
