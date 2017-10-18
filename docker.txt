@@ -4,6 +4,7 @@ docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins
 安装docker：
 1. apt-get remove docker docker-engine docker.io
 2. http://www.cnblogs.com/ksir16/p/6530433.html 
+3. https://testerhome.com/topics/5798
 
 1. get intall
 apt intall docker.io
@@ -47,9 +48,13 @@ Cannot connect to the Docker daemon. Is the docker daemon running on this host?.
 
 
 docker 199 jenkins容器实练
-sudo docker run -p 8080:8080 -p 50000:50000 -v /home/anxin/jenkins:/var/jenkins_home -v /home/anxin/version:/var/jenkins/version jenkins
+sudo docker run -p 8082:8080 -p 50002:50000 -v /home/anxin/jenkins:/var/jenkins_home -v /home/anxin/version:/var/jenkins/version \
+-v /var/run/docker.sock:/var/run/docker.sock \
+    -v $(which docker):/usr/bin/docker \
+    -v ~/.ssh:/var/jenkins_home/.ssh \
+	--name=jenkins jenkins-my
 
-nsenter 进入容器 （http://blog.csdn.net/u010397369/article/details/41045251）
+♥♥ nsenter 进入容器 （http://blog.csdn.net/u010397369/article/details/41045251）
 $ wget https://www.kernel.org/pub/linux/utils/util-linux/v2.24/util-linux-2.24.tar.gz
 $ tar -xzvf util-linux-2.24.tar.gz
 $ cd util-linux-2.24/
@@ -61,7 +66,7 @@ $ sudo docker ps
 
 $ sudo docker inspect -f {{.State.Pid}} 44fc0f0582d9
 
-$ sudo nsenter --target 3326 --mount --uts --ipc --net --pid
+$ sudo nsenter --target 15230 --mount --uts --ipc --net --pid
 
 mount -t cifs //10.8.30.163/versions /var/jenkins-version -o rw
 
@@ -110,3 +115,83 @@ WORKDIR 后续命令的执行路径。
 RUN important！，执行相应的命令，这一步是在容器构建这一步中执行的命令，一般用作安装软件，操作的结果是持久化在容器里面保存下来的。
 Tips：每次执行RUN的时候都是再默认路径执行的，如果要到固定路径下执行命令请在之前加WORKDIR，或者使用RUN (cd workpath && echo "mike")这样把cd命令跟相应的执行命令用括号括起来。
 ENTRYPOINT 容器启动后执行的命令。
+
+
+Docker命令解析[https://studygolang.com/articles/1828]
+https://segmentfault.com/a/1190000002978115#articleHeader6
+http://blog.csdn.net/u012562943/article/details/52437878
+https://segmentfault.com/a/1190000003732967
+https://segmentfault.com/a/1190000007837054
+http://www.csdn.net/article/2015-08-21/2825511
+
+
+♥♥ docker go最小容器 alpine + glibc
+sudo docker run -it alpine
+#安装glibc apk [https://github.com/sgerrand/alpine-pkg-glibc]
+apk --no-cache add ca-certificates wget
+wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub
+wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.25-r0/glibc-2.25-r0.apk
+apk add glibc-2.25-r0.apk
+ok
+
+♥ 本地docker仓库
+文章：
+	http://blog.csdn.net/shengyiliu/article/details/40658175
+	http://blog.csdn.net/wangtaoking1/article/details/44180901/
+资源：https://github.com/docker/docker-registry
+
+docker pull registry:latest
+mkdir -p /home/anxin/docker-registry/data
+修改docker配置：
+##/etc/init/docker.config
+##exec "$DOCKERD" $DOCKER_OPTS --raw-logs --insecure-registry 10.8.30.199:5000
+/etc/default/docker  增加 --insecure-registry 10.8.30.199:5000
+另一种方法，自己签发证书[https://github.com/lightning-li/docker-nginx-auth-registry/blob/master/README.md]
+sudo docker run -d -p 5000:5000 -v /home/anxin/docker-registry:/opt/docker-image -e SQLALCHEMY_INDEX_DATABASE=sqlite:////opt/docker-image/docker-registry.db -e STORAGE_PATH=/opt/docker-image registry:latest
+
+镜像命名规则：
+registry.domain.com/namespace/repository:tags
+------------------- --------- ---------- ----
+	服务器地址       命名空间   镜像名  版本号
+	
+sudo docker tag 10.8.30.199:5000/test/busybox:12.01
+sudo docker push 10.8.30.199:5000/test/busybox:12.01
+
+
+♥ jenkins中docker构建
+(1) docker build step jenkins插件
+使用shipyard/docker-proxy Docker server REST API
+docker run \
+    -ti \
+    -d \
+    -p 2375:2375 \
+    --hostname=$HOSTNAME \
+    --restart=always \
+    --name shipyard-proxy \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -e PORT=2375 \
+    shipyard/docker-proxy:latest
+设置 Docker URL -> tcp://10.8.30.199:2375
+增加构建步骤  Execute Docker container  -->  create image...
+(2) CloudBees Docker Build and Publish plugin
+	RepositoryName anxin/gorecv
+	Tag 1.0.${BUILD_NUMBER}
+	Docker Host URI unix:///var/run/docker.sock
+	Docker registry URL http://10.8.30.199:5000
+
+
+参考文章：
+1. https://testerhome.com/topics/5798
+2. http://www.linuxidc.com/Linux/2015-07/120287.htm
+3. http://www.cnblogs.com/soar1688/p/6833540.html
+
+♥ jenkins中无法使用docker
+是用 -v /var/run/docker.sock:/var/run/docker.sock \
+     -v $(which docker):/usr/bin/docker \
+	 的方式
+ docker exec jenkins ls -la /var/run/docker.sock 查看文件权限，发现没有jenkins用户权限
+ whoami && id
+ chown -R 1000 /var/run/docker.sock
+ chown -R 1000 /usr/bin/docker
+ ok
+
