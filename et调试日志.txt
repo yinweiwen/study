@@ -262,3 +262,6 @@ Savoir
 http://10.8.30.35:8081/signin
 test  tester 123456
 
+
+
+spark-submit --class anxin.et.main --master spark://anxin-m1:6066,anxin-m2:6066 --deploy-mode cluster hdfs://iota-m1:8020/savoir/code/et.jar

@@ -95,3 +95,9 @@ So the actual processing happens when you call an Action on an RDD. The simplest
 插播 Nuget错误  "无法初始化 PowerShell 主机。如果将你的 PowerShell 执行策略设置设置为 AllSigned，请先打开 Package Manager Console 以初始化该主机。"
 1 Set-ExecutionPolicy AllSigned  XXX
 2 Set-ExecutionPolicy RemoteSigned -Force  XXX
+
+
+https://community.hortonworks.com/questions/108156/2-hosts-not-running-master-services.html
+http://stackmirror.bird.so/page/rhlmfudpx2k1
+https://community.hortonworks.com/questions/10508/mkdir-permission-denied-userroot-accesswrite-inode.html
+-- sudo su root >> su hdfs

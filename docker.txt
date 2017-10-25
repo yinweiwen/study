@@ -157,6 +157,10 @@ registry.domain.com/namespace/repository:tags
 sudo docker tag 10.8.30.199:5000/test/busybox:12.01
 sudo docker push 10.8.30.199:5000/test/busybox:12.01
 
+带UI的仓库：
+https://hub.docker.com/r/hyper/docker-registry-web/
+http://port.us.org/
+
 
 ♥ jenkins中docker构建
 (1) docker build step jenkins插件
