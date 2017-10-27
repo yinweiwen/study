@@ -1,0 +1,212 @@
+set host:
+# Iota-Anxin start
+192.168.0.201 iota-m1
+192.168.0.202 iota-m2
+192.168.0.211 iota-n1
+192.168.0.212 iota-n2
+192.168.0.213 iota-n3
+192.168.0.214 iota-n4
+192.168.0.231	anxin-m1
+192.168.0.232	anxin-m2
+# Iota-Anxin end
+
+>> Iota集群环境：
+ambari:
+http://iota-m1:8080
+
+zookeeper:
+2181
+	iota-m2
+	iota-n1
+	iota-n2
+	iota-n3
+	iota-n4
+kafka:
+6667
+	iota-m1
+	iota-m2
+	iota-n1
+	iota-n2
+	iota-n3
+	iota-n4
+
+HDFS:
+8020
+http://iota-m1:50070
+
+ES:
+/home/iota/es
+9200  9300
+	iota-n1
+	iota-n2
+	iota-n3
+	iota-n4
+cluster.name iota
+
+yarn:
+ResourceManager:
+	iota-m2
+NodeManager:
+	iota-n1
+	iota-n2
+	iota-n3
+	iota-n4
+
+>> iota 使用资源清单
+Kafka Topic
+	ScriptTest
+	ScriptTestAck
+	InvokeCap
+	InvokeCapAck
+	RawData
+	Alert
+
+ES index/map
+	raw_data/raw
+	api_metrics/fetch
+	alert_data/alert
+	stream_metrics/stream
+	
+HDFS
+	iota/
+		alert
+		raw
+		stream_metrics
+
+>> anxin-m1,anxin-m2环境搭建
+	ubuntu16.04 - desktop
+	raid5
+	apt-get update
+	apt-get upgrade
+	apt-get install openssh-server
+	apt-get install openjdk-8-jdk
+	vim /etc/network/interfaces
+		auto eno1
+		iface eno1 inet static
+		address 192.168.0.231
+		gateway 192.168.0.1
+		netmask 255.255.255.0
+		dns-nameservers 114.114.114.114
+	systemctl networking.service stop/start
+	sudo ifdown eno1 && sudo ifup eno1
+	
+	> 设置ssh免密登录
+		...
+	> ambari 中增加anxin节点
+		...
+	> ambari 中添加spark component
+		...
+	> 安装seaweedfs
+		--> https://10.8.30.22/svn/FS-SavoirCloud/trunk/doc/基础设施/利用docker搭建文件服务.txt
+
+	> 安装nvm和node.js、pm2
+		
+	> 安装docker
+		latest Docker.CE
+		--> https://yeasy.gitbooks.io/docker_practice/content/install/ubuntu.html
+	> 安装
+
+>> anxin 基础设施准备
+	> 创建Topic
+	##  cd /usr/hdp/2.6.1.0-129/kafka/bin/
+	./kafka-topics.sh  --create --zookeeper 192.168.0.202:2181,192.168.0.211:2181,192.168.0.212:2181,192.168.0.213:2181,192.168.0.214:2181 --replication-factor 1 --partitions 1 --topic savoir_data
+	## 
+	./kafka-topics.sh  --create --zookeeper 192.168.0.202:2181,192.168.0.211:2181,192.168.0.212:2181,192.168.0.213:2181,192.168.0.214:2181 --replication-factor 1 --partitions 1 --topic savoir_vbData
+	## 
+	./kafka-topics.sh  --create --zookeeper 192.168.0.202:2181,192.168.0.211:2181,192.168.0.212:2181,192.168.0.213:2181,192.168.0.214:2181 --replication-factor 1 --partitions 1 --topic savoir_alarm
+	## 
+	./kafka-topics.sh  --create --zookeeper 192.168.0.202:2181,192.168.0.211:2181,192.168.0.212:2181,192.168.0.213:2181,192.168.0.214:2181 --replication-factor 1 --partitions 1 --topic savoir_report
+
+	> 查看topic
+	./kafka-topics.sh --zookeeper 192.168.0.202:2181,192.168.0.211:2181,192.168.0.212:2181,192.168.0.213:2181,192.168.0.214:2181 --describe --topic savoir_data
+
+	> 创建数据库
+		
+	> 创建ES索引
+		kibana地址：http://iota-n1:5601
+		--> https://10.8.30.22/svn/FS-SavoirCloud/trunk/doc/部署/生产环境服务器集群搭建方案.docx
+	
+	> 创建hdfs目录(上传et代码）	
+		hdfs dfs -mkdir hdfs://iota-m1:8020/savoir
+		hdfs dfs -mkdir hdfs://iota-m1:8020/savoir/code
+		hdfs dfs -mkdir hdfs://iota-m1:8020/savoir/data
+
+>> anxin 部署
+	> 部署nodejs进程
+		vi ./start.sh
+		chmod +x ./start.sh
+		./start.sh
+
+	> 部署et (spark)
+	sudo su root
+	su hdfs
+	hdfs dfs -rm hdfs://iota-m1:8020/savoir/code/et.jar
+	hdfs dfs -put ./et.jar hdfs://iota-m1:8020/savoir/code/et.jar
+	spark-submit --class anxin.et.main --master yarn --deploy-mode cluster hdfs://iota-m1:8020/savoir/code/et.jar
+		tracking URL:
+			http://iota-m2:19888
+			http://iota-m2:8088/proxy/{application_id}/
+			http://iota-m1:18081/
+				> show incomplete applications > select > Executors > read executors stdout/stderr
+			yarn tracking:
+				resource manager:
+					http://iota-m2:8088/cluster
+					http://iota-m2:8088/cluster/apps
+					http://iota-m2:8088/cluster/nodes
+				node manager:
+					http://iota-n1:8042/node/allApplications
+		log file:
+			/var/log/spark2
+
+	@TODO 修改日志级别
+	
+		停止任务：
+		yarn application -kill appid
+
+	> 部署recv
+		docker pull 10.8.30.163:5005/anxin/gorecv 
+
+		docker rm -f gorecv
+
+		sudo docker run \
+		-d \
+		-p 7002:7002 \
+		--restart=always \
+		--name=gorecv 10.8.30.163:5005/anxin/gorecv:latest
+
+
+>> 附1:ET et.properties
+
+# kafka-zookeeper settings
+kafka.brokers=iota-m1:6667,iota-m2:6667,iota-n1:6667,iota-n2:6667,iota-n3:6667,iota-n4:6667
+kafka.topics.data=savoir_data
+kafka.topics.vbdata=savoir_vbData
+
+kafka.alarm.topics=savoir_alarm
+
+# spark control settings
+spark.batch.duration.sec=10
+spark.common.data.expire.sec=3600
+
+# database settings
+db.url=jdbc:postgresql://iota-m1:5433/SavoirCloud
+db.user=FashionAdmin
+db.pwd=123456
+
+# elasticsearch settings
+es.cluster.name=iota
+es.cluster.nodes=iota-n1:9300,iota-n2:9300,iota-n3:9300,iota-n4:9300
+es.themes.index.name=savoir_themes
+es.raws.index.name=savoir_raws
+
+# hdfs settings
+fs.defaultFS=hdfs://iota-m1:8020
+fs.data.path=/savoir/structure_data/structure_%d/theme/%d/%d/%d
+
+# iota API
+iota.api.proxy=http://anxin-m1:7001/_iota_api
+
+project.profiles.active=production
+
+>> 附2：ambari中修改的配置
+	@TO ADD
