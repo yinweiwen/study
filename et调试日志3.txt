@@ -138,11 +138,14 @@ HDFS
 		./start.sh
 
 	> 部署et (spark)
+	(必须先切换到hdfs用户下，不然会报权限错误)
 	sudo su root
 	su hdfs
 	hdfs dfs -rm hdfs://iota-m1:8020/savoir/code/et.jar
 	hdfs dfs -put ./et.jar hdfs://iota-m1:8020/savoir/code/et.jar
 	spark-submit --class anxin.et.main --master yarn --deploy-mode cluster hdfs://iota-m1:8020/savoir/code/et.jar
+		spark history server
+			http://anxin-m1:18081/
 		tracking URL:
 			http://iota-m2:19888
 			http://iota-m2:8088/proxy/{application_id}/
@@ -157,11 +160,13 @@ HDFS
 					http://iota-n1:8042/node/allApplications
 		log file:
 			/var/log/spark2
-
-	@TODO 修改日志级别
 	
-		停止任务：
-		yarn application -kill appid
+	yarn任务运维命令
+		> 停止任务：
+			yarn application -kill appid
+		> 查看正在运行的任务ID
+			yarn application -list
+			yarn application -list -appStates RUNNING
 
 	> 部署recv
 		docker pull 10.8.30.163:5005/anxin/gorecv 
@@ -169,10 +174,14 @@ HDFS
 		docker rm -f gorecv
 
 		sudo docker run \
-		-d \
-		-p 7002:7002 \
-		--restart=always \
-		--name=gorecv 10.8.30.163:5005/anxin/gorecv:latest
+-d \
+-p 7002:7002 \
+-v /etc/hosts:/etc/hosts \
+--restart=always \
+--name=gorecv 10.8.30.163:5005/anxin/gorecv:latest
+		
+		#调试
+		sudo docker run -it -p 7002:7002 -v /etc/hosts:/etc/hosts --name=gorecv.debug 10.8.30.163:5005/anxin/gorecv:latest
 
 
 >> 附1:ET et.properties
@@ -209,4 +218,26 @@ iota.api.proxy=http://anxin-m1:7001/_iota_api
 project.profiles.active=production
 
 >> 附2：ambari中修改的配置
-	@TO ADD
+	Spark中添加日志过滤：
+	spark2>configs>Advanced spark2-log4j-properties 
+		+ 
+		log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=WARN
+		log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=WARN
+		log4j.logger.org.apache.spark=WARN
+	yarn>configs>Advanced yarn-log4j
+		+		
+		#ADD by Anxin 20171026
+		log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=WARN
+		log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=WARN
+		log4j.logger.org.apache.spark=ERROR    #修正 太多告警的问题 WARN Executor: 1 block locks were not released by TID
+		#END Add
+		
+	HDFS中cache disable(et bug##)
+	hdfs>configs>Custom core-site
+		+
+		fs.hdfs.impl.disable.cache=true
+	
+	(重启HDFS时可能会卡在Retrying after 10 seconds. Reason: Execution of '/usr/hdp/current/hadoop-hdfs-namenode/bin/hdfs dfsadmin -fs hdfs://iota-m1:8020 -safemode get | grep 'Safe mode is OFF'' returned 1. )
+		--> http://stackmirror.bird.so/page/rhtwz5r7n48o
+	> sudo -u hdfs hdfs dfsadmin -safemode leave
+	
