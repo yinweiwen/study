@@ -205,3 +205,8 @@ The defer only defers the function call. The field and method are accessed immed
 
  multiple-value strconv.ParseInt() in single-value context   返回值有多个，但只有一个接受变量
 
+ 
+# go 编译为32位
+ set GOARCH=386
+go build
+make.bat

@@ -84,3 +84,11 @@ docker inspect <task or container>
 docker stack rm <appname> 删除指定stack	
 docker node ls   查看集群中节点列表
 docker swarm leave --force 当前节点退出集群
+
+chapter 4:swarm
+swarm manager -- nodes
+安装virtualbox
+https://www.virtualbox.org/wiki/Downloads (提示确实某库时执行sudo apt-get install -f)
+安装docker-machine
+https://github.com/docker/machine/releases/
+
