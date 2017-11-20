@@ -39,11 +39,21 @@ https://www.cloudera.com/documentation/enterprise/5-6-x/topics/cdh_ig_running_sp
 DAG: Directed-Acyclic-Graph 有向无环图
 
 
+SPARK spark-history-server配置：
+1. $SPARK_HOME$/conf目录下的spark-defaults.conf
+	spark.eventLog.enabled           true
+	spark.eventLog.dir               hdfs://node35:9000/history
+	spark.eventLog.compress          true
+	
+2. 配置spark-env.sh文件
+	export SPARK_HISTORY_OPTS="-Dspark.history.ui.port=18080 -Dspark.history.retainedApplications=3 -Dspark.history.fs.logDirectory=hdfs://node35:9000/history"
 
+3. $SPARK_HOME$/sbin/start-history-server.sh 
 
-
-
-
+######################
+Long-running Spark Streaming Jobs on YARN Cluster
+http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/
+#######################
 
 
 
