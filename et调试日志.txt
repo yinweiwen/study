@@ -66,7 +66,9 @@
 			jps 查看后台进程
 			ps -ef | grep pname     kill -pid pid/ppid (kill -TERM PPID)    killall pname     kill -HUP pid 进程重启    kill -9 PID 强制
 		
+
 		hdfs namenode -format
+		(hdfs dfsadmin -safemode leave)
 		hdfs dfs -mkdir /test
 		sbin/start-all.sh
 			or sbin/start-dfs  sbin/start-yarn (***如果使用独立的spark集群提交et，无需启动yarn)

@@ -1,0 +1,69 @@
+# spark分配任务后，测试环境35上服务全关闭
+	> 增加系统日志查看
+		/etc/rsyslog.d/50-default.conf  
+		*.info;mail.none;authpriv.none;cron.none /var/log/messages
+		
+http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/
+
+>> 	
+Application application_1510825620631_0002 failed 2 times due to AM Container for appattempt_1510825620631_0002_000002 exited with exitCode: 1
+
+Long-Run Mode
+		
+./spark-submit --class anxin.et.main --master yarn --deploy-mode cluster \
+	--conf spark.yarn.maxAppAttempts=4 \
+    --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
+    --conf spark.yarn.max.executor.failures={8 * num_executors} \
+    --conf spark.yarn.executor.failuresValidityInterval=1h \
+    --conf spark.task.maxFailures=8 \
+	hdfs://node35:9000/savoir/code/et.jar
+
+	>>
+User class threw exception: org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 1539.0 failed 8 times, most recent failure: Lost task 0.7 in stage 1539.0 (TID 566, node36, executor 1): java.util.NoSuchElementException: JsError.get
+		
+		
+./spark-submit --class anxin.et.main --master yarn --deploy-mode cluster \
+	--conf spark.yarn.maxAppAttempts=4 \
+    --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
+    --conf spark.yarn.executor.failuresValidityInterval=1h \
+    --conf spark.task.maxFailures=8 \
+	hdfs://node35:9000/savoir/code/et.jar
+	
+	spark.yarn.maxAppAttempts	yarn.resourcemanager.am.max-attempts in YARN	The maximum number of attempts that will be made to submit the application. It should 
+																				be no larger than the global number of max attempts in the YARN configuration.
+	yarn.resourcemanager.am.max-attempts - YARN's own setting with default being 2
+	
+	yarn-site.xml
+	
+	 <property>
+        <name>yarn.resourcemanager.am.max-attempts</name>
+        <value>4</value>
+    </property>
+	
+	
+	
+	已yarn集群(cluster)模式运行的spark进程，spark driver 和 Application Master运行在同一个容器中(yarn分配的第一个容器)。Application Master负责分发应用程序和从YARN请求资源(spark executor)。
+./spark-submit --class anxin.et.main --master yarn --deploy-mode cluster \
+	--conf spark.yarn.maxAppAttempts=20 \  
+    --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
+    --conf spark.yarn.executor.failuresValidityInterval=1h \
+    --conf spark.task.maxFailures=8 \
+	hdfs://node35:9000/savoir/code/et.jar
+
+xx
+
+
+
+>> 生产环境			
+spark-submit --class anxin.et.main --master yarn --deploy-mode cluster \
+	--conf spark.yarn.maxAppAttempts=20 \
+    --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
+    --conf spark.yarn.executor.failuresValidityInterval=1h \
+    --conf spark.task.maxFailures=8 \
+	hdfs://iota-m1:8020/savoir/code/et.jar
+
+
+	--driver-memory 4g \
+    --executor-memory 2g \
+    --executor-cores 1 \
+    --queue thequeue \
