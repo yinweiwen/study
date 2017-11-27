@@ -1,0 +1,89 @@
+
+https://reactjs.org/docs/react-component.html
+意图：UI分割成独立的组件。Component是虚拟的基类
+class Greeting extends React.Component{
+	render(){
+		return <h1>Hello,{this.props.name}</h1>
+	}
+}
+
+#组件被插入DOM中将触发：
+constructor
+componentWillMount
+render
+componentDidMount
+#改变props或state触发刷新，组件重新渲染
+componentWillReceiveProps
+shouldComponentUpdate
+componentWillUpdate
+render
+componentDidUpdate
+#从DOM中移除，unmounting
+componentWillUnmount
+
+#错误处理
+componentDidCatch
+
+>> render函数
+ 返回React元素： 通常是JSX定义的，系统DOM组件或用户定义的组件
+ 返回string或number
+ Portals
+ null or Boolean
+render中通常实现简单的渲染操作，不包括状态的改变和界面的交互
+>>  constructor
+ 初始化state 、绑定事件handler方法
+ 记住调用 super(props)
+>> componentWillMount()
+>> componentDidMount()
+	建立订阅
+>> componentWillReceiveProps(nextProps)
+	仅在组件属性更新时调用。 徐比较 this.props和nextProps，然后setState
+>> shouldComponentUpdate(nextProps, nextState)
+	false->阻止render(不会阻止子组件state改变触发的re-rendering)
+>> componentWillUpdate(nextProps, nextState)
+	在update rendering发生前做一些准备工作，注意不要在这里setState
+>> componentDidUpdate(prevProps, prevState)	
+	This is also a good place to do network requests as long as you compare the current props to previous props 
+>> componentWillUnmount()
+	clean-up 清理无效定时器、取消网络请求、清理订阅
+>> componentDidCatch(error, info)
+	log err,fallback ERR UI
+
+>> setState(updater[,callback])
+	Enqueues changes -> 请把这个函数看作是请求而非直接对组件的刷新
+	updater -> (prevState, props) => stateChange
+		e.g. this.setState((prevState,props)=>{return {counter: prevState.counter + props.Step};})
+		shallowly merged
+	callback -> setState完成，组件完成刷新后回调。我们建议使用 componentDidUpdate
+
+>> component.forceUpdate(callback)
+	 跳过 shouldComponentUpdate检查直接render，注意子组件将触发normal lifecycle
+
+>> defaultProps:
+	class CustomButton extends React.Component {
+	  // ...
+	}
+
+	CustomButton.defaultProps = {
+	  color: 'blue'
+	};
+	** this is used for undefined props, but not for null props.
+
+>> state
+	* 未在render中使用的状态，不要定义在state中，直接在实例中定义
+	* 永远不要直接修改state，通过setState方法修改它，把它当作不可变量对待
+
+REACT 基本原则
+##Props are Read-Only##
+All React components must act like pure functions with respect to their props.
+pure -> 不会改变函数的输入
+
+
+##ES6
+Babel REPL
+https://babeljs.io/repl/#?presets=react&code_lz=MYewdgzgLgBApgGzgWzmWBeGAeAFgRgD4AJRBEAGhgHcQAnBAEwEJsB6AwgbgChRJY_KAEMAlmDh0YWRiGABXVOgB0AczhQAokiVQAQgE8AkowAUPGDADkdECChWeASl4AlOMOBQAIgHkAssp0aIySpogoaFBUQmISdC48QA
+
+## Handling Events
+和DOM事件区别：
+camelCase、pass event handler,rather than a string 
+<button onClick={activateLasers}>Activate Laser</button>

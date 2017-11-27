@@ -1,0 +1,21 @@
+【Remix OS】已收购Android x86，可双系统，分辨率不能调，对AMD支持不行，无法手动切换声卡输出线路。
+【Genymotion】基于X86的，虽然可装基于ARM的补丁，但是软件兼容性差，有些app在它上面会打不开点不动之类。
+【BlueStacks】最早做模拟器的，在国外独大，但性能欠佳，游戏兼容性差，国内很多助手模拟器都是基于它优化的。
+【Hyper-V】不如Vmware方便，Visual Studio 2015 里的 Android 模拟器也是Hyper-V，需安装ARM支持库。
+
+
+
+作者：知乎用户
+链接：https://www.zhihu.com/question/24815978/answer/236441198
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+>>
+A problem occurred configuring project ':app'.
+> You have not accepted the license agreements of the following SDK components:
+# 重新安装sdk(android strudio中)
+
+>>
+React Native unable to load script from assets index.android.bundle on windows
+具体步骤：报错页面晃动手机，显示菜单 =》 点击Dev Settings =》 点击Debug server host & port for device =》 设置IP和端口（ex:192.168.0.20:8081）=》 点击返回 =》 页面是空白，再次点击摇一摇，选择Reload JS程序就显示出来了
+
