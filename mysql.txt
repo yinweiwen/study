@@ -1,0 +1,29 @@
+@TODO
+∑¢ÀÕ ∑÷÷°
+
+## ÷ÿ÷√√‹¬Î 
+http://stackmirror.bird.so/page/rh7scdjh4zeg
+
+On Windows:
+
+0) shut down service mysql56
+
+1) go to C:\ProgramData\MySQL\MySQL Server 5.6, note that ProgramData is a hidden folder
+
+2) looking for file my.ini, open it and add one line skip-grant-tables below [mysqld],save
+
+[mysqld]
+
+skip-grant-tables
+3) start service mysql56
+
+4) by right, you can access the database, run mysql
+
+5) and use the query below to update the password
+
+update mysql.user set password=PASSWORD('NEW PASSWORD') where user='root';
+update mysql.user set authentication_string=PASSWORD('123456') where user='root';
+note: for newer version, use authentication_string instead of password
+
+6) shut down the service again, remove the line skip-grant-tables save it, and start the service again. try to use the password you set to login.
+
