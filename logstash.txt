@@ -1,0 +1,123 @@
+GETTING START
+https://www.elastic.co/guide/en/logstash/current/first-event.html
+
+./logstash -e 'input {
+  udp {
+    port => 9998
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => "10.8.30.35"
+  }
+}'
+
+
+精确匹配日志查找：
+使用lucene语法：
+
+{"match_phrase": {"message" : {"query" : "Bulk copy error"}}}
+
+// 在106上部署：
+
+nohup ./logstash -e 'input {
+  udp {
+    port => 9998
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => "192.168.0.106:19200"
+  }
+}' 1>/dev/null 2>&1 &
+
+
+#启动kibana (5605)
+nohup ./kibana 1>/dev/null 2>&1 &
+
+开放端口：
+
+firewall-cmd --zone=public --permanent --add-port=9998/udp
+firewall-cmd --zone=public --permanent --add-port=5605/tcp
+
+最新版kibana6不支持jdk1.7 (Unsupported major.minor version 52.0 (unable to load class) )
+支持情况详情：
+https://www.elastic.co/support/matrix#matrix_jvm
+
+
+https://www.elastic.co/downloads/past-releases past-releases 
+
+kibana版本  4.1.0
+logstash版本 2.4.1
+
+
+
+*** study logstash
+
+INPUT => FILTER => OUTPUTS
+
+bin/logstash -e 'input { stdin { } } output { stdout {} }'
+
+Filebeats>
+Filebeat是一个日志文件托运工具
+	#filebeat.yml
+	filebeat.prospectors:
+	-	type: log
+		paths:
+		-	/path/to/file/xx.log
+	output.logstash:
+		hosts:["localhost:5044"]
+	
+	sudo ./filebeat -e -c filebeat.yml -d "publish"
+		
+	#logstash/first-pipeline.conf
+	input {
+			beats{
+			port => "5044"
+		}
+	}
+	filter {
+		grok {
+			match => { "message" => "%{COMBINEDAPACHELOG}"}
+		}
+		geoip {
+			source => "clientip"
+		}
+	}
+	output {
+		stdout { codec => rubydebug }
+		elasticsearch {
+			hosts => [ "localhost:9200" ]
+		}
+		elasticsearch {
+			hosts => [ "node1:9200","node2:9200" ]
+		}
+		file {
+			path => "/path/to/target/file"
+		}
+	}
+	
+	>> config file test
+	 ./logstash -f first-pipeline.conf --config.test_and_exit
+	>> start
+	 ./logstash -f first-pipeline.conf --config.reload.automatic	// 配置文件改变后会自动重新载入
+	 // filebeat 重新加载日志文件
+	 sudo rm data/registry
+	 
+>> HOW LOGSTASH WORK
+	INPUT (https://www.elastic.co/guide/en/logstash/current/input-plugins.html)
+		file/syslog/redis/beats:
+		
+	FILTER (https://www.elastic.co/guide/en/logstash/current/filter-plugins.html)
+		grok: **
+		mutate/drop/clone/geoip
+
+	OUTPUTS (https://www.elastic.co/guide/en/logstash/current/output-plugins.html)
+		elasticsearch/file/graphite/statsd
+	
+	CODECS (https://www.elastic.co/guide/en/logstash/current/codec-plugins.html)
+		json/msgpack/plain/multiline
+		
+	

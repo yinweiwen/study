@@ -26,3 +26,7 @@ step by step
 mkdir -p localdir
 apt install cifs-utils
 mount -t cifs //10.8.30.163/versions /var/jenkins-version -o rw
+
+tail:
+tail -f 循环读取
+tail -n 行数
