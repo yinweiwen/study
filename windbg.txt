@@ -1,0 +1,115 @@
+F:\Program Files (x86)\Windows Kits\10\Debuggers\x64\windbg.exe
+::管理员身份启动
+File > Symbol Search Path > 'srv*D:\Symbols*https://msdl.microsoft.com/download/symbols'
+File>Open Crash Dump > 'select DMP file'
+.cordll -lp D:\Symbols\64
+.load D:\Symbols\yww\SOS.dll  (copy from C:\Windows\Microsoft.NET\Framework64\v4.0.30319\sos.dll)
+!dumpheap -stat
+
+// 在107上进行
+srv*F:\others\debuggerx64\symbols*https://msdl.microsoft.com/download/symbols
+
+https://blogs.msdn.microsoft.com/salvapatuel/2010/03/09/how-to-configure-windbg-to-run-other-versions-of-the-net/
+1) .cordll -ve -u -l
+2) You have unloaded the CLR and we are enabling the verbose mode
+3) Change the CLR path using: .cordll -lp <the path where you put the mscordacwks>
+4) load the SOS again
+5) run !threads
+
+https://blogs.msdn.microsoft.com/dougste/2009/02/18/failed-to-load-data-access-dll-0x80004005-or-what-is-mscordacwks-dll/
+!sym noisy
+.symfix c:mylocalsymcache 
+.cordll -ve -u -l
+
+https://blogs.msdn.microsoft.com/junfeng/2007/08/13/loading-clr-dac-dll-from-a-different-path/
+.cordll -lp c:\otherpath
+https://stackoverflow.com/questions/9129852/why-cant-windbg-find-the-mscordacwks-dll
+拷贝目标机器 .dll 到 WinDbg目录
+
+
+################################# ★★★这个在服务器上执行行了★★ -- 在win10上安装了WDK，然后把F:\Program Files (x86)\Windows Kits\10\Debuggers\x64拷贝到服务器
+https://stackoverflow.com/questions/9514401/how-do-i-use-a-dump-file-to-diagnose-a-memory-leak
+
+1) Run WinDbg, set symbols path (File -> Symbol Search Path) to
+
+SRV*c:\symbols*http://msdl.microsoft.com/download/symbols
+2) Open Crash dump or drag your .DMP file onto WinDbg.
+
+3)type this into the command window
+
+.loadby sos clr
+(FYI, for .NET 2, the command should be .loadby sos mscorwks)
+
+4) then type this
+
+!dumpheap -stat
+
+
+
+###################################
+下载 Windows 符号程序包(symbol package):  https://developer.microsoft.com/zh-cn/windows/hardware/download-symbols
+
+SRV*c:\symbols*http://msdl.microsoft.com/download/symbols (MUST HAVE FAST NETWORK)
+
+
+https://blogs.msdn.microsoft.com/paullou/2011/06/28/debugging-managed-code-memory-leak-with-memory-dump-using-windbg/
+
+1. .symfix  and .reload -f
+ The idea here is finding correct symbols. If .symfix doesn't work, you will need to set the symbol path manually from the menu or use .sympath. This is important and make sure to do it right. Debugging  without symbols is harder and very inconvenient. 
+ 
+ 2. .loadby sos mscorwks (.net 3.5 or earlier) / .loadby sos clr (.net 4.0 or later)
+ sos is the debugger extension for managed coding debugging. Type !help to see what command are available and how to use them. The help is really useful and do read it.  The commands are case insensitive and there are also shortcuts for some commands. 
+
+ 3. !VerifyHeap
+ Run this command to make sure that your memory dump is good to use because when you take memory dump, the GC may be doing its work and the memory dump taken will not be good for analysis.
+ 检查dump是否可用
+ 
+ 4. !EEHeap
+ 查看整个Heap大小
+ Total LoaderHeap size: 0x2dd0000(48037888)bytes  -- 高频堆，静态对象，GC不操作
+ ....
+ ephemeral segment allocation context:
+ Large object heap starts     ------ LOH (Large Object Heap)
+ Total Size        0x8a0e83a8(2316207016)
+ ------------------------------
+ GC Heap Size        0x8a0e83a8(2316207016)  --- 低频堆， 动态对象，GC管理 
+ 堆栈分析：
+ 5. !dumpheap -stat
+  MT                      Count      Total Size          Class Name
+
+ 000007ff00a473e0    36826     14730400 System.Net.HttpWebRequest
+ 000007fef58ee278    67741     33448512 System.Collections.Hashtable+bucket[]
+ 000007fef58d4548   393533     33956800 System.Object[]
+ 000007ff01907cb8      139     44941480 System.Collections.Generic.Dictionary`2+Entry[[System.Object, mscorlib],[Microsoft.IdentityModel.MruSecurityTokenCache+CacheEntry, Microsoft.IdentityModel]][]
+ 000007fef58e6758   643630    143906080 System.String
+ 000007fef58ee798   124388    487011696 System.Byte[]
+ 0000000001bfd530    15368    973670696      Free
+ Total 4183274 objects
+ 
+ By looking at the output, you will find that there are so many HttpWebRequest which looks fishy.  Let's take a closer look in next step.
+ 
+ 6. !dumpheap -type
+ 0:000> !dumpheap -type System.Net.HttpWebRequest
+ -- 检查所有类型为HttpWebRequest的对象， 选择任意对象执行!do命令查看详细
+          Address               MT     Size
+ 00000000037fd6c0 000007ff00a473e0      400     
+ 000000000380bac0 000007ff00a473e0      400     
+ 0000000003812f88 000007ff00a473e0      400     
+ 0000000003816990 000007ff00a473e0      400     
+ -- -min <size>  only shows the objects which are at least <size> in bytes
+ -- 
+ ...
+ 
+ This command will list all the objects of type System.Net.HttpWebRequest. You can pick any object or object with larger size and look into it.  Let's pick the first object and take a look. 
+ 
+ 7. !do
+ 0:000> !do 00000000037fd6c0
+ 
+ 
+ 8. !threads
+ 显示所有线程
+ 
+ 9. kb
+ ~*kb
+ Let's pick thread 72 and run the below command to see what we can get. 
+ 显示线程调用堆栈
