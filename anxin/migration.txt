@@ -1,0 +1,18 @@
+iota-m2 pg_dump postgres database;
+还原到36
+	anxin-m1
+	sudo su root
+	ssh iota-m2
+	sudo su postgres
+	pg_dump -U FashionAdmin SavoirCloud -f /tmp/dumpxx.sql
+
+外网109上运行
+	C# Migration 工具
+	右键结构物 -> 输出设备映射表
+
+java Migration 工具：
+	修改jar中device_mapping.txt
+	
+anxin-m1
+	Migration tool -> 
+	Usage: java -jar migration.jar {yyyymmdd} {yyyymmdd} {structId...}

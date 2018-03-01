@@ -26,3 +26,25 @@ step by step
 mkdir -p localdir
 apt install cifs-utils
 mount -t cifs //10.8.30.163/versions /var/jenkins-version -o rw
+
+>> tail:
+tail -f 循环读取
+tail -n 行数
+
+>> 列出所有版本信息
+[root@localhost ~]# lsb_release -a
+
+>> Systemctl  (https://linux.cn/article-5926-1.html)
+Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。
+分析启动耗时
+systemd-analyze [blame]/各进程  [critical-chain]/关键链
+systemctl list-unit-files 列出所有可用单元
+systemctl list-units 列出所有运行中单元
+systemctl --failed  列出所有失败单元
+systemctl is-enabled crond.service 检查某个单元（如 cron.service）是否启用
+systemctl status firewalld.service 检查某个单元或服务是否运行 
+# systemctl start httpd.service
+# systemctl restart httpd.service
+# systemctl stop httpd.service
+# systemctl reload httpd.service
+# systemctl status httpd.service 

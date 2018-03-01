@@ -21,13 +21,20 @@ Long-Run Mode
 	>>
 User class threw exception: org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 1539.0 failed 8 times, most recent failure: Lost task 0.7 in stage 1539.0 (TID 566, node36, executor 1): java.util.NoSuchElementException: JsError.get
 		
-		
+
+***************************************************************************
+
+[[
+
 ./spark-submit --class anxin.et.main --master yarn --deploy-mode cluster \
 	--conf spark.yarn.maxAppAttempts=4 \
     --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
     --conf spark.yarn.executor.failuresValidityInterval=1h \
     --conf spark.task.maxFailures=8 \
 	hdfs://node35:9000/savoir/code/et.jar
+	
+]]
+******************************************************************************
 	
 	spark.yarn.maxAppAttempts	yarn.resourcemanager.am.max-attempts in YARN	The maximum number of attempts that will be made to submit the application. It should 
 																				be no larger than the global number of max attempts in the YARN configuration.
@@ -43,12 +50,7 @@ User class threw exception: org.apache.spark.SparkException: Job aborted due to 
 	
 	
 	已yarn集群(cluster)模式运行的spark进程，spark driver 和 Application Master运行在同一个容器中(yarn分配的第一个容器)。Application Master负责分发应用程序和从YARN请求资源(spark executor)。
-./spark-submit --class anxin.et.main --master yarn --deploy-mode cluster \
-	--conf spark.yarn.maxAppAttempts=20 \  
-    --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
-    --conf spark.yarn.executor.failuresValidityInterval=1h \
-    --conf spark.task.maxFailures=8 \
-	hdfs://node35:9000/savoir/code/et.jar
+./spark-submit --class anxin.et.main --master yarn --deploy-mode cluster --conf spark.yarn.maxAppAttempts=20 --conf spark.yarn.am.attemptFailuresValidityInterval=1h --conf spark.yarn.executor.failuresValidityInterval=1h --conf spark.task.maxFailures=8 hdfs://node35:9000/savoir/code/et.jar
 
 xx
 
@@ -67,3 +69,27 @@ spark-submit --class anxin.et.main --master yarn --deploy-mode cluster \
     --executor-memory 2g \
     --executor-cores 1 \
     --queue thequeue \
+	
+	
+日志清理：
+查看hadoop日志存储“
+
+hadoop fs -du -h /
+》 795.0 G  /spark2-history
+
+“Custom spark-defaults” config setting in Ambari 
+spark.history.fs.cleaner.enabled=true
+spark.history.fs.cleaner.interval=1
+spark.history.fs.cleaner.maxAge=7d
+
+重启yarn后不需要重新提交应用
+https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/ResourceManagerRestart.html
+yarn.resourcemanager.recovery.enabled = true (已是默认)
+
+et问题排查：
+1. 查看消息：
+	m1上看docker日志：
+	docker ps
+	docker inspect xxx
+	docker logs xxx
+	grep xxx内容 xx文件
