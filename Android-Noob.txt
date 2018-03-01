@@ -1,0 +1,192 @@
+http://www.runoob.com/w3cnote/android-tutorial-system-architecture-analysis.html
+
+-aplication
+- framework
+- libraries and android runtime(core+dalvik)
+
+相关术语：
+Dalvik he JVM不同,Dalvik更加适合移动终端
+AVD (android virtual machine) 虚拟设备 模拟器
+ADT (android development tools)
+SDK (software development kit)
+DDMS (dalvik debug monitor service) android调试工具
+adb 安卓调试桥
+DX工具 将.class转换成.dex文件
+AAPT (android asset packing tool) 资源打包工具
+R.java 由aapt工具根据App中的资源文件自动生成 资源字典
+AndroidManifest.xml app包名+组件声明+程序兼容版本+所需权限
+LogCat 查看手机日志
+
+
+adb命令：
+adb install -r -s xx.apk -r 重新安装 -s 安装到sd卡
+adb uninstall -p package
+adb pull/push xxxx.xxxx  文件传输
+adb shell 手机终端
+adb devices 列出所有连接设备
+
+代码目录结构：
+java - 业务代码
+res - 资源
+	- asset 文件流访问(二进制流) AssetManager
+	- 其他 会编译成R.java，通过id访问
+		- mipmap (hdpi/mdpi/xmdpi/xxhdpi)
+		- drawable
+		- layout 布局资源
+		- menu 菜单资源
+		- values 
+			- demens.xml：定义尺寸资源
+			- string.xml：定义字符串资源
+			- styles.xml：定义样式资源
+			- colors.xml：定义颜色资源
+			- arrays.xml：定义数组资源
+			- attrs.xml：自定义控件时用的较多，自定义控件的属性！
+			
+	 manifest文件中个属性说明：
+	http://www.runoob.com/w3cnote/android-tutorial-project-src-analysis.html
+	
+使用AS签名打包：
+AS -> build -> Generate Signed APK
+
+布局：
+	LinearLayout:
+		orientation -< horizontal/vertical
+		gravity 引力(组内元素) left|buttom
+		layout_gravity .< 当前组件在父组件中的对齐方式
+		layout_width/height -> 布局的宽高 wrap_content(实际组件大小) fill_parent/match_parent
+		id -> findViewById
+		background -> 背景
+		weight - 权重
+		divider - 分隔线 
+			android:divider="@drawable/ktv_line_div"  图片
+			android:showDividers="middle"   none/beginning/end/middle
+			android:dividerPadding="10dp"  
+		*gravity \
+			当 android:orientation="vertical" 时， 只有水平方向的设置才起作用，垂直方向的设置不起作用。 即：left，right，center_horizontal 是生效的。 当 android:orientation="horizontal" 时， 只有垂直方向的设置才起作用，水平方向的设置不起作用。 即：top，bottom，center_vertical 是生效的。
+	RelativeLayout:
+		gravity内组建的对齐方式
+		ignoreGravity
+		layout_alignParentLeft/right/top/bottom，对齐（根据父容器定位）
+		layout_centerHorizontal/centerVertical/centerInParent 居中
+		layout_toLeftOf/right/above/below  根据兄弟组件定位“
+		layout_alignTop/bottom/left/right 对齐（与兄弟组件的边界对齐）
+		layout_margin(Left/right/top/bottom) 设置组件与父容器的边距（偏移）
+		padding(Left/right/top/bottom) 设置组件内元素间的边距
+	TableLayout:
+		宽度是默认fill_parent不可设置
+		<TableLayout>  // collapseColumns(隐藏列)/stretchColumns="1,2"/"*"（拉伸撑满） / shrinkColumns  / layout_column/layout_span
+			<TableRow> 		// 列数取决于子元素的个数
+				<Button>...
+			</TableRow>
+		</TableLayout>
+	FrameLayout:
+		帧布局
+		foreground 前景图片
+		foregroundGravity：前景图片对齐
+	GridLayout:
+		android 4.0
+		rowCount/columnCount
+		layout_row="0" 子组件所在行/列
+		layout_rowSpan="2" 跨几个 // 还需要设置 layout_gravity="fill"
+	AbsoluteLayout:
+		layout_x/y dp
+		layout_width/height  dp
+		
+android 异步操作：
+	1. Handler 中写好UI更新，通过sendmessage等方法通知更新
+	2. Activity.runOnUiThread(Runnable) 
+	AsyncTask
+	（……——……） 类似.net winform backgroundWorker!!??
+		onPreExecute -> doInbackground -> publishProgress -> onPostExecute(Result) - > onProgressUpdate -> onCancelled
+
+		
+手势：
+1.手指触碰屏幕时，触发MotionEvent事件！
+2.该事件被OnTouchListener监听，可在它的onTouch()方法中获得该MotionEvent对象！
+3.通过GestureDetector转发MotionEvent对象给OnGestureListener
+4.我们可以通过OnGestureListener获得该对象，然后获取相关信息，以及做相关处理！
+GestureListener：
+	onDown
+	onFling 抛掷(迅速松开)
+	onLongPress 长按
+	onScroll
+	onShowPress 按住
+	onSingleTagUp 抬起
+	
+Android四大组件：一 Activity
+	LifeCircle：
+	onCreate > onStart > onResume > onPause > onStop >(onRestart)> onDestroy
+	finish 关闭某个activity
+	Activity Task(栈), 当在一个Activity中启动另外一个时，前一个压入栈中，按回退键时，显示第一个
+	
+>> 插播(组件中通信)
+Activity、Service、Fragment：
+Activity<-->Activity
+	1. Bundle bundle=new Bundle(); build.putString("k","v"); itent.putExtras(bundle);   startActivity(itent);
+	2. 需要从后者取结果
+		startActivityForResult(intent,REQUEST_TAG);  
+		重写 onActivityResult
+			if(requestCode==REQUEST_TAG){
+				if(null!=data){
+					String msg=data.getStringExtra("k");
+				}
+			}
+		B-> 
+			Intent intent=new Intent();
+			intent.putExtra("k","xxa");
+			setResult(RESULT_OK,intent);
+			this.finish();
+	
+	其他：
+	http://blog.csdn.net/io_field/article/details/50427936
+
+>> service
+http://blog.csdn.net/guolin_blog/article/details/11952435/
+	public class MyService extends Service{
+		@Override
+		public void onCreate();
+		@Override
+		public void onStartCommand();
+		@Override
+		public void onDestroy();
+		@Override
+		public IBinder onBind(Intent intent){}
+	}
+	
+	在Activity中：
+		startButton.setOnClickListener(this);
+		
+		@Override
+		public void onClick(View v){
+			switch(v.getId()){
+				case R.id.btnStart:
+					Intent sIntent=new Intent(this,MyService.class);
+					startService(sIntent);
+					break;
+			}
+		}
+	Service都必须在AndroidManifest.xml中注册
+		<service android:name="com.example.servicetest.MyService"/>
+	
+	注意： 多次start service，只会调用一次service的onCreate,会多次调用onStartCommnad
+	
+	和Activity通信：
+		class MyBinder extends Binder{
+			public void startDownload(){}
+		}
+		// activity中
+		private MyService.MyBinder myBinder;
+		private ServiceConnection sc=new ServiceConnection(){
+			@Override
+			public void onServiceConnected(ComponentName name,IBinder service){
+				myBinder=(MyService.MyBinder)service;
+				myBinder.startDownload();
+			}
+		}
+		Intent bindIntent = new Intent(this, MyService.class);
+		bindService(bindIntent, sc, BIND_AUTO_CREATE);
+	销毁：
+	stopService || unbindSerivce()
+	
+	Service和Thread的关系：
+	**Service是运行在主线程中的（WHAT） 。  不依赖UI和Activity，同时又比Thread好控制

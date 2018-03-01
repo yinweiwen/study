@@ -4,3 +4,15 @@ https://github.com/coreybutler/nvm-windows  （windows）
 
 nvm install 8.4.0
 
+
+npm
+阮一峰 
+http://www.ruanyifeng.com/blog/2016/01/npm-install.html
+1. npm install <pn> -f (--force)
+2. npm update
+https://registry.npmjs.org/react/v0.14.6
+下载下来放到本地缓存目录 %AppData%/npm-cache  /  $home/.npm
+npm config get cache
+$ npm install --cache-min 9999999 <package-name>   <超过9999999分钟后才会去registry下载，否则取本地缓存>
+
+npm set registry http://
