@@ -210,3 +210,9 @@ The defer only defers the function call. The field and method are accessed immed
  set GOARCH=386
 go build
 make.bat
+
+
+20171212
+GOgland收费，使用IDEA装Go插件代替
+https://plugins.jetbrains.com/plugin/5047-go-language-golang-org-support-plugin
+虽然阉割了很多Gogland功能

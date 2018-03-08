@@ -19,3 +19,278 @@ A problem occurred configuring project ':app'.
 React Native unable to load script from assets index.android.bundle on windows
 具体步骤：报错页面晃动手机，显示菜单 =》 点击Dev Settings =》 点击Debug server host & port for device =》 设置IP和端口（ex:192.168.0.20:8081）=》 点击返回 =》 页面是空白，再次点击摇一摇，选择Reload JS程序就显示出来了
 
+adb devices
+adb reverse tcp:8081 tcp:8081
+>>
+
+vs code + RN:
+ React Native Tools：微软官方出的ReactNative插件,非常好用
+ Reactjs code snippets：react的代码提示，如componentWillMount方法可以通过cwm直接获得
+ Auto Close Tag：自动闭合标签
+ Auto Rename Tag：自动重命名标签，配合上面的插件使用，基本上能赶上IntelliJ IDEA系的功能了
+ Path Intellisense：文件路径提示补全
+ 
+ npm install typings -g
+typings install dt~react --save
+typings install dt~react-native --save
+ 
+>> only use in '.ts' file
+{
+    "javascript.validate.enable": false
+}
+
+>> 理解REACT-NATIVE和原生开发的关系：http://www.jianshu.com/p/97692b1c451d
+
+npm install xxxx --save 下载依赖包
+react-native link 或 react-native link xxx 因为有些第三方库是通过原生代码加RN实现的，这个命令自动把相关的配置代码自动添加到Android或ios项目中
+1） RN 其实是运行在ReactActivity上
+2） MainApplication 继承ReactApplication, 其中getPackage()返回需要与原生交互的包
+
+调试：
+VS code --> js IDE  --> npm start （node server）
+Android Studio --> java IDE  --> run 'app'
+*要先启动node
+
+>>
+XxxModule:
+    @Override
+getName -> js中调用组件名
+    @Override
+public Map<String, Object> getConstants() 可选，js'常量
+
+    @ReactMethod
+    public void show(String message,int duration) 自定义方法，返回void
+    @ReactMethod
+public void measureLayout(int tag, int ancestorTag, Callback errorCallback,Callback successCallback) 回调  js.measureLayout(..,..,(msg)=>{do something})
+  @ReactMethod
+public void measureLayout(int tag, int ancestorTag, Promise promise) Promise用法 
+		---- 插入 --- js. promise
+		async function xxx{
+			try{
+				var {xxx,xxx}=await Xxx.measureLayout(100,100);
+				console.log(xxx);
+			}catch(e){console.log(e)}
+		}
+	
+	多线程：
+	耗时操作 使用内部管理的工作现场 通常AsyncTask
+	
+	
+>>
+XxxPackage implements ReactPackage
+	
+    @Override
+    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
+        return Collections.emptyList();
+    }
+	 @Override
+    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
+        List<NativeModule> modules=new ArrayList<>();
+        modules.add(new XxxModule(reactContext));
+        return modules;
+    }
+	** 注意，要在MainApplicationt.getPackages方法中增加次继承类
+	
+Boolean -> Bool
+Integer -> Number
+Double -> Number
+Float -> Number
+String -> String
+Callback -> function
+ReadableMap -> Object
+ReadableArray -> Array
+
+
+>>  发送事件到JavaScript
+
+    public void DoSomething(){
+        WritableMap map=Arguments.createMap();
+        map.putDouble("test",3.1415926);
+        getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("eventname",map);
+    }
+	
+import { DeviceEventEmitter } from 'react-native';
+
+    componentWillMount(){
+        DeviceEventEmitter.addListener('test', (e)=>{console.log(e)});
+    }
+	
+>> >> 原生UI组件
+1. 创建一个ViewManager的子类。
+2. 实现createViewInstance方法。
+3. 导出视图的属性设置器：使用@ReactProp（或@ReactPropGroup）注解。
+4. 把这个视图管理类注册到应用程序包的createViewManagers里。
+5. 实现JavaScript模块。
+
+
+** Android Studio中添加单元测试：
+http://www.jianshu.com/p/03118c11c199
+在类名位置右击，选择 Goto -> Test ,
+自动创建单元测试，并自动Gradle中添加JUNIT4的引用
+
+JSONObject测试报错：
+java.lang.RuntimeException: Stub!
+// 如另一篇Android工程中无法执行java的main函数相似，Android工程和Java工程还有一定的差异，不能混用他们的库，和函数入口方法。将上面的代码，移植到在Android工程可以正确执行！
+http://robolectric.org/getting-started/
+on Android Studio 2.3
+
+testCompile "org.robolectric:robolectric:3.5.1"
+
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class)
+public class SandwichTest {
+}
+
+{
+JAVA
+>> java没有uint ushort等基础类型
+>> java一个文件下只能有一个public
+>> enum 可以有自己的构造方法和函数
+>> 没有out参数，用可变参数mutable
+>> 没有默认值参数，用重载 this(xx)
+>> static final == const C#
+>> 二进制操作可以使用类似 ByteBuffer.allocate(DauMsg.HEADER_LEN).order(ByteOrder.nativeOrder());
+>> 回调回调 callback
+>> 超级大锅：java中字符串相等比较不能用 == ，要用 equals
+}
+
+java神坑：
+byte是有符号的(-127~128)， 而其他变成语言一般byte是无符号0~255
+
+打开react-native开发菜单:(不用摇一摇)
+adb shell input keyevent 82
+
+Genymotion:
+Ctrl+F11 > 强制横屏
+
+《》《》2017-12-18
+卡了一天： APP启动后白屏
+1. 不是所说的悬浮窗属性没开(华为EMui安装API时提示在其他APP上端显示)
+2. npm start -- --reset-cache  仍然无济于事
+3. 安装E:\0workspace\watchman，添加到Path， 没用
+4. 原来，是新增加的原生Package的问题，在MainApplication中将此package先去掉后，成功！！！
+
+
+
+VS调试错误：
+ERROR  EPERM: operation not permitted, lstat 
+>> cd android  ..  .\gradlew.bat clean
+
+npm install --save react-native-keep-awake
+react-native link
+
+react-native unlink xxx
+npm uninstall --save xxx
+
+You can just use this line in the activity:
+getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+FLAG_KEEP_SCREEN_ON
+
+// --Could not find com.android.tools.build:gradle:3.0.0.
+buildscript {
+    repositories {
+        jcenter()
+        google() ++
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.0.0'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+
+>> uncompiled PNG file passed as argument. Must be compiled first into .flat file
+gradle 全局配置文件中添加 android.enableAapt2=false  强制使用旧版本aapt打包工具 (C:\users\.gradle\)
+
+
+>> Unable to start activity ComponentInfo java.lang.IllegalStateException: You need to use a Theme.AppCompat theme (or descendant) with this activity
+http://blog.csdn.net/ouyang_peng/article/details/51334761
+
+
+gradle:
+compile and implementation and api
+t is one of the breaking changes coming with gradle:3.0 that Google announced at IO17 gradle:3.0
+
+the compile configuration is now deprecated and should be replaced by implementation or api
+
+From the gradle docs :
+
+dependencies {
+    api 'commons-httpclient:commons-httpclient:3.1'
+    implementation 'org.apache.commons:commons-lang3:3.5' 
+}
+Dependencies appearing in the api configurations will be transitively exposed to consumers of the library, and as such will appear on the compile classpath of consumers.
+
+Dependencies found in the implementation configuration will, on the other hand, not be exposed to consumers, and therefore not leak into the consumers' compile classpath. This comes with several benefits:
+
+dependencies do not leak into the compile classpath of consumers anymore, so you will never accidentally depend on a transitive dependency
+faster compilation thanks to reduced classpath size
+less recompilations when implementation dependencies change: consumers would not need to be recompiled
+cleaner publishing: when used in conjunction with the new maven-publish plugin, Java libraries produce POM files that distinguish exactly between what is required to compile against the library and what is required to use the library at runtime (in other words, don't mix what is needed to compile the library itself and what is needed to compile against the library).
+The compile configuration still exists but should not be used as it will not offer the guarantees that the api and implementation configurations provide.
+
+tl;dr:
+just replace compile with implementation, debugCompile with debugImplementation, testCompile with testImplementation and androidTestCompile with androidTestImplementation
+
+>> ERROR
+Error:Unable to resolve dependency for ':app@debug/compileClasspath': Could not resolve javax.annotation:jsr250-api:1.0.
+（升级Android Studio 3 以后）
+在build.gradle中增加
+allprojects {
+    repositories {
+        jcenter()
+        maven {
+            url 'https://dl.google.com/dl/android/maven2/'
+       // Alternative URL is 'https://dl.google.com/dl/android/maven2/'
+        }
+    }
+}
+
+>Another Solution:
+Go to File->Settings->Build, Execution, Deployment->Gradle->Uncheck Offline work option.
+
+>Another Solution:
+Re-Try
+
+>> Android JNI (c/C++)
+	AS中需要安装 NDK/CMake/LLDB
+
+	新建项目,选择支持C++，编译，
+	或者
+	向现有AS项目中添加JNI：
+		修改：
+		gradle:
+
+			externalNativeBuild {
+				cmake {
+					cppFlags ""
+				}
+			}
+				
+			externalNativeBuild {
+				cmake {
+					path "CMakeLists.txt"
+				}
+			}
+		CPP目录手动创建，手动创建cpp，同时手动添加 CMakeLists.txt
+		native方法中红色错误处 Ctrl+Enter 创建方法
+
+>> adb server is out of date.  killing
+排查：
+adb nodaemon server
+netstat -ano | findstr "5037"
+tasklist | findstr "8516"
+taskkill /f /pid 963
+
+md > 自己控制台占用，重启即可
+abd push
+adb install x.apk
+
+>> 多台设备online时，adb -s SH0A6PL00243 shell
+
+>>> 安卓串口-serial port
+在Android　SDK 目录找到emulator：
+执行emulator -avd Nexus_10_API_23 -qemu -serial COM2   （-list-avds 显示所有可用模拟器  ，用AS创建）
+连接串口使用google开源库中的http://code.google.com/p/android-serialport-api/
