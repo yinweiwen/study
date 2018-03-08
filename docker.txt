@@ -198,4 +198,9 @@ docker run \
  chown -R 1000 /var/run/docker.sock
  chown -R 1000 /usr/bin/docker
  ok
+ 
+ 
+163 docker试炼
+sudo docker run -d -p 8088:8080 -p 50005:50000 -v /docker/jenkins/:/var/jenkins_home -v /versions:/versions -v ~/.ssh:/var/jenkins_home/.ssh -v /etc/localtime:/etc/localtime:ro -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -e JAVA_OPTS=-Duser.timezone=Asia/Shanghai --restart=always --name=myjenkins 10.8.30.163:5005/jenkins:10.28
+
 

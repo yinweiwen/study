@@ -16,3 +16,8 @@ java Migration 工具：
 anxin-m1
 	Migration tool -> 
 	Usage: java -jar migration.jar {yyyymmdd} {yyyymmdd} {structId...}
+	
+	
+golang的tcp转发，实现mssql连接：
+chmod +x ./tools/tool-tcp-deliver
+nohup ./tools/tool-tcp-deliver 1>/dev/null 2>&1 &
