@@ -105,7 +105,11 @@ PUBLISH
 
 >> MQTT Broker
 
-	EMQtt http://www.emqtt.io/  Erlang开发的分布式高吞吐量的代理服务‘
+	EMQtt
+	
+	http://emqtt.com/
+	http://www.emqtt.io/  Erlang开发的分布式高吞吐量的代理服务‘
+	
 		./bin/emqttd start/stop
 		WEB Dashboard http://localhost:18083  admin  public
 		plugings >> ./bin/emqttd_ctl plugins load emq_xxxx
@@ -166,3 +170,12 @@ PUBLISH
 				persistence_location /var/lib/mosquitto/mosquitto
 				queue_qos0_messages false 允许长客户端的QoS0消息缓存（非标准）
 				retry_interval 20[s] QoS1/2消息重试间隔
+				store_clean_interval  10 seconds 内部无引用消息保存时长
+				sys_interval 10 seconds $SYS等级publish周期
+				bind_address 默认listener绑定的IP地址
+				listener port [bind address/host]
+				max_connections -1 最大客户端连接数
+				mount_point 主题前缀
+				port 1883
+				protocol mqtt
+				<Configuring Bridges> ...

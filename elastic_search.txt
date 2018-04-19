@@ -1,3 +1,82 @@
 #
 
 # http://10.8.30.37:5601/app/kibana
+
+启动：
+	bin/elasticsearch -d
+关闭：
+	ps -ef | grep elastic
+	kill -9
+	
+安装head插件
+https://github.com/mobz/elasticsearch-head
+	git clone git://github.com/mobz/elasticsearch-head.git
+	cd elasticsearch-head
+	npm install
+	npm run start
+	open http://localhost:9100/
+
+
+安装x-pack监视性能：
+	bin/elasticsearch-plugin install x-pack
+ 没学会。。。
+ 
+
+ ES性能监视
+	监视内存
+	ps -ef | grep elastic
+	top -p xxx -d 1
+	监视存储
+	head http://10.8.30.35:9100/
+		savoir_raws
+		size: 56.9Gi (117Gi)
+		docs: 812,228 (1,624,456)
+		
+		GET _cat/indices/savoir_raws
+				health status index uuid pri rep docs.count docs.deleted   store.size  pri.store.size
+				green open savoir_raws X3OCrzSwSwKEZrQhkn9Rrw 5 1 819361 0 118gb 57.2gb
++
+LUCENSE:
+document -> 索引和搜索的主要数据载体，对应写入到ES中的一个doc
+field -> 字段
+term -> 词项，搜索时单位
+token -> 词项(term)在字段(field)中的一次出现,包括词项的文本、开始和结束的位移、类型等信息
+
+index 类似db
+shard is an instance of Lucene. It is a fully functional search engine in its own right. primary shard&& replica shard ,提供容错和读取吞吐量
+segment 每个shard包含多个segment，在shard中的搜索会按顺序手搜索该shard上所有的segment。 segment(逆向索引)不可变
+
+分片处理机制：
+https://blog.csdn.net/mgxcool/article/details/49250341
+
+/_cat/allocation
+	shards disk.indices disk.used disk.avail disk.total disk.percent host          ip            node
+   101      655.7mb   172.8gb     50.5gb    223.4gb           77 192.168.0.106 192.168.0.106 node-0
+   101      655.6mb    48.3gb    853.3gb    901.7gb            5 192.168.0.109 192.168.0.109 node-1
+   ?v 显示详细信息
+
+/_cat/shards
+	所有分片大小位置
+/_cat/shards/{index}
+	
+/_cat/master 主节点信息
+/_cat/nodes 节点信息
+/_cat/indices 索引信息
+/_cat/indices/{index}
+/_cat/segments 
+/_cat/segments/{index}
+/_cat/count
+/_cat/count/{index}
+/_cat/recovery
+/_cat/recovery/{index}
+/_cat/health
+/_cat/pending_tasks
+/_cat/aliases
+/_cat/aliases/{alias}
+/_cat/thread_pool
+/_cat/plugins
+/_cat/fielddata
+/_cat/fielddata/{fields}
+/_cat/nodeattrs
+/_cat/repositories
+/_cat/snapshots/{repository}

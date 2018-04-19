@@ -48,3 +48,26 @@ systemctl status firewalld.service 检查某个单元或服务是否运行
 # systemctl stop httpd.service
 # systemctl reload httpd.service
 # systemctl status httpd.service 
+
+
+>> hdfs
+查看hdfs存储空间：
+hdfs dfs -du -h / 
+hdfs dfs -rmr  hdfs://node35:9000/user/anxin/check-point
+docker logs xxx container_id
+
+>> hadoop 集群部署时确保所有机器上用户必须一样
+	如
+	useradd hadoop
+	passwords hadoop
+	// 加入sudoers
+	su
+	chmod 777 /etc/sudoers
+	vi /etc/sudoers
+		-- hadoop    ALL=(ALL)       ALL
+	chmod 440 /etc/sudoers
+	
+	su hadoop
+	sudo mkdir /home/hadoop
+	sudo chown /home/hadoop
+	

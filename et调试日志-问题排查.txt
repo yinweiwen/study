@@ -1,0 +1,22 @@
+et问题排查：
+yarn集群模式部署，节点日志可通过 yarn logs -applicationId 查找，不过应用程序必须允许完，同时必须打开 日志聚集功能 yarn.log-aggregation-enable
+日志文件存储在hdfs上，文件后缀.inprogress,无法下载
+
+通过ResourceManager节点的WEB UI进入  点击表格中Tracking UI列的ApplicationMaster进入spark-history作业，Executors菜单列出所有节点，println的消息将显示在stdout，其他日志会在stderr里面
+
+spark默认日志级别是INFO，可以修改 $SPARK_HOME/conf/log4j.properties：
+	spark.root.logger=WARN,console
+ 
+	log4j.rootLogger=${spark.root.logger}
+	 
+	log4j.appender.console=org.apache.log4j.ConsoleAppender
+	log4j.appender.console.target=System.err
+	log4j.appender.console.layout=org.apache.log4j.PatternLayout
+	log4j.appender.console.layout.ConversionPattern=%d (%t) [%p - %l] %m%n
+
+#####
+curl -G http://iota-n1:8042/node/containerlogs/container_e10_1521615031035_0002_01_000002/hdfs/stderr?start=-40960000 > et.log
+
+获取日志到文件后查询
+
+

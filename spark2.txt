@@ -1,0 +1,68 @@
+RUNING SPARK on YARN
+http://spark.apache.org/docs/latest/running-on-yarn.html#debugging-your-application
+
+HADOOP_CONF_DIR/YARN_CONFIG_DIR 中指定HDFS和YARN的配置
+
+Cluster模式 spark driver在AM进程中
+Client模式 spark driver运行在client进程中
+
+调试：
+第一种情况
+yarn.log-aggregation-enable 时，容器日志复制到hdfs
+ 查看方法：
+ 1. yarn logs -applicationId <app ID>
+ 2、 HDFS上浏览文件  (yarn.nodemanager.remote-app-log-dir and yarn.nodemanager.remote-app-log-dir-suffix)
+ 3. SPARK WEB(history server)/MapReduce(history server), yarn-site.xml中配置yarn.log.server.url
+ 
+第二种情况：
+log聚集未开启，日志保留在本地（YARN_APP_LOGS_DIR，通常是 /tmp/logs or $HADOOP_HOME/logs/userlogs）
+
+如何查看各个容器的启动环境：
+ 增加 yarn.nodemanager.delete.debug-delay-sec, 在yarn.nodemanager.local-dirs下保留了启动脚本、JARs等
+ 
+修改log4j配置的方法：
+方法1： spark-submit --files custom-log4j.properties
+方法2：spark.driver.extraJavaOptions/spark.executor.extraJavaOptions + -Dlog4j.configuration=/xxx/log4j.properties
+方法3：修改$SPARK_CONF_DIR/log4j.properties文件
+
+实例：
+Ambari(http://10.8.25.201:8080/#/main/services/YARN/configs)中yarn高级配置：
+Enable Log Aggregation √
+yarn.nodemanager.log-dirs  /hadoop/yarn/log
+yarn.nodemanager.remote-app-log-dir  /app-logs
+yarn.nodemanager.remote-app-log-dir-suffix logs
+
+YARN Log: backup file size 256MB
+YARN Log: # of backup files 20
+
+Custom log4j.properties
+	#ADD by Anxin 20171026
+	log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=WARN
+	log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=WARN
+	log4j.logger.org.apache.spark=WARN
+	#END Add
+	...
+
+
+##日志记录到logstash：
+安装配置filebeat
+	curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.2.2-amd64.deb
+	sudo dpkg -i filebeat-6.2.2-amd64.deb
+配置filebeat
+#/etc/filebeat/filebeat.yml
+filebeat:
+	prospectors:
+		-
+			paths:
+				- /var/log/your-app/app.*.log
+			input_type: log
+output:
+	logstash:
+		hosts:["logstash-host:5000"]
+
+配置logstash：
+input:{
+	beats{
+		port=>5000
+	}
+}

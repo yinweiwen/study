@@ -21,3 +21,8 @@ anxin-m1
 golang的tcp转发，实现mssql连接：
 chmod +x ./tools/tool-tcp-deliver
 nohup ./tools/tool-tcp-deliver 1>/dev/null 2>&1 &
+
+
+另：mqtt外网环境转测试环境：
+ ./tools/tool-tcp-deliver -l=0.0.0.0:1884 -d 10.8.30.37:1883
+ nohup ./tools/tool-tcp-deliver -l=0.0.0.0:1884 -d 10.8.30.37:1883 1>/dev/null 2>&1 &

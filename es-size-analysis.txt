@@ -1,0 +1,20 @@
+savoir_raws
+6.95Mi/13.9Mi	22.7k
+
+savoir_raws
+size: 6.95Mi (13.9Mi)
+docs: 22,694 (45,388)
+
+批次插入前
+savoir_raws
+size: 94.8Mi (175Mi)
+docs: 24,228 (48,456)
+
+
+mem 
+	35 564392
+	36 8.994g
+	37 8.952g
+	
+	
+

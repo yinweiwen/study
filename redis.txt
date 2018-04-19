@@ -1,0 +1,161 @@
+http://www.runoob.com/redis
+NOOBS
+
+启动redis服务： redis-server [redis.windows.conf]
+启动客户端: redis-cli.exe -h 127.0.0.1 -p 6379
+
+配置：
+	config get *
+	config set loglevel "notice"
+	
+	配置项“
+	daemonize yes -- 以守护进程方式运行
+	pidfile xxx.pid
+	port 6379 默认端口 MERZ
+	bind 127.0.0.1 绑定主机地址
+	timeout 300 0-关闭
+	loglevel debug/verbose/notice/warning
+	logfile stdout
+	database 16 数据库数量
+	save <seconds> <changes>  多少秒内有多少更新操作，将数据同步到文件；可以多个条件配合
+	rdbcompression yes 存储至本地数据库时是否压缩数据，默认为yes，Redis采用LZF压缩
+	dbfilename dump.rdb // dir ./  本地数据文件路径和文件名
+	maxclients 128 最大连接数
+	maxmemory <bytes> 达到最大内存，清除过期key，不能执行写入操作；新VM机制： key存在内存区，value存在swap
+	appendonly yes 每次更新操作后进行日志记录
+	appendfilename appendonly.aof 指定更新日志文件名
+	appendfsync everysec 指定更新日志条件，共有3个可选值： 
+		no：表示等操作系统进行数据缓存同步到磁盘（快） 
+		always：表示每次更新操作后手动调用fsync()将数据写到磁盘（慢，安全） 
+		everysec：表示每秒同步一次（折衷，默认值）
+
+数据类型：
+	string ：字符串
+		还可以存图片等二进制资源
+		set name "value"  -- 多次set直接更新（覆盖）
+		get name
+		
+			getrange key 0 10 截取字符串
+			strlen key 返回字符串长度
+			getset key value：设置key，同时，key不存在返回nil，否则返回旧值
+			get/setbit key offset : 获取设置指定偏移量上的位(bit)
+			mset/mget ： 批量设置和读取  MSET key1 "hello" key2 "world"; MGET key1,key2,someotherK;
+			setnx/metnx (set if not exist)
+			setex key seconds value : 设置同时加过期（覆盖）
+			incr key +1 、 incrby key num/ incrbyfloat key num / decr key/ decrby key num 加减数
+			append key value 追加字符串，不存在是建立
+			
+		
+	Hash : 哈希表
+		HMSET myhash field1 "value1" field2 "value2"
+		HGET myhash field1
+		适用于对象存储
+		
+			HDEL KEY_NAME FIELD1.. FIELDn 删除字段
+			HEXISTS KEY_NAME FIELD_NAME  指定字段是否存在
+			HGETALL KEY_NAME 返回所有字段和字段值
+			HINCRBY myhash field 1 指定字段加上指定增量值
+			HINCRBYFLOAT key field increment  浮点值增量
+			HKEYS key 返回所有字段(域) 、 HVALS 获取哈希表中的所有值
+			HLEN key 字段数量
+			HSET key field value 设置字段值 // 创建或覆盖
+			HMGET key field1 [field2] 获取多个字段值
+		
+	List : 列表
+		lpush name member
+		lrange name 0 10
+			
+			BLPOP LIST1 LIST2 .. LISTn TIMEOUT 移除并获取第一元素、空则等待超时返回nil <BRPOP>
+			BRPOPLPUSH LIST1 ANOTHER_LIST TIMEOUT 从列表中弹出一个值，将弹出的元素插入到另外一个列表中并返回它； 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+			LINDEX key index 按索引取值
+			LPUSH 头部插入 RPUSH 尾部插入  LPOP 头部弹出 RPOP 尾部弹出
+			LLEN key 获取列表长度
+			LPUSHX/RPUSHX 区别：key不存在时不会创建
+			LINSERT key before/after exist_value new_value 在制定值位置前/后插入新值
+			LREM key count value  : 移除count个value相同的值；count<0从后向前搜索
+			LTRIM key start end ： 修剪，包含头尾
+			RPOPLPUSH key another_key 移除列表最后一个元素，添加到另一个列表并返回
+		
+	Set : 无序集合
+		sadd key member  (元素的唯一性,返回0表示元素已存在)
+		smembers key
+			
+			SADD key val1 val2 ...
+			SCARD key 获取成员数
+			SDIFF key1 key2 keyn 差集 {a,b,c} - {e,c,f} = {a,b} 结果来自前者  // SDIFFSTORE destination key...
+			SINTER key1 key2... 交集 {a,b} +{b,c}={b}  //SINTERSTORE
+			SUNION key1 key2... 并集 {a,b} +{b,c}={a,b,c}  // SUNIONSTORE
+			SISMEMBER key val 是不是其中的成员
+			SMEMBERS 返回集合的所有成员
+			SMOVE SOURCE DESTINATION MEMBER 成员移动
+			SPOP 移除并返回集合中的一个随机元素
+			SRANDMEMBER KEY [count] 返回随机原始(count个  不移除) （count正各元素不同，count为负允许相同）
+			SREM key val 移除指定成员
+			SSCAN key cursor [MATCH pattern] [COUNT count] 扫描集合中元素, sscan myset 0 match xxx count 10
+	
+	ZSet ：有序集；同Set，但多一个score
+		zadd key score member  （已存在则更新分数）
+		zrangebyscore key 0 1000
+			
+			zcard key 获取成员数
+			zcount key min max 分数在[min,max]之间的成员数
+			zincrby key increment member 指定成员加数
+			zrange key start stop [WITHSCORES]  指定索引区间内的成员(从小到大排序) // zrevrange 返回结果按分数值从大到小
+			zrangebylex key min max [LIMIT offset count]  通过字典区间返回有序集的成员
+			zlexcount key min max 计算指定区间内成员数量
+			zinterstore destination numOfKeys key1 key2... 交集，分数默认求和
+			zrangebyscore key min max [WITHSCORES] [LIMIT offset count] 返回指定分数区间的成员列表，返回结果按分数值递增 (区间默认是闭区间。增加'('强调是开区间 )
+			zrank key member  指定成员排名(从小到大) //zrevrank
+			zrem key member... 删除成员  、 zremrangebylex /zremrangebyscore
+			zscore key member 返回成员的分数值
+			
+		\
+Redis命令：
+	DEL KEY_NAME 删除已存在键
+	DUMP KEY_NAME 序列化给定KEY
+	
+	Expire KEY_NAME TIME_IN_SECONDS 设置key的过期时间
+	PExpire KEY milliseconds 同上，以毫秒计数
+	TTL Key 返回当前key的剩余时间 -2 键不存在、-1 未设置超时
+	PTTL Key 按毫秒返回
+	Persist Key 移除过期设置
+	ExpireAt Key TIME_IN_UNIX_TIMESTAMP 以UNIX时间戳格式设置过期时间
+	PExpireAt Key TimeStamp 设置 key 过期时间的时间戳(unix timestamp) 以毫秒计
+	
+	Keys pattern  列出所有指定模式的key(pattern )
+	Exists key 判断key是否存在 1=true
+	TYPE KEY_NAME  返回key的类型；none、string、list、set、zset、hash
+	
+	Move key 1  将当前数据库key移动到数据库1中
+	Rename key newkey 重命名
+	Renamenx 用于在新的 key 不存在时修改 key 的名称；1-修改成功，0-new name已存在
+	RandomKey 从当前数据库中随机返回一个key
+	
+	
+Redis事务：
+	MULTY   ... balabala ...  EXEC
+	Redis的单步命令是原子的，但事务不具有原子性，失败的命令不会打断后续执行，也不会回滚；可以理解为批量脚本操作；
+
+Redis脚本
+	Redis可以执行lua脚本
+	
+其他：
+	INFO 可以查看redis一些运行信息
+	BgreWriteAof 异步执行一个AOF (AppendOnly File)文件重写操作
+	BGSave 后台异步保存当前数据到文件
+	Client list/set name/get name/kill ip port /
+	Config get/set/rewrite 重写redis.conf配置文件/resetstat 重装info里面一些统计信息
+	DBSize 返回key数量
+	flushall、flushdb删除key
+	lastsave 最近一次数据保存到磁盘的时间
+	monitor 调试用：实时打印出 Redis 服务器接收到的命令
+	Save 同步保存
+	
+	性能测试 redis-benchmark
+	
+	
+select 0 选取当前库
+keys * 查询所有键
+dbsize 键数量
+exists k 检查键是否存在
+flushall 删除(当前数据库)所有键
