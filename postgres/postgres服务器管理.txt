@@ -116,10 +116,17 @@ show max_connections;
 show superuser_reserved_connections;
 
 
+## 数据库备份和还原
+# 23test 
+	su postgres
+	
+	pg_dump -h 127.0.0.1 -U FashionAdmin -d SavoirCloud > /tmp/sc.bak
 
+	createdb -h 127.0.0.1 -p 5432 -U FashionAdmin SecureCloud
 
+	psql -h 127.0.0.1 -U FashionAdmin -d SecureCloud < /tmp/sc.bak
 
-
+	psql -U FashionAdmin -d SecureCloud
 
 
 
