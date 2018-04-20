@@ -1,0 +1,144 @@
+在磁盘上初始化一个数据库存储区域。 我们称之为一个数据库集簇（SQL 标准使用的术语是目录集簇）
+$ initdb -D /usr/local/pgsql/data
+$ pg_ctl -D /usr/local/pgsql/data initdb
+启动数据库服务器
+$ postgres -D /usr/local/pgsql/data
+pg_ctl start -l logfile
+
+关闭：
+三种信号 - 1.SIGTERM 智能关闭 2.SIGINT 快速关闭 3.SIGQUIT 立即关闭
+pg_ctl stop [-W] [-t seconds] [-s] [-D datadir] [-m s[mart] | f[ast] | i[mmediate] ]
+
+pg_ctl reload
+SQL函数 pg_reload_conf()
+
+升级（主发行版本）的方式：
+1. 先转储然后重新载入
+2. pg_upgrade
+
+客户端认证
+/var/lib/pgsql/9.6/data/pg_hba.conf
+
+# "local" is for Unix domain socket connections only
+local   all             all                                     peer
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            ident
+host    all             all             10.8.30.117/32          trust
+
+常见psql操作：
+psql -U user -d database
+切换数据库 \c database
+列举数据库 \l
+列举表 \dt
+查看表结构 \d tbname
+查看索引 \di
+查看编码格式 \encoding
+
+文件位置：
+默认的文件路径：/var/lib/pgsql/9.x/data
+数据集簇PGDATA
+PGDATA目录下：
+	配置文件：
+		pg_hba.conf			pg的访问权限
+		pg_ident.conf		操作系统用户名和pg中用户名的映射关系
+		postgresql.conf		
+	数据文件：
+		base	包含每个数据库对应的子目录的子目录
+			子目录的名字是数据库在pg_database中的OID
+			名称为1的是模板数据库template1.(template1在initdb完成之后是可以由用户修改的，template0则始终提供一个未被修改的干净模板)
+				每个表和索引都存储在单独的文件中，以该表或索引的filenode号命名(pg_class.relfilenode 注意filenode和OID不尽相同)
+				文件大小超过1G后，分裂成1G大小的段，命名如filenode.1,filenode.2等
+				大对象另外存储在TOAST表中
+				_fsm
+				_vm
+		global	包含集群范围的表的子目录，比如pg_database
+		pg_clog	包含事务提交状态数据的子目录
+		pg_multixact	包含多重事务（multi-transaction）状态数据的子目录（用于共享的行锁）
+		pg_subtrans	包含子事务状态数据的子目录
+		pg_tblspc	包含指向表空间的符号链接的子目录
+			默认表空间没有在此目录下关联 
+			pg_default - PGDATA/base
+			pg_globla -- PGDATA/global
+		pg_twophase	包含用于准备好事务状态文件的子目录
+		pg_xlog
+	其他：
+		postmaster.opts		记录 postmaster 最后一次启动时使用的命令行参数的文件
+		PG_VERSION			版本号
+		postmaster.pid		服务进程号pid以及共享内存段ID
+
+		
+参数设置：
+修改参数设置方法：
+	修改postgresql.conf文件
+	ALTER SYSTEM
+	系统表pg_file_settings
+	对本地会话 SET configuration_parameter TO DEFAULT;  (SHOW [Configuration_parameter/ALL])
+	服务器启动时 postgres -c log_connections=yes
+	include 'shared.conf'
+	
+数据库：
+	CREATE/DROP ROLE name
+	CREATE DATABASE dbname OWNER rolename TEMPLATE template0
+	DTOP DATABASE dbname
+	表空间 CREATE TABLESPACE xxx LOCATION '/ssd1/postgres/data'
+		CREATE TABLE table TABLESPACE space
+		
+清理：
+	VACUUM、VACUUM FULL
+	1. 恢复磁盘空间
+		MVCC
+		包含大量死亡版本时，VACUUM FULL/CLUSTER/ALTER TABLE的表重写变体，需要额外的磁盘空间
+		TRUNCATE - 立即移除该表的整个内容
+	2. 更新规划器统计信息
+		VACUUM ANALYZE
+	3. 更新可见性映射
+	4. 防止事务 ID 回卷失败
+
+	REINDEX - 提高索引空间利用率、提供访问速度(B-Tree)
+	
+	日志
+	配置在 postgresql.conf 中‘ERROR REPORTING AND LOGGING’小节
+	
+		
+系统表：
+
+
+
+##2018 comming
+
+#清理空闲连接
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '数据库名称' AND pid <> pg_backend_pid() AND state = 'idle';
+-- 当前活动连接
+select count(1) from pg_stat_activity;
+-- 显示最大连接数
+show max_connections;
+-- 显示保留连接数
+show superuser_reserved_connections;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
