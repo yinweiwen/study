@@ -216,3 +216,8 @@ make.bat
 GOgland收费，使用IDEA装Go插件代替
 https://plugins.jetbrains.com/plugin/5047-go-language-golang-org-support-plugin
 虽然阉割了很多Gogland功能
+
+
+20180505
+项目根目录下定义了很多go文件，都是package main，调试提示方法找不到：
+*修改运行配置，把File改成Directory
