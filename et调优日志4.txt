@@ -93,3 +93,14 @@ et问题排查：
 	docker inspect xxx
 	docker logs xxx
 	grep xxx内容 xx文件
+	
+	
+
+	
+#118测试环境
+./spark-submit --class anxin.et.main --master yarn --deploy-mode cluster \
+	--conf spark.yarn.maxAppAttempts=4 \
+    --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
+    --conf spark.yarn.executor.failuresValidityInterval=1h \
+    --conf spark.task.maxFailures=8 \
+	hdfs://10.8.30.118:9000/anxinyun/code/et.jar
