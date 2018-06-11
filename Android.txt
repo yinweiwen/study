@@ -294,3 +294,8 @@ adb install x.apk
 在Android　SDK 目录找到emulator：
 执行emulator -avd Nexus_10_API_23 -qemu -serial COM2   （-list-avds 显示所有可用模拟器  ，用AS创建）
 连接串口使用google开源库中的http://code.google.com/p/android-serialport-api/
+
+
+>>> AS ERROR: installation failed with message invalid file
+ build > clean project
+ build > build apks
