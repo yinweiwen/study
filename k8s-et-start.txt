@@ -1,0 +1,152 @@
+./spark-submit \
+    --class et.main.main \
+    --master k8s://https://anxinyun-m1:6443 \
+    --deploy-mode cluster \
+    --name spark-et \
+	--conf spark.kubernetes.driverEnv.SPARK_USER=hdfs \
+	--conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
+	--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
+	--conf spark.executorEnv.SPARK_USER=hdfs \
+    --conf spark.driver.memory=4G \
+    --conf spark.executor.memory=4G \
+    --conf spark.driver.cores=2 \
+    --conf spark.executor.cores=1 \
+    --conf spark.kubernetes.driver.limit.cores=3 \
+    --conf spark.kubernetes.executor.limit.cores=2 \
+    --conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  \
+    --conf spark.kubernetes.driver.pod.name=spark-et-driver \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
+	--conf spark.kubernetes.namespace=anxinyun \
+	--files hdfs://anxinyun-m1:8020/anxinyun/code/log4j.properties,hdfs://anxinyun-m1:8020/anxinyun/code/log4j2.xml \
+    hdfs://anxinyun-m1:8020/anxinyun/code/et.jar
+	
+	
+	
+	
+	
+	# 35测试环境
+./spark-submit \
+--class et.main.main \
+--master k8s://https://10.8.30.35:6443 \
+--deploy-mode cluster \
+--name spark-et \
+--conf spark.kubernetes.driverEnv.SPARK_USER=hdfs \
+--conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.SPARK_USER=hdfs \
+--conf spark.driver.memory=1G \
+--conf spark.executor.memory=1G \
+--conf spark.driver.cores=2 \
+--conf spark.executor.cores=1 \
+--conf spark.kubernetes.driver.limit.cores=3 \
+--conf spark.kubernetes.executor.limit.cores=2 \
+--conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  \
+--conf spark.kubernetes.driver.pod.name=spark-et-driver \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
+--conf spark.kubernetes.namespace=anxinyun \
+--files hdfs://10.8.30.35:8020/anxinyun/code/log4j.properties,hdfs://10.8.30.35:8020/anxinyun/code/log4j2.xml \
+hdfs://10.8.30.35:8020/anxinyun/code/et.jar
+
+
+# recalc 
+
+./spark-submit \
+--class main \
+--master k8s://https://10.8.30.35:6443 \
+--deploy-mode cluster \
+--name spark-recalc \
+--conf spark.kubernetes.driverEnv.SPARK_USER=hdfs \
+--conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.SPARK_USER=hdfs \
+--conf spark.driver.memory=1G \
+--conf spark.executor.memory=1G \
+--conf spark.driver.cores=1 \
+--conf spark.executor.cores=1 \
+--conf spark.kubernetes.driver.limit.cores=3 \
+--conf spark.kubernetes.executor.limit.cores=2 \
+--conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  \
+--conf spark.kubernetes.driver.pod.name=spark-recalc-driver \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
+--conf spark.kubernetes.namespace=anxinyun \
+--files hdfs://10.8.30.35:8020/anxinyun/code/log4j.properties,hdfs://10.8.30.35:8020/anxinyun/code/log4j2.xml \
+hdfs://10.8.30.35:8020/anxinyun/code/recalc.jar
+
+
+ 启动upload
+
+./spark-submit \
+--class et.upload.main \
+--master k8s://https://10.8.30.35:6443 \
+--deploy-mode cluster \
+--name spark-et-upload \
+--conf spark.kubernetes.driverEnv.SPARK_USER=hdfs \
+--conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.SPARK_USER=hdfs \
+--conf spark.driver.memory=1G \
+--conf spark.executor.memory=1G \
+--conf spark.driver.cores=2 \
+--conf spark.executor.cores=1 \
+--conf spark.kubernetes.driver.limit.cores=3 \
+--conf spark.kubernetes.executor.limit.cores=2 \
+--conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  \
+--conf spark.kubernetes.driver.pod.name=spark-et-upload-driver \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
+--conf spark.kubernetes.namespace=anxinyun \
+--files hdfs://10.8.30.35:8020/anxinyun/code/log4j.properties,hdfs://10.8.30.35:8020/anxinyun/code/log4j2.xml \
+hdfs://10.8.30.35:8020/anxinyun/code/et-upload.jar
+	
+	
+spark-2.3.0-bin-hadoop2.7/bin/spark-submit --class et.main.main --master k8s://https://10.8.30.176:6443 --deploy-mode cluster --name spark-et --conf spark.driver.memory=4G --conf spark.executor.memory=4G --conf spark.driver.cores=2 --conf spark.executor.cores=1 --conf spark.kubernetes.driver.limit.cores=3 --conf spark.kubernetes.executor.limit.cores=2 --conf spark.executor.instances=2 --conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  --conf spark.kubernetes.driver.pod.name=spark-et-driver --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark hdfs://anxinyun-m1:9000/anxinyun/code/et-main-3.0.jar
+
+
+spark-2.3.0-bin-hadoop2.7/bin/spark-submit --class et.main.main --master local[*] hdfs://anxinyun-m1:9000/anxinyun/code/et-main-3.0.jar
+
+
+./spark-submit --class et.main.main --master yarn --deploy-mode cluster \
+	--conf spark.yarn.maxAppAttempts=20 \
+    --conf spark.yarn.am.attemptFailuresValidityInterval=1h \
+    --conf spark.yarn.executor.failuresValidityInterval=1h \
+    --conf spark.task.maxFailures=8 \
+    hdfs://10.8.30.176:8020/anxinyun/code/et-main-ip.jar
+
+	
+	
+	
+	
+	
+./spark-submit \
+    --class et.main.main \
+    --master k8s://https://10.8.30.176:6443 \
+    --deploy-mode cluster \
+    --name spark-et \
+    --conf spark.driver.memory=4G \
+    --conf spark.executor.memory=4G \
+    --conf spark.driver.cores=2 \
+    --conf spark.executor.cores=1 \
+    --conf spark.kubernetes.driver.limit.cores=3 \
+    --conf spark.kubernetes.executor.limit.cores=2 \
+    --conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  \
+    --conf spark.kubernetes.driver.pod.name=spark-et-driver \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
+	--conf spark.kubernetes.namespace=anxinyun \
+	--conf spark.kubernetes.container.mountPath= /etc/hosts \
+    hdfs://10.8.30.176:8020/anxinyun/code/et-main-3.0.jar
+	
+	
+	Events:
+  Type     Reason                 Age                 From               Message
+  ----     ------                 ----                ----               -------
+  Normal   Scheduled              15m                 default-scheduler  Successfully assigned spark-et-driver to node37
+  Normal   SuccessfulMountVolume  15m                 kubelet, node37    MountVolume.SetUp succeeded for volume "download-jars-volume"
+  Normal   SuccessfulMountVolume  15m                 kubelet, node37    MountVolume.SetUp succeeded for volume "download-files-volume"
+  Normal   SuccessfulMountVolume  15m                 kubelet, node37    MountVolume.SetUp succeeded for volume "anxinyun-token-82lsq"
+  Warning  FailedMount            15m (x2 over 15m)   kubelet, node37    MountVolume.SetUp failed for volume "spark-init-properties" : configmaps "spark-et-82fe775b528d36b59b7ef1e8c14d7df5-init-config" not found
+  Normal   SuccessfulMountVolume  15m                 kubelet, node37    MountVolume.SetUp succeeded for volume "spark-init-properties"
+  Warning  Failed                 14m (x3 over 15m)   kubelet, node37    Failed to pull image "registry.zhiwucloud.com/anxinyun/spark:latest": rpc error: code = Unknown desc = Error response from daemon: manifest for registry.zhiwucloud.com/anxinyun/spark:latest not found
+  Normal   Pulling                14m (x4 over 15m)   kubelet, node37    pulling image "registry.zhiwucloud.com/anxinyun/spark:latest"
+  Normal   BackOff                5m (x41 over 15m)   kubelet, node37    Back-off pulling image "registry.zhiwucloud.com/anxinyun/spark:latest"
+  Warning  FailedSync             15s (x70 over 15m)  kubelet, node37    Error syncing pod
+
+		

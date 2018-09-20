@@ -9,13 +9,48 @@
   ./http_server -addr ":8011" -brokers "10.8.30.173:9092"
   
   #创建topic
-  bin/kafka-topics.sh --create --zookeeper localhost:2182 --replication-factor 1 --partitions 1 --topic important
+  bin/kafka-topics.sh --create --zookeeper node35:2181,node36:2181,node37:2181 --replication-factor 3 --partitions 1 --topic anxinyun_data2
  
   bin/kafka-console-producer.sh --broker-list localhost:9092 --topic important
 
-  bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic important --from-beginning
+  bin/kafka-console-consumer.sh --bootstrap-server 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_agg --from-beginning
   // on windows
 	I:\WorkSpace\@JAVA\kafka_2.11-0.11.0.0\bin\windows>kafka-console-consumer.bat --bootstrap-server 10.8.30.117:9092 --topic important --from-beginning
+	
+  # 查看topic  (describe)
+  ./kafka-topics.sh --list --zookeeper node35:2181,node36:2181,node37:2181
+  
+  kafka-topics.sh --zookeeper node35:2181,node36:2181,node37:2181  --describe  --topic anxinyun_data
+  ```bash
+	Topic:anxinyun_data	PartitionCount:1	ReplicationFactor:1	Configs:
+	Topic: anxinyun_data	Partition: 0	Leader: 1003	Replicas: 1003	Isr: 1003
+  ```
+  
+  # 
+  `increase-replication-factor.json`
+  ``` json
+  {"version":1,
+	  "partitions":[
+		 {"topic":"anxinyun_data2","partition":0,"replicas":[1001,1002,1003]},
+		 {"topic":"anxinyun_data2","partition":1,"replicas":[1001,1002,1003]},
+		 {"topic":"anxinyun_data2","partition":2,"replicas":[1001,1002,1003]}
+	]}
+  ```
+  kafka-reassign-partitions --zookeeper node35:2181,node36:2181,node37:2181 --reassignment-json-file increase-replication-factor.json --execute
+  
+  
+  # 删除topic
+  ./kafka-topics.sh --delete --zookeeper node35:2181,node36:2181,node37:2181 --topic anxinyun_data2
+  如果 `delete.topic.enable=true` 则直接删除，否则topic仅仅被标记为删除
+  从zk中删除topic
+  ./zkCli.sh
+  ls /brokers/topics
+  rmr /brokers/topics/anxinyun_data2
+  删除完成后重启zookeeper和kafka服务；
+  
+  
+	
+	
   SPARK 
   启动master	./sbin/start-master.sh
   启动slaves	./sbin/start-slave.sh <worker#> <master-spark-URL>
@@ -74,3 +109,27 @@ File>ProjectStructure>Library>+ScalaSDK  (可能要download)
  
  postgres备份
  pg_dump -h host1 dbname | psql -h host2 dbname  
+ 
+ 
+ 
+ #!/bin/sh
+for host in node-1 node-2 node-3
+do
+	ssh $host "source /etc/profile;/export/servers/zookeeper/bin/zkServer.sh start"
+    ssh $host"source/etc/profile;nohup /export/servers/kafka/binkafka-server-start.sh 
+	/export/servers/kafka/config/server.properties >/dev/null 2>&1" 
+	echo "$host zookeeper&kafka is running"
+done
+
+#!/bin/sh
+for host in node-1 node-2 node-3
+do
+	ssh $host "source /etc/profile;bash /export/servers/kafka/bin/kafka-server-stop.sh" 
+	ssh $host "source /etc/profile;/export/servers/zookeeper/bin/zkServer.sh stop"
+	echo "$host kafka&zookeeper is stopping"
+done
+
+
+
+## kafka分区设置
+./kafka-topics.sh --zookeeper 10.8.30.35:2181,10.8.30.36:2181,10.8.30.37:2181 --alter --partitions 2 --topic anxinyun_data2

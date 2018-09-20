@@ -1,0 +1,309 @@
+FAULTS RECORDS
+=================
+1. ES 报错 NoNodeAvailableException
+	ES集群的IP、端口或集群名称是否正确(es-savoir,not es-savior)
+	
+2. 本机调试代码报错：org.apache.hadoop.security.AccessControlException: Permission denied: user=yww08, access=WRITE, inode="/anxinyun/structure_data/structure_2/raw/2018/7/液位变送器1.csv":testerone:supergroup:-rw-r--r--
+	设置环境变量
+	System.setProperty("HADOOP_USER_NAME",hdfsUser)
+	
+3. 已拥有为“NETStandard.Library”定义的依赖项。
+	工具栏---工具----扩展和更新 重装nuget升级
+	
+4.  Spark: URI is not hierarchical
+	引用资源文件错误，修改 `val source=Source.fromFile(getClass.getResource("/jiangsu.json").toURI)`  >> `val source=Source.fromInputStream(getClass.getResourceAsStream("/jiangsu.json"))`
+	
+5. [Savoir]  修改在Rdd.foreachPartition中存储后，出现Hdfs存储错误：
+org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException): Failed to APPEND_FILE /savoir/structure_data/structure_4/theme/2018/7/温湿度.csv for DFSClient_NONMAPREDUCE_-602640997_1250 on 10.8.30.117 because DFSClient_NONMAPREDUCE_-602640997_1250 is already the current lease holder.
+	排查可能存在多线程读写文件：
+	
+6：No configuration setting found for key 'akka'
+	<https://stackoverflow.com/questions/31011243/no-configuration-setting-found-for-key-akka-version>
+	使用插件maven-shade-plugin,配置见具体项目；
+	其中： 
+	```xml
+		<filters>
+			<filter>
+				<!--错误:Invalid signature file digest for Manifest main attributes-->
+				<artifact>*:*</artifact>
+				<excludes>
+					<exclude>META-INF/*.SF</exclude>
+					<exclude>META-INF/*.DSA</exclude>
+					<exclude>META-INF/*.RSA</exclude>
+				</excludes>
+			</filter>
+		</filters>
+	```
+	
+7. java.util.concurrent.TimeoutException: Futures timed out after [100000 milliseconds]
+	配置profile未修改为production发布，即还是使用new SparkConf().setMaster("local[*]").setAppName(appname)初始化SparkConf
+	
+8. Offset commit failed.
+	org.apache.kafka.clients.consumer.CommitFailedException: Commit cannot be completed since the group has already rebalanced and assigned the partitions to another member. This means that the time between subsequent calls to poll() was longer than the configured session.timeout.ms, which typically implies that the poll loop is spending too much time message processing. You can address this either by increasing the session timeout or by reducing the maximum size of batches returned in poll() with max.poll.records.
+	简单翻译一下，“位移提交失败，原因是消费者组开启了rebalance且已然分配对应分区给其他消费者。这表明poll调用间隔超过了max.poll.interval.ms的值，这通常表示poll循环中的消息处理花费了太长的时间。解决方案有两个：1. 增加session.timeout.ms值；2. 减少max.poll.records值”
+	
+	1. group.max.session.timeout.ms in the server.properties > session.timeout.ms in the consumer.properties.
+	2. group.min.session.timeout.ms in the server.properties < session.timeout.ms in the consumer.properties.
+	3. request.timeout.ms > session.timeout.ms and fetch.max.wait.ms
+	4. (session.timeout.ms)/3 > heartbeat.interval.ms
+	5. session.timeout.ms > Worst case processing time of Consumer Records per consumer poll(ms).
+	
+9. IntelliJ IDEA中提交svn时卡在 performing vcs refresh
+	File > Invalidate Caches / Restart...   选择 Invalidate and Restart
+
+10. kubeadm join token过期
+	$ kubeadm token create
+	abcdef.1234567890abcdef
+
+	# get root ca cert fingerprint
+	$ openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+	e18105ef24bacebb23d694dad491e8ef1c2ea9ade944e784b1f03a15a0d5ecea 
+
+
+
+
+
+(运行支持kubernetes原生调度的Spark程序)[https://jimmysong.io/kubernetes-handbook/usecases/running-spark-with-kubernetes-native-scheduler.html]
+
+############ AXY部署：
+0. K8S环境部署 [](./kubeadm.html)
+	
+	重装需要清理环境：+
+	```
+		rm -rf /var/lib/cni/
+		rm -rf /var/lib/kubelet/*
+		rm -rf /etc/cni/
+		ifconfig cni0 down
+		ifconfig flannel.1 down
+		ifconfig docker0 down
+	```
+	root下执行提示cr5什么的，是因为配置文件/root/.kube/xxx.config文件缺失
+
+1. Ambari安装后，kafka执行程序路径：
+	/usr/hdp/current/kafka-broker/bin
+	./kafka-console-consumer.sh --bootstrap-server anxinyun-m1:6667,anxinyun-n1:6667,anxinyun-n2:6667 --topic anxinyun_data --from-beginning
+
+	
+2. Group coordinator anxinyun-n2:6667 (id: 2147482644 rack: null) is unavailable or invalid, will attempt rediscovery
+
+	问题分析： stackwork提示 容器内hosts无法连接外部kafka broker
+	解决：修改 kube-dns
+	
+	#kubectl get pod kube-dns-545bc4bfd4-qzcrt -n kube-system -o yaml --export -f dns/dns.yaml
+	
+	kubectl get deploy kube-dns -o yaml -n kube-system > kube-deploy.yaml
+	
+	添加一下内容：
+	```
+	dnsPolicy: Default
+      hostAliases:
+      - hostnames:
+        - anxinyun-m1
+        ip: 10.8.30.176
+      - hostnames:
+        - anxinyun-n1
+        ip: 10.8.30.177
+      - hostnames:
+        - anxinyun-n2
+        ip: 10.8.30.179
+      nodeName: anxinyun-m1
+	  ```
+	  kubectl delete -f kube-deploy.yaml
+	  kubectl create -f kube-deploy.yaml
+	
+3. [WARN] The short-circuit local reads feature cannot be used because libhadoop cannot be loaded
+	同 local hdfs lib not found, 忽略
+
+4. java.lang.ClassNotFoundException: scala.Product  
+	运行docker的scala进程时报错
+	> kafka 版本错误： 2.12->> 2.11
+	
+	Exception in thread "main" java.lang.ClassNotFoundException: a=1
+	you need to provide exactly one argument: the class of the application supervisor actor
+	
+	> 修改了pom中的shade-pluging
+	
+	No configuration setting found for key 'akka.version'
+	
+	> shade-pluging中增加配置，
+		<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+			<resource>reference.conf</resource>
+		</transformer>
+		
+5.[ERROR] [07/29/2018 05:51:33.289] [default-rediscala.rediscala-client-worker-dispatcher-5] [akka://default/user/RedisClient-$a] CommandFailed(Connect( anxinyun-n1:6379,None,List(KeepAlive(true)),None,false))
+	k8s pod的yaml配置文件中，redis.host= anxinyun-n2 中间多了一个空格(MMP)
+	
+6.  KafkaConsumer is not safe for multi-threaded access
+
+	KafkaConsumer和操作它的线程数必须是1对1的关系
+	
+7. Failed on local exception: com.google.protobuf.InvalidProtocolBufferException: Protocol message end-group tag did not match expected tag.; Host Details : local host is: "spark-et-driver/10.244.1.19"; destination host is: "anxinyun-m1":9000;
+	hdfs url配错，ambari默认8020而非9000
+
+7.1  Checkpoint RDD has a different number of partitions from original RDD. Original RDD [ID: 10658, num of partitions: 2]; Checkpoint RDD [ID: 10685, num of partitions: 0].
+	
+	> 修改cp目录从本地文件格式为 hdfs://.... ....
+	又出现 
+		org.apache.hadoop.security.AccessControlException: Permission denied: user=root, access=WRITE, inode="/user/hdfs/anxinyun-check-point/e7236205-88b8-4d0e-bb3c-12d2549f8ad6/rdd-371/.part-00000-attempt-3":hdfs:hdfs:drwxr-xr-x
+			> submit添加如下参数
+			--conf spark.kubernetes.driverEnv.SPARK_USER=hdfs \
+			--conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
+			--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
+			--conf spark.executorEnv.SPARK_USER=hdfs \
+			
+			还可以通过：
+			sudo -u hdfs hdfs dfs -chmod -R 775 /user/check-point
+			或者修改hdfs中超级用户组和权限配置：
+			fs.permissions.umask-mode=002  dfs.permissions.superusergroup=hdfs   dfs.permissions=false(直接关闭权限验证)
+			
+			又出现
+				Failed to replace a bad datanode on the existing pipeline due to no more good datanodes being available to try
+				
+				hdfs conf +++
+			又出现
+				org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException): Failed to APPEND_FILE /anxinyun/structure_data/structure_1/raw/2018/7/WSD#1.csv for DFSClient_NONMAPREDUCE_50217299_1 on 10.8.30.179 because DFSClient_NONMAPREDUCE_50217299_1 is already the current lease holder.
+
+	[参考]:
+		<https://community.hortonworks.com/questions/202369/datanode-failed-to-replace-a-bad-datanode-on-the-e.html>
+		<https://community.hortonworks.com/articles/16144/write-or-append-failures-in-very-small-clusters-un.html>
+
+				
+
+8. OOMKilled
+	spark driver在k8s中运行一段时间出现 OOMKilled
+	未复现
+	
+9. WEB UI （spark on k8s）
+	kubectl port-forward spark-et-driver -n anxinyun  4040:4040
+	仅能在driver机器上通过localhost:4040访问
+	
+	
+第二次部署踩坑(08.01)
+1. ubuntu系统无法进入
+	所有文件处于只读状态
+	可以通过 mount -o remount / 方法临时修改，但是重启后依旧
+	解决方法：重装系统
+	
+2. hdb-selecter not found 
+	`ambari仓库配置错了`
+	'hadoop-client ... failed, ' error param conf
+	`/etc/hadoop/conf文件丢失了，重装ambari时会发生的错误，解决方法：手动拷贝`
+	kafka-broker启动失败
+	``
+
+3. k8s安装完成后所有节点处于NotReady状态
+	kubectl get nodes -o wide
+	发现kenerl和k8s版本不一致
+	解决方法：系统upgrade后，执行以下命令：
+		kubeadm reset 
+		systemctl stop kubelet
+		rm -rf /var/lib/cni/
+		rm -rf /var/lib/kubelet/*
+		rm -rf /run/flannel
+		rm -rf /etc/cni/
+		ifconfig cni0 down
+		ifconfig flannel.1 down
+		ip link delete cni0
+		ip link delete flannel.1
+		apt purge -y kubelet kubeadm kubectl kubernetes-cni 
+		systemctl daemon-reload
+		apt install kubernetes-cni=0.5.1-00 kubelet=1.8.2-00 kubeadm=1.8.2-00 kubectl=1.8.2-00
+		
+		修改配置
+		vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
+
+		添加：
+		Environment="KUBELET_EXTRA_ARGS=--fail-swap-on=false"
+		重启服务
+		systemctl daemon-reload
+		systemctl restart kubelet
+		关闭交互分区
+
+		swapoff -a  
+
+		删除 /etc/fstab 表中的交换分区记录
+	
+10. 其他错误
+	lient Version: version.Info{Major:"1", Minor:"8", GitVersion:"v1.8.2", GitCommit:"bdaeafa71f6c7c04636251031f93464384d54963", GitTreeState:"clean", BuildDate:"2017-10-24T19:48:57Z", GoVersion:"go1.8.3", Compiler:"gc", Platform:"linux/amd64"}
+	Error from server (NotFound): the server could not find the requested resource
+	
+	
+	vents:
+  Type     Reason                 Age                From                  Message
+  ----     ------                 ----               ----                  -------
+  Normal   Scheduled              11m                default-scheduler     Successfully assigned spark-et-driver to anxinyun-n2
+  Normal   SuccessfulMountVolume  11m                kubelet, anxinyun-n2  MountVolume.SetUp succeeded for volume "download-jars-volume"
+  Normal   SuccessfulMountVolume  11m                kubelet, anxinyun-n2  MountVolume.SetUp succeeded for volume "download-files-volume"
+  Warning  FailedMount            11m                kubelet, anxinyun-n2  MountVolume.SetUp failed for volume "spark-init-properties" : configmaps "spark-et-94a3f73e5af13b2d83fb23ba02973cda-init-config" not found
+  Normal   SuccessfulMountVolume  11m                kubelet, anxinyun-n2  MountVolume.SetUp succeeded for volume "anxinyun-token-vh5hj"
+  Normal   SuccessfulMountVolume  11m                kubelet, anxinyun-n2  MountVolume.SetUp succeeded for volume "spark-init-properties"
+  Normal   Pulling                10m (x3 over 11m)  kubelet, anxinyun-n2  pulling image "registry.zhiwucloud.com/anxinyun/spark:latest"
+  Warning  Failed                 10m (x3 over 11m)  kubelet, anxinyun-n2  Failed to pull image "registry.zhiwucloud.com/anxinyun/spark:latest": rpc error: code = Unknown desc = Error response from daemon: manifest for registry.zhiwucloud.com/anxinyun/spark:latest not found
+  Warning  FailedSync             10m (x8 over 11m)  kubelet, anxinyun-n2  Error syncing pod
+  Normal   BackOff                1m (x43 over 11m)  kubelet, anxinyun-n2  Back-off pulling image "registry.zhiwucloud.com/anxinyun/spark:latest"
+  
+  
+## 测试环境合并
+1. kubernetes Network Plugin cni failed
+	kubernetes flannel Failed to find any valid interface to use
+	节点上的flannel pod一直处于 Init:CrashLoopBackOff
+	
+	解决方法： 判断节点网络是否有问题(能否访问外网、解析域名)
+			重装节点kubenertes(上3)
+
+			
+## 代码重构1.0 
+IDEA 2017.1.6 et
+1. scala project Error:java: Compilation failed: internal java compiler error
+	
+	设置 > java compiler > 设置jdk版本
+	
+2. Diamond type are not supported at this language level
+	Ctrl+Alt+Shift+S (项目设置 ) > Language Level > 8 - Lambdas,type annotations etc.	
+	
+3.  HDFS文件的错误：No FileSystem for scheme: hdfshttps://www.codelast.com/%E5%8E%9F%E5%88%9B-%E8%A7%A3%E5%86%B3%E8%AF%BB%E5%86%99hdfs%E6%96%87%E4%BB%B6%E7%9A%84%E9%94%99%E8%AF%AF%EF%BC%9Ano-filesystem-for-scheme-hdfs/
+
+4. Exception in thread "main" java.lang.NoClassDefFoundError: scala/Function1
+	添加引用
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.11.8</version>
+        </dependency>
+		
+
+5. java项目resource中文件复制到target/class目录下后内容发生了改变(例如https的cacerts.store文件)
+	原因： maven resouce的filter插件
+	修改为：
+	```xml
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>../src/main/resources</directory>
+            </resource>
+            <resource>
+                <filtering>true</filtering>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <includes>
+                    <include>*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+				<!-- 不使用过滤的资源文件 -->
+                <filtering>false</filtering>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <excludes>
+                    <exclude>*.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
+	```
+
+6. et_upload 中创建多个kafkastream时接收不到数据
+	??
+	
+7. postman请求https无响应
+	postman设置，关闭 SSL certificate verification
+	
+以后：
+1. Caused by: java.io.IOException: Cannot run program "I:\@\hadoop-2.7.3\bin\winutils.exe": CreateProcess error=5, 拒绝访问。

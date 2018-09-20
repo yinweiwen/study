@@ -174,6 +174,9 @@ HDFS
 		docker rm -f gorecv
 
 		sudo docker run \
+		
+	> 无法连接网络 unkown host:
+		route add default gw 10.8.30.1
 -d \
 -p 7002:7002 \
 -v /etc/hosts:/etc/hosts \

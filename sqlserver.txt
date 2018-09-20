@@ -8,3 +8,52 @@ DBCC FREESYSTEMCACHE ('ALL');
 SET STATISTICS TIME ON ;
 --查询条件
 SET STATISTICS TIME OFF;
+
+
+2. 跨库查询
+
+exec sp_addlinkedserver 'AXY',' ','SQLOLEDB','192.168.0.10'
+
+exec sp_addlinkedsrvlogin 'AXY','false ',null,'sa','Fas123'
+
+go
+
+exec sp_addlinkedserver 'Axy32',' ','SQLOLEDB','10.8.30.32'
+
+exec sp_addlinkedsrvlogin 'Axy32','false ',null,'sa','123'
+go
+
+
+insert into Axy32.[DW_iSecureCloud_Empty_20180603].[dbo].T_THEMES_ENVI_SATURATION_LINE (SENSOR_ID,SAFETY_FACTOR_TYPE_ID,HOLE_DIS,HEIGHT,ACQUISITION_DATETIME)
+select 25370 as SENSOR_ID,t.SAFETY_FACTOR_TYPE_ID,t.HOLE_DIS,t.HEIGHT,t.ACQUISITION_DATETIME from AXY.[DW_iSecureCloud_Empty].[dbo].T_THEMES_ENVI_SATURATION_LINE  as t where
+t.SENSOR_ID=26094
+
+insert into Axy32.[DW_iSecureCloud_Empty_20180603].[dbo].T_THEMES_ENVI_SATURATION_LINE (SENSOR_ID,SAFETY_FACTOR_TYPE_ID,HOLE_DIS,HEIGHT,ACQUISITION_DATETIME)
+select 25371 as SENSOR_ID,t.SAFETY_FACTOR_TYPE_ID,t.HOLE_DIS,t.HEIGHT,t.ACQUISITION_DATETIME from AXY.[DW_iSecureCloud_Empty].[dbo].T_THEMES_ENVI_SATURATION_LINE  as t where
+t.SENSOR_ID=26095
+
+insert into Axy32.[DW_iSecureCloud_Empty_20180603].[dbo].T_THEMES_ENVI_SATURATION_LINE (SENSOR_ID,SAFETY_FACTOR_TYPE_ID,HOLE_DIS,HEIGHT,ACQUISITION_DATETIME)
+select 25372 as SENSOR_ID,t.SAFETY_FACTOR_TYPE_ID,t.HOLE_DIS,t.HEIGHT,t.ACQUISITION_DATETIME from AXY.[DW_iSecureCloud_Empty].[dbo].T_THEMES_ENVI_SATURATION_LINE  as t where
+t.SENSOR_ID=26096
+
+insert into Axy32.[DW_iSecureCloud_Empty_20180603].[dbo].T_THEMES_ENVI_SATURATION_LINE (SENSOR_ID,SAFETY_FACTOR_TYPE_ID,HOLE_DIS,HEIGHT,ACQUISITION_DATETIME)
+select 25373 as SENSOR_ID,t.SAFETY_FACTOR_TYPE_ID,t.HOLE_DIS,t.HEIGHT,t.ACQUISITION_DATETIME from AXY.[DW_iSecureCloud_Empty].[dbo].T_THEMES_ENVI_SATURATION_LINE  as t where
+t.SENSOR_ID=26097
+
+
+--用完后可删除
+if exists(select 1 from sys.servers where name='AXY')
+begin
+Exec sp_droplinkedsrvlogin AXY,NULL--删除链接服务器的登陆帐户
+Exec sp_dropserver AXY--删除链接服务器
+end
+go
+--用完后可删除
+if exists(select 1 from sys.servers where name='Axy32')
+begin
+Exec sp_droplinkedsrvlogin Axy32,NULL  --删除链接服务器的登陆帐户
+Exec sp_dropserver Axy32  --删除链接服务器
+end
+go
+--查看已注册的链接服务器
+exec sp_linkedservers

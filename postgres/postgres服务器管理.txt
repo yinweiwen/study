@@ -130,6 +130,11 @@ show superuser_reserved_connections;
 
 
 
+执行数据库脚本
+psql -U postgres -f secure_cloud.sql 
+
+pg_dump --dbname="Anxinyun0726" --file="anxinyun0726.sql" --create -U FashionAdmin
+
 
 
 

@@ -179,3 +179,11 @@ INFO [section]
 	conf中注释： # bind 127.0.0.1
 	config set daemonize "no"
 	config set protected-mode "no"
+	
+ubuntu 16:
+	apt-get install redis-server
+	/etc/init.d/redis-server status 状态查看
+	修改配置：
+		vi /etc/redis/redis.conf
+		注释掉 # bind 127.0.0.1
+		sudo /etc/init.d/redis-server restart

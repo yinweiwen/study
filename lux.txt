@@ -71,3 +71,67 @@ docker logs xxx container_id
 	sudo mkdir /home/hadoop
 	sudo chown /home/hadoop
 	
+>> 内存问题排查
+
+	free [-m -g...]
+	 total        used        free      shared  buff/cache   available
+Mem:       12219288     7485148      271236       27104     4462904     4311184
+Swap:             0           0           0
+	mem:物理内存 swap硬盘上交换分区的使用情况。只有mem被当前进程实际占用完,即没有了buffers和cache时，才会使用到swap
+	MEM -- total: 总物理内存大小  used: 总计分配给缓存使用的数量(包含buff/cache)  free: 未被分配的内存  shared: 共享内存(一般系统不会用到)
+			buff/cache： 分配但未被使用的cache和buffer数量
+	<https://blog.csdn.net/tianlesoftware/article/details/5463790>
+	
+	dmidecode -t processor memory [bios, system, baseboard, chassis, processor, memory, cache, connector, slot]
+	
+	top -d 1(1秒更新一次)  -c（显示完整的路径名称）  -i(不现实任何Idle和zombie进程)  -m(更新次数，完成后退出)
+	【】【】     【优先级】				  
+	PID USER      PR  NI【优先级别数值】    VIRT【进程占用的虚拟内存值】    RES【进程占用的物理内存值】
+    SHR【进程使用的共享内存值】 S【进程的状态，其中S表示休眠，R表示正在运行，Z表示僵死状态，N表示该进程优先值是负数】
+	%CPU %MEM     TIME+ COMMAND                                                                                                                       
+ 3581 root      20   0  415048 266628  21956 S   6.3  2.2 512:58.32 kube-apiserver                                                                                                                
+  730 root      20   0  708712  61548  16404 S   4.7  0.5 333:30.48 kubelet                                                                                                                       
+ 3241 root      20   0  139472  57008  15800 S   4.0  0.5 353:34.31 kube-controller  
+	
+	top下支持的操作：
+	 《空格》：立刻刷新。
+
+	P：根据CPU使用大小进行排序。
+
+	T：根据时间、累计时间排序。
+
+	q：退出top命令。
+
+	m：切换显示内存信息。
+
+	t：切换显示进程和CPU状态信息。
+
+	c：切换显示命令名称和完整命令行。
+
+	M：根据使用内存大小进行排序。
+
+	W：将当前设置写入~/.toprc文件中
+	
+	uptime 显示系统运行时长 最近1分钟/5分钟/15分钟的系统负载
+	17:38:07 up 6 days,  1:13,  4 users,  load average: 0.32, 0.36, 0.45
+	
+	vmstat显示
+	procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+	 r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+	 0  0      0 251324 477184 3994764    0    0     8    48   10   12  3  2 94  1  0
+	 其中：
+	 io:
+		bi - 从磁盘每秒读取的块数（blocks/s）
+		bo - 每秒写到磁盘的块数（blocks/s）
+	 cpu:
+		us - 用户进程占cpu比例
+		sy - 系统占用比例
+		id - 空闲时间比例
+		wa - cpu等待未决的磁盘IO时间比例
+		
+	iostat 用于统计CPU的使用情况及tty设备、硬盘和CD-ROM的I/0量
+	
+## GREP查询多个条件
+
+kubectl logs spark-et-driver-savoir | grep 'a\|b'
+netstat -an | grep -E "ESTABLISHED|WAIT"
