@@ -307,3 +307,61 @@ IDEA 2017.1.6 et
 	
 以后：
 1. Caused by: java.io.IOException: Cannot run program "I:\@\hadoop-2.7.3\bin\winutils.exe": CreateProcess error=5, 拒绝访问。
+	在windows机器中安装hadoop，参见[3]
+
+2. Offsets out of range with no configured reset policy for partitions (spark-stream kafka)
+	https://www.jianshu.com/p/40aee290f484
+	
+3. windows上安装hadoop （问题1解决思路）
+	https://blog.csdn.net/rav009/article/details/70214788
+	> https://mirrors.cnnic.cn/apache/hadoop/common/ 下载hadoop镜像并解压
+	> https://github.com/steveloughran/winutils 下载对应winutils 覆盖到bin
+	> 设置 HADOOP_HOME 以及 Path
+	> 修改etc/hadoop-env.cmd下
+	  set JAVA_HOME=C:\PROGRA~1\Java\jdk1.8.0_121
+	> core-site:
+	 <configuration>
+			<property>
+					<name>fs.defaultFS</name>
+					<value>hdfs://localhost:9000</value>
+			</property>
+	 </configuration>
+	> hdfs-site.xml
+		<configuration>
+				<property>
+						<name>dfs.replication</name>
+						<value>1</value>
+				</property>
+				<property>
+						<name>dfs.namenode.name.dir</name>
+						<value>file:/hadoop/data/dfs/namenode</value>  相同盘符根目录下响应位置
+				</property>
+				<property>
+						<name>dfs.datanode.data.dir</name>
+						<value>file:/hadoop/data/dfs/datanode</value>
+				</property>
+		</configuration>
+	> hadoop namenode -format
+	  如果不行就修改数据文件夹的权限(everyone)
+	> cd sbin
+	> start-dfs.cmd
+	> OK
+
+4. could only be replicated to 0 nodes instead of minReplication (=1).  There are 1 datanode(s) running and no node(s) are excluded in this operation.
+	怀疑存储空间不足，待验证
+	
+5. Too many dynamic script compilations within one minute (ElasticSearch)
+	重启进程
+	
+6. mqtt receiver进程重复接收数据；
+	savoir的receiver进程中仅订阅了savoir_data，确会收到anxinyun_data的数据
+	怀疑：client.id之前订阅过anxinyun_data主题
+	解决方法： 修改client.id
+	
+7. [ERROR] Caused by: java.lang.AssertionError: assertion failed: org.joda.convert.ToString
+	scala maven项目编译能通过，执行mvn install时提示错误：
+	除了引用joda-time库外还需要引用 joda-convert库
+	
+8. 安心云ET运行一段时间报错：[Executor] Executor self-exiting due to : Driver spark-et-baed51c5f49f33339750c4602718b303-driver-svc.anxinyun.svc:7078 disassociated! Shutting down
+	应该是OOM后被kill,   继续排查spark内存泄漏的问题
+	参见[https://www.jianshu.com/p/80dc6209acc0]

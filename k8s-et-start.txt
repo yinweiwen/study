@@ -1,4 +1,4 @@
-./spark-submit \
+                                                                                                               ./spark-submit \
     --class et.main.main \
     --master k8s://https://anxinyun-m1:6443 \
     --deploy-mode cluster \
@@ -34,8 +34,32 @@
 --conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
 --conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
 --conf spark.executorEnv.SPARK_USER=hdfs \
---conf spark.driver.memory=1G \
---conf spark.executor.memory=1G \
+--conf spark.driver.memory=2G \
+--conf spark.executor.memory=2G \
+--conf spark.driver.cores=2 \
+--conf spark.executor.cores=1 \
+--conf spark.kubernetes.driver.limit.cores=3 \
+--conf spark.kubernetes.executor.limit.cores=2 \
+--conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  \
+--conf spark.kubernetes.driver.pod.name=spark-et-driver \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
+--conf spark.kubernetes.namespace=anxinyun \
+--files hdfs://10.8.30.35:8020/anxinyun/code/log4j.properties,hdfs://10.8.30.35:8020/anxinyun/code/log4j2.xml \
+hdfs://10.8.30.35:8020/anxinyun/code/et.jar
+
+	
+	# 35测试环境  (DEBUG)
+./spark-submit \
+--class et.main.main \
+--master k8s://https://10.8.30.35:6443 \
+--deploy-mode cluster \
+--name spark-et \
+--conf spark.kubernetes.driverEnv.SPARK_USER=hdfs \
+--conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.SPARK_USER=hdfs \
+--conf spark.driver.memory=2G \
+--conf spark.executor.memory=2G \
 --conf spark.driver.cores=2 \
 --conf spark.executor.cores=1 \
 --conf spark.kubernetes.driver.limit.cores=3 \

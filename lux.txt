@@ -135,3 +135,39 @@ Swap:             0           0           0
 
 kubectl logs spark-et-driver-savoir | grep 'a\|b'
 netstat -an | grep -E "ESTABLISHED|WAIT"
+
+## chmod 用法
+	u -- User 文件或目录的拥有者
+	g -- Group 所属群组
+	o -- Other
+	a -- 全部用户
+	r -- 读取权限，数字代号4
+	w -- 写入权限，数字代号2
+	x -- 执行或切换权限，数字代号1
+	- -- 不具任何权限，数字代号0
+	s -- 特殊功能说明：变更文件或目录的权限
+	-R 递归处理
+	chmod u+x f01 // 设置拥有者的可执行属性
+	chmod u=rwx,g=rw f01
+	chmod 764 f01
+
+	- rw- r-- r-- 
+	第一个字符"-"表示普通文件 "d"表示目录
+	后面三组分别为 u/g/o 用户的权限
+
+
+## 查找/删除 指定日期的文件
+	find .  -type f  -name *.*  -mtime +10  -exec rm {} \;
+	. 当前目录
+	-type f 查找文件
+	-name *.log 查找名称后缀log的文件
+	-mtime +180  查询180天以前的文件
+	find . -type f -mtime -180 -exec ls -l {} \; | more
+	find . -newermt '2016-11-03' ! -newermt '2016-11-04' -exec ls -l {} \;
+
+	find . -type d -ctime +10 | xargs rm -rf;
+	删除修改时间超过10天的所有文件夹 （等价于 find /path/to/base/dir/* -type d -ctime +10 -exec rm -rf {} \;）
+
+	// 到version目录执行
+	find . -type d -mindepth 1 -maxdepth 2  -ctime +10 | xargs rm -rf
+	...TO LERN MORE

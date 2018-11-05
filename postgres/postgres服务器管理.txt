@@ -128,7 +128,14 @@ show superuser_reserved_connections;
 
 	psql -U FashionAdmin -d SecureCloud
 
-
+# 删除数据库
+	dropdb -h 127.0.0.1 -U FashionAdmin SecureCloud
+	或
+	psql> drop database SecureCloud
+	提示有连接无法删除：
+	SELECT pg_terminate_backend(pid)
+	FROM pg_stat_activity
+	WHERE datname = 'mydb';
 
 执行数据库脚本
 psql -U postgres -f secure_cloud.sql 
