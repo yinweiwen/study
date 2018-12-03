@@ -112,6 +112,9 @@ Swap:             0           0           0
 
 	W：将当前设置写入~/.toprc文件中
 	
+	SHIFT+M 固定按内存排序
+	
+	
 	uptime 显示系统运行时长 最近1分钟/5分钟/15分钟的系统负载
 	17:38:07 up 6 days,  1:13,  4 users,  load average: 0.32, 0.36, 0.45
 	
@@ -171,3 +174,39 @@ netstat -an | grep -E "ESTABLISHED|WAIT"
 	// 到version目录执行
 	find . -type d -mindepth 1 -maxdepth 2  -ctime +10 | xargs rm -rf
 	...TO LERN MORE
+	
+	
+## 后台启动进程
+  *nohup 如果宿主ssh进程关闭，后台nohup进程也会被关闭
+  建议使用 screen
+  apt-get install screen
+  > screen 按Enter，进入新的screen
+	> 在新的screen里面使用nohup（或者直接启动）启动我们的进程
+	> Ctrl A + D 退出
+	> 显示 [detached from 8377.pts-12.node35]
+  > 列出当前用户所有screen -ls
+  > 进入已有screen -r 8377.pts-12.node35
+  
+## 关闭交换分区
+https://serverfault.com/questions/684771/best-way-to-disable-swap-in-linux
+	1. Identify configured swap devices and files with cat /proc/swaps.
+	2. Turn off all swap devices and files with swapoff -a.
+	3. Remove any matching reference found in /etc/fstab.
+	4. Optional: Destroy any swap devices or files found in step 1 to prevent their reuse. Due to your concerns about leaking sensitive information, you may wish to consider performing some sort of secure wipe.
+	
+	1. run swapoff -a: this will immediately disable swap
+	2. remove any swap entry from /etc/fstab
+	3. reboot the system. If the swap is gone, good. If, for some reason, it is still here, you had to remove the swap partition. Repeat steps 1 and 2 and, after that, use fdisk or parted to remove the (now unused) swap partition. Use great care here: removing the wrong partition will have disastrous effects!
+	4. reboot
+	
+## xshell使用
+	属性里面可以设置默认语言为UTF-8
+	属性里可以设置外观颜色(标识出重要的连接)
+	sudo apt install lrzsz安装后可以实现文件传输（拖拽上传/rz 上传/sz 下载）
+	
+## git Permission denied (github)
+	ssh-keygen
+	copy C:\Users\yww08/.ssh/id_rsa.pub 内容
+	github.com >personal settings>SSH > New SSH Key
+	[ref](https://stackoverflow.com/questions/2643502/how-to-solve-permission-denied-publickey-error-when-using-git)
+	

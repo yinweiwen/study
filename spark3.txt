@@ -1,3 +1,6 @@
 ## SPARK PERFORMANCE TUNING
 
 https://blog.csdn.net/u013063153/article/details/54286021
+
+## Spark Streaming 读取 Kafka 的各种姿势解析
+https://toutiao.io/posts/1s24pj/preview

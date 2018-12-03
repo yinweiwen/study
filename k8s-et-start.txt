@@ -1,8 +1,9 @@
-                                                                                                               ./spark-submit \
-    --class et.main.main \
-    --master k8s://https://anxinyun-m1:6443 \
-    --deploy-mode cluster \
-    --name spark-et \
+             
+./spark-submit \
+--class et.main.main \
+--master k8s://https://anxinyun-m1:6443 \
+--deploy-mode cluster \
+--name spark-et \
 	--conf spark.kubernetes.driverEnv.SPARK_USER=hdfs \
 	--conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
 	--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
@@ -13,12 +14,12 @@
     --conf spark.executor.cores=1 \
     --conf spark.kubernetes.driver.limit.cores=3 \
     --conf spark.kubernetes.executor.limit.cores=2 \
-    --conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  \
+    --conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark2.3.2:latest  \
     --conf spark.kubernetes.driver.pod.name=spark-et-driver \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
 	--conf spark.kubernetes.namespace=anxinyun \
 	--files hdfs://anxinyun-m1:8020/anxinyun/code/log4j.properties,hdfs://anxinyun-m1:8020/anxinyun/code/log4j2.xml \
-    hdfs://anxinyun-m1:8020/anxinyun/code/et.jar
+    hdfs://anxinyun-m1:8020/anxinyun/code/et2.jar
 	
 	
 	
@@ -48,7 +49,26 @@
 hdfs://10.8.30.35:8020/anxinyun/code/et.jar
 
 	
-	# 35测试环境  (DEBUG)
+	#YARN启动
+./spark-submit --class et.main.main --master spark://node36:7077 --deploy-mode cluster \
+--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
+--conf spark.executorEnv.SPARK_USER=hdfs \
+	--files hdfs://10.8.30.35:8020/anxinyun/code/log4j.properties,hdfs://10.8.30.35:8020/anxinyun/code/log4j2.xml \
+	hdfs://10.8.30.35:8020/anxinyun/code/et2.jar
+	
+	./spark-submit --class anxin.et.main --master yarn --deploy-mode cluster     --conf spark.yarn.maxAppAttempts=10     --conf spark.yarn.am.attemptFailuresValidityInterval=1h     --conf spark.yarn.executor.failuresValidityInterval=1h     --conf spark.task.maxFailures=8 hdfs://10.8.30.35:8020/anxinyun/code/et-spark2.4.0.jar
+	
+export JAVA_HOME=/usr/lib/jdk1.8.0_131
+export SCALA_HOME=/usr/lib/scala-2.12.3
+export SPARK_WORKER_MEMORY=2g
+export SPARK_DAEMON_MEMORY=2g
+export SPARK_MASTER_IP=10.8.30.35
+export MASTER=spark://10.8.30.35:7077
+export HADOOP_CONF_DIR=/etc/hadoop/2.6.1.0-129/0
+export YARN_CONF_DIR=/etc/hadoop/2.6.1.0-129/0
+export SPARK_HISTORY_OPTS="-Dspark.history.ui.port=18080 -Dspark.history.retainedApplications=3 -Dspark.history.fs.logDirectory=hdfs://node35:9000/history"
+	
+	# 35测试环境  (SPARK2.3.2)
 ./spark-submit \
 --class et.main.main \
 --master k8s://https://10.8.30.35:6443 \
@@ -64,7 +84,7 @@ hdfs://10.8.30.35:8020/anxinyun/code/et.jar
 --conf spark.executor.cores=1 \
 --conf spark.kubernetes.driver.limit.cores=3 \
 --conf spark.kubernetes.executor.limit.cores=2 \
---conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark:latest  \
+--conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark2.3.2:latest  \
 --conf spark.kubernetes.driver.pod.name=spark-et-driver \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
 --conf spark.kubernetes.namespace=anxinyun \
@@ -174,3 +194,26 @@ spark-2.3.0-bin-hadoop2.7/bin/spark-submit --class et.main.main --master local[*
   Warning  FailedSync             15s (x70 over 15m)  kubelet, node37    Error syncing pod
 
 		
+		
+		
+		./spark-submit \
+--class et.main.main \
+--master k8s://https://anxinyun-m1:6443 \
+--deploy-mode cluster \
+--name spark-et-test \
+	--conf spark.kubernetes.driverEnv.SPARK_USER=hdfs \
+	--conf spark.kubernetes.driverEnv.HADOOP_USER_NAME=hdfs \
+	--conf spark.executorEnv.HADOOP_USER_NAME=hdfs \
+	--conf spark.executorEnv.SPARK_USER=hdfs \
+    --conf spark.driver.memory=1G \
+    --conf spark.executor.memory=1G \
+    --conf spark.driver.cores=1 \
+    --conf spark.executor.cores=1 \
+    --conf spark.kubernetes.driver.limit.cores=3 \
+    --conf spark.kubernetes.executor.limit.cores=2 \
+    --conf spark.kubernetes.container.image=registry.zhiwucloud.com/anxin/spark2.3.2:latest  \
+    --conf spark.kubernetes.driver.pod.name=spark-et-driver-test \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=anxinyun \
+	--conf spark.kubernetes.namespace=anxinyun \
+	--files hdfs://anxinyun-m1:8020/anxinyun/code/log4j.properties,hdfs://anxinyun-m1:8020/anxinyun/code/log4j2.xml \
+    hdfs://anxinyun-m1:8020/anxinyun/code/ettest.jar
