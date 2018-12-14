@@ -1,0 +1,71 @@
+hadoop HDFS安装
+
+肉鸡：vitualBox Centos 7 最小安装 10.8.30.181
+用户名密码 root/root
+亦庄环境：Postgres9.6 JAVA7
+
+fs/FasService123_ 
+
+###########################################
+systemctl stop firewalld.service #停止firewall
+systemctl disable firewalld.service #禁止firewall开机启动
+firewall-cmd --state 
+
+
+伪分布下调用MR样列
+########################################
+上面的单机模式，grep 例子读取的是本地数据，伪分布式读取的则是 HDFS 上的数据。要使用 HDFS，首先需要创建用户目录
+
+bin/hdfs dfs -mkdir -p /user/hadoop
+接着将 etc/hadoop 中的文件作为输入文件复制到分布式文件系统中，即将 /usr/local/hadoop/etc/hadoop 复制到分布式文件系统中的 /user/hadoop/input 中。上一步已创建了用户目录 /user/hadoop ，因此命令中就可以使用相对目录如 input，其对应的绝对路径就是 /user/hadoop/input:
+
+bin/hdfs dfs -mkdir input
+bin/hdfs dfs -put etc/hadoop/*.xml input
+复制完成后，可以通过如下命令查看文件列表：
+
+bin/hdfs dfs -ls input
+伪分布式运行 MapReduce 作业的方式跟单机模式相同，区别在于伪分布式读取的是HDFS中的文件（可以将单机步骤中创建的本地 input 文件夹删掉以及运行结果来验证这一点）。
+
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar grep input output 'dfs[a-z.]+'
+查看运行结果的命令（查看的是位于 HDFS 中的输出结果）：
+
+bin/hdfs dfs -cat output/*
+也可以将运行结果取回到本地：
+
+rm -R ./output
+bin/hdfs dfs -get output output     # 将 HDFS 上的 output 文件夹拷贝到本机
+cat ./output/*
+
+Hadoop运行程序时，默认输出目录不能存在，因此再次运行需要执行如下命令删除 output文件夹:
+
+bin/hdfs dfs -rm -r /user/hadoop/output     # 删除 output 文件夹
+
+
+###################################################
+
+
+安装elasticsearch
+###################################################
+elasticsearch-5.4.1
+NEED JAVA8
+安装JAVA8  vi /etc/profile 修改JAVA_HOME source /etc/profile
+ES不能以root用户运行。新增 elasticsearch 用户
+useradd elasticsearch
+passwd elasticsearch
+su
+chown -R elasticsearch /usr/elasticsearch （赋权限）
+#./ elasticsearch –d			//	后台运行
+http://192.168.1.47:9200 查看status 是否为200
+
+vi /etc/security/limits.conf 
+添加如下内容:
+* soft nofile 65536
+* hard nofile 131072
+* soft nproc 2048
+* hard nproc 4096
+
+vi /etc/sysctl.conf 
+添加下面配置：
+vm.max_map_count=655360
+并执行命令：
+sysctl -p

@@ -137,7 +137,22 @@ Swap:             0           0           0
 ## GREP查询多个条件
 
 kubectl logs spark-et-driver-savoir | grep 'a\|b'
+kubectl logs -n savoir savoir-recv2-d55c84956-lwt47 --tail 100000 | egrep 'savoir_data.*3ad16d61-de50-49d0-a7c5-04798e6a0838.*"result":{"code":3002'
 netstat -an | grep -E "ESTABLISHED|WAIT"
+
+使用方式：egrep [OPTIONS] PATTERN [FILE...] 
+
+　　grep -E [OPTIONS] PATTERN [FILE...]
+
+　　-i：忽略字符的大小写
+　　-o：仅显示匹配到的字符串本身
+　　-v：显示不被模式匹配到的行
+　　-q：静默模式，即不输出任何信息
+　　-A #：显示被模式匹配的行及其后#行
+　　-B #：显示被模式匹配的行及其前#行
+　　-C #：显示被模式匹配的行及其前后各#行
+　　-G:支持基本正则表达式
+
 
 ## chmod 用法
 	u -- User 文件或目录的拥有者

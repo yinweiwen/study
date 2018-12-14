@@ -1,0 +1,42 @@
+安装postgres
+
+查看已安装版本
+yum list | grep postgresql
+
+安装 yum 源
+yum install https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+yum update
+yum list | grep postgresql
+
+安装postgresql96-server和postgresql96-contrib
+yum install postgresql96-server postgresql96-contrib
+
+可执行文件在 /usr/pgsql-9.6/bin/， 数据和配置文件在 /var/lib/pgsql/9.6/data/
+
+初始化数据库
+bin/postgresql96-setup initdb
+
+权限配置
+data/pg_hba.conf
+
+开启远程访问
+data/postgresql.conf
+#listen_addresses = 'localhost'   修改为 listen_addresses='*'
+
+管理服务
+systemctl start postgresql-9.6 #启动服务
+systemctl restart postgresql-9.6 #重启服务
+systemctl stop postgresql-9.6 #停止服务
+systemctl enable postgresql-9.6 #自动启动
+
+登录PostgreSQL
+sudo -i -u postgres
+psql 
+ALTER USER postgres WITH PASSWORD '123456'
+ \q
+ \password postgres
+ 
+ 打开防火墙
+ 开放postgresql服务
+firewall-cmd --add-service=postgresql --permanent
+firewall-cmd --reload

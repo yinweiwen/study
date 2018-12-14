@@ -1,0 +1,19 @@
+kafka:
+
+http://www.open-open.com/lib/view/open1354277579741.html
+
+A distributed publish-subscribe messaging system。
+更准确的说 消息订阅和发布的系统
+
+producer -push- broker -pull- consumer
+
+Kafka is run as a cluster on one or more servers.
+The Kafka cluster stores streams of records in categories called topics.
+Each record consists of a key, a value, and a timestamp.
+
+ Producer API 
+ Consumer API
+ Streams API
+ Connector API
+ 
+ 

@@ -1,0 +1,133 @@
+docker
+
+yum -y install docker-io
+systemctl start  docker.service
+systemctl enable docker.service
+
+# docker -v
+Docker version 1.12.6, build 1398f24/1.12.6
+# docker version
+Client:
+ Version:         1.12.6
+ API version:     1.24
+ Package version: docker-1.12.6-28.git1398f24.el7.centos.x86_64
+ Go version:      go1.7.4
+ Git commit:      1398f24/1.12.6
+ Built:           Fri May 26 17:28:18 2017
+ OS/Arch:         linux/amd64
+
+Server:
+ Version:         1.12.6
+ API version:     1.24
+ Package version: docker-1.12.6-28.git1398f24.el7.centos.x86_64
+ Go version:      go1.7.4
+ Git commit:      1398f24/1.12.6
+ Built:           Fri May 26 17:28:18 2017
+ OS/Arch:         linux/amd64
+
+
+##从docker.io中下载centos镜像到本地 /var/lib/docker/graph
+docker pull centos:latest
+
+docker images                                  #查看已下载的镜像
+
+docker run -i -t centos /bin/bash              #启动一个容器
+
+docker rmi image_id                            #删除镜像
+
+docker rmi $(docker images | grep none | awk '{print $3}' | sort -r)  #删除所有镜像
+
+docker ps -a                                  #查看所有容器(包括正在运行和已停止的)
+
+docker start/stop container_id                        #开启一个容器（注意container_id和image_id是完全不一样
+
+docker logs <容器名orID> 2>&1 | grep '^User: ' | tail -n1 #查看容器的root用户密码,因为docker容器启动时的root用户的密码是随机分配的。所以，通过这种方式就可以得到redmine容器的root用户的密码了
+
+docker logs -f <容器名orID>                    #查看容器日志
+
+docker rm $(docker ps -a -q)                    #删除所有容&删除单个容器docker rm <容器名orID>
+
+docker run --name redmine -p 9003:80 -p 9023:22 -d -v /var/redmine/files:/redmine/files -v    /var/redmine/mysql:/var/lib/mysql sameersbn/redmine
+
+#运行一个新容器，同时为它命名、端口映射、文件夹映射。以redmine镜像为例
+
+docker run -i -t --name sonar -d -link mmysql:db  tpires/sonar-server
+
+# 一个容器连接到另一个容器&sonar容器连接到mmysql容器，并将mmysql容器重命名为db。这样，sonar容器就可以使用db的相关的环境变量了。
+
+docker port xxxxx 查看端口映射
+docker top 容器ID或名称   查看正在运行容器内部运行的进程
+docker inspect 容器名或ID  查看Docker容器的配置和状态信息
+
+#当需要把一台机器上的镜像迁移到另一台机器的时候，需要保存镜像与加载镜像。
+
+机器a
+
+docker save busybox-1 > /home/save.tar
+
+使用scp将save.tar拷到机器b上，然后：
+
+docker load < /home/save.tar
+
+docker build -t <镜像名> <Dockerfile路径>        #构建自己的镜像
+
+
+docker run参数说明：
+Usage: docker run [OPTIONS] IMAGE [COMMAND] [ARG...] 
+	-d, --detach=false         指定容器运行于前台还是后台，默认为false     （docker attach ）
+  -i, --interactive=false   打开STDIN，用于控制台交互    
+  -t, --tty=false            分配tty设备，该可以支持终端登录，默认为false    
+  -u, --user=""              指定容器的用户    
+  -a, --attach=[]            登录容器（必须是以docker run -d启动的容器）  
+  -w, --workdir=""           指定容器的工作目录   
+  -c, --cpu-shares=0        设置容器CPU权重，在CPU共享场景使用    
+  -e, --env=[]               指定环境变量，容器中可以使用该环境变量    
+  -m, --memory=""            指定容器的内存上限    
+  -P, --publish-all=false    指定容器暴露的端口    
+  -p, --publish=[]           指定容器暴露的端口   
+  -h, --hostname=""          指定容器的主机名    
+  -v, --volume=[]            给容器挂载存储卷，挂载到容器的某个目录    
+  --volumes-from=[]          给容器挂载其他容器上的卷，挂载到容器的某个目录  
+  --cap-add=[]               添加权限，权限清单详见：http://linux.die.net/man/7/capabilities    
+  --cap-drop=[]              删除权限，权限清单详见：http://linux.die.net/man/7/capabilities    
+  --cidfile=""               运行容器后，在指定文件中写入容器PID值，一种典型的监控系统用法    
+  --cpuset=""                设置容器可以使用哪些CPU，此参数可以用来容器独占CPU    
+  --device=[]                添加主机设备给容器，相当于设备直通    
+  --dns=[]                   指定容器的dns服务器    
+  --dns-search=[]            指定容器的dns搜索域名，写入到容器的/etc/resolv.conf文件    
+  --entrypoint=""            覆盖image的入口点    
+  --env-file=[]              指定环境变量文件，文件格式为每行一个环境变量    
+  --expose=[]                指定容器暴露的端口，即修改镜像的暴露端口    
+  --link=[]                  指定容器间的关联，使用其他容器的IP、env等信息    
+  --lxc-conf=[]              指定容器的配置文件，只有在指定--exec-driver=lxc时使用    
+  --name=""                  指定容器名字，后续可以通过名字进行容器管理，links特性需要使用名字    
+  --net="bridge"             容器网络设置:  
+                                bridge 使用docker daemon指定的网桥       
+                                host    //容器使用主机的网络    
+                                container:NAME_or_ID  >//使用其他容器的网路，共享IP和PORT等网络资源    
+                                none 容器使用自己的网络（类似--net=bridge），但是不进行配置   
+  --privileged=false         指定容器是否为特权容器，特权容器拥有所有的capabilities    
+  --restart="no"             指定容器停止后的重启策略:  
+                                no：容器退出时不重启    
+                                on-failure：容器故障退出（返回值非零）时重启   
+                                always：容器退出时总是重启    
+  --rm=false                 指定容器停止后自动删除容器(不支持以docker run -d启动的容器)    
+  --sig-proxy=true           设置由代理接受并处理信号，但是SIGCHLD、SIGSTOP和SIGKILL不能被代理 
+
+  ########################################
+  Alpine Linux是一个面向安全的轻型的linux发行版。
+  docker pull alpine:latest
+  
+  
+  镜像仓库 docker images
+  REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+ubuntu              14.04               90d5884b1ee0        5 days ago          188 MB
+ 使用不同TAG的镜像：
+ docker run -it ubuntu:15.10 /bin/bash
+ docker search xxxxx
+ docker pull xxxxx
+ 
+ 更新镜像：
+ 更改过的容器保存更新镜像：
+ docker commit -m="提交描述" -a="提交作者" 容器ID 目标镜像名runoob/ubuntu:V2
+ 

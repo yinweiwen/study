@@ -436,3 +436,28 @@ http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.schedu
             <version>6.2.4</version>
         </dependency>
 	
+20. flatMap && flatten
+	// flatMap  TraversableLike.scala
+
+	  def flatMap[B, That](f: A => GenTraversableOnce[B])(implicit bf: CanBuildFrom[Repr, B, That]): That = {
+		def builder = bf(repr) // extracted to keep method size under 35 bytes, so that it can be JIT-inlined
+		val b = builder
+		for (x <- this) b ++= f(x).seq
+		b.result
+	  }
+	  
+	// flatten  GenericTraversableTemplate.scala
+
+	  def flatten[B](implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]): CC[B] = {
+		val b = genericBuilder[B]
+		for (xs <- sequential)
+		  b ++= asTraversable(xs).seq
+		b.result()
+	  }
+
+	两者功能上几乎没有区别
+	通过 ++= 枚举元素进行添加，Map的相同键的元素会覆盖
+
+21. 
+	
+	
