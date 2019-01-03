@@ -1,10 +1,8 @@
 import org.elasticsearch.ElasticsearchTimeoutException;
-import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
@@ -119,42 +117,12 @@ public class EsHelper {
                     BulkItemResponse response = itr.next();
                 }
             }
-            System.out.println("ok");
+            System.out.println("indexed " + mapDocs.size());
             return !bulkResponse.hasFailures();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-    }
-
-    // 设备数据插入或更新（设备ID和时间唯一）
-    public boolean upsertDeviceData(String indexName, String typeName, List<Map<String, Object>> mapDocs) {
-        if (client == null)
-            return false;
-
-        return upsert(indexName, typeName, mapDocs, "iota_device", "collect_time");
-    }
-
-    public List<Map<String, Object>> query(String indexName, String typeName, QueryBuilder query) {
-        SearchResponse resp;
-        int scrollSize = 1000;
-        int fromIndex = 0;
-        List<Map<String, Object>> result = new ArrayList();
-        do {
-            resp = client.prepareSearch()
-                    .setIndices(indexName)
-                    .setTypes(typeName)
-                    .setQuery(query)
-                    .setFrom(fromIndex)
-                    .setSize(scrollSize)
-                    .get();
-            fromIndex += scrollSize;
-            SearchHit[] hits = resp.getHits().getHits();
-            for (SearchHit hit : hits) {
-                result.add(hit.getSourceAsMap());
-            }
-        } while (resp.getHits().totalHits > fromIndex);
-        return result;
     }
 
     public boolean upsert(String indexName, String typeName, List<Map<String, Object>> mapDocs, String... queryFields) {
@@ -216,68 +184,67 @@ public class EsHelper {
         return docs;
     }
 
-    public void queryRawData(String device,String cs,int st, DateTime dtBegin, DateTime dtEnd) {
+    public void migrateRawData(String device, String cs, int st, DateTime dtBegin, DateTime dtEnd, int hourDelay) {
         SearchResponse scrollResp = client.prepareSearch("anxinyun_raws")
                 .setTypes("raw")
                 .setScroll(new TimeValue(mQueryTimeoutMillis))
                 .setQuery(QueryBuilders.boolQuery()
                         .must(QueryBuilders.termQuery("iota_device", device))
-                        .must(QueryBuilders.rangeQuery("collect_time").gte(dtBegin).lt(dtEnd)))
+                        .must(QueryBuilders.rangeQuery("collect_time").gte(dtBegin.plusHours(-hourDelay)).lt(dtEnd.plusHours(-hourDelay))))
                 .addSort("collect_time", SortOrder.ASC)
                 .setSize(mQueryScrollSize).get();
-        List<Map<String, Object>> ss= query(scrollResp);
+        List<Map<String, Object>> ss = query(scrollResp);
 
         for (Map<String, Object> item : ss) {
             item.put("iota_device", cs);
-            item.put("structId",st);
+            item.put("structId", st);
+            if (hourDelay != 0) {
+                item.put("collect_time", DateTime.parse(item.get("collect_time").toString()).plusHours(hourDelay));
+            }
         }
-        indexDocs("anxinyun_raws", "raw", ss);
+        if (ss.size() > 0)
+            indexDocs("anxinyun_raws", "raw", ss);
     }
 
-    public void queryAggData(int stationId, int cs, DateTime dtBegin, DateTime dtEnd) {
+    public void migrateAggData(int stationId, int cs, DateTime dtBegin, DateTime dtEnd, int hourDelay) {
         SearchResponse scrollResp = client.prepareSearch("anxinyun_aggregation")
                 .setTypes("agg")
                 .setScroll(new TimeValue(mQueryTimeoutMillis))
                 .setQuery(QueryBuilders.boolQuery()
                         .must(QueryBuilders.termQuery("sensor", stationId))
-                        .must(QueryBuilders.rangeQuery("date").gte(dtBegin).lt(dtEnd)))
+                        .must(QueryBuilders.rangeQuery("date").gte(dtBegin.plusHours(-hourDelay)).lt(dtEnd.plusHours(-hourDelay))))
                 .addSort("date", SortOrder.ASC)
                 .setSize(mQueryScrollSize).get();
         List<Map<String, Object>> ss = query(scrollResp);
         for (Map<String, Object> item : ss) {
             item.put("sensor", cs);
+            if (hourDelay != 0) {
+                item.put("date", DateTime.parse(item.get("date").toString()).plusHours(hourDelay));
+            }
         }
-        indexDocs("anxinyun_aggregation", "agg", ss);
+        if (ss.size() > 0)
+            indexDocs("anxinyun_aggregation", "agg", ss);
     }
 
-    public void queryThemeData(int stationId,int cs,int st, DateTime dtBegin, DateTime dtEnd) {
+    public void migrateThemeData(int stationId, int cs, int st, DateTime dtBegin, DateTime dtEnd, int hourDelay) {
         SearchResponse scrollResp = client.prepareSearch("anxinyun_themes")
                 .setTypes("theme")
                 .setScroll(new TimeValue(mQueryTimeoutMillis))
                 .setQuery(QueryBuilders.boolQuery()
                         .must(QueryBuilders.termQuery("sensor", stationId))
-                        .must(QueryBuilders.rangeQuery("collect_time").gte(dtBegin).lt(dtEnd)))
+                        .must(QueryBuilders.rangeQuery("collect_time").gte(dtBegin.plusHours(-hourDelay)).lt(dtEnd.plusHours(-hourDelay))))
                 .addSort("collect_time", SortOrder.ASC)
                 .setSize(mQueryScrollSize).get();
         List<Map<String, Object>> ss = query(scrollResp);
         for (Map<String, Object> item : ss) {
             item.put("sensor", cs);
-            item.put("structure",st);
+            item.put("structure", st);
+            if (hourDelay != 0) {
+                item.put("collect_time", DateTime.parse(item.get("collect_time").toString()).plusHours(hourDelay));
+            }
         }
-        indexDocs("anxinyun_themes", "theme", ss);
-    }
-
-    public List<Map<String, Object>> queryThemeData(String indexName, int structureId, int factorId, DateTime dtBegin, DateTime dtEnd) {
-        SearchResponse scrollResp = client.prepareSearch(indexName)
-                .setTypes("theme")
-                .setScroll(new TimeValue(mQueryTimeoutMillis))
-                .setQuery(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery("structure", structureId))
-                        .must(QueryBuilders.termQuery("factor", factorId))
-                        .must(QueryBuilders.rangeQuery("collect_time").gte(dtBegin).lt(dtEnd)))
-                .addSort("collect_time", SortOrder.ASC)
-                .setSize(mQueryScrollSize).get();
-        return query(scrollResp);
+        if (ss.size() > 0)
+            indexDocs("anxinyun_themes", "theme", ss);
     }
 
     public long delete(String indexName, String typeName, QueryBuilder query) {
