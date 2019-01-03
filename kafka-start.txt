@@ -9,7 +9,7 @@
   ./http_server -addr ":8011" -brokers "10.8.30.173:9092"
   
   #创建topic
-  ./kafka-topics.sh --create --zookeeper node35:2181,node36:2181,node37:2181 --replication-factor 3 --partitions 1 --topic anxinyun_data
+  ./kafka-topics.sh --create --zookeeper node35:2181,node36:2181,node37:2181 --replication-factor 1 --partitions 3 --topic anxinyun_data
  
   ./kafka-console-producer.sh --broker-list 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data
 

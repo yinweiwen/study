@@ -137,7 +137,7 @@ Swap:             0           0           0
 ## GREP查询多个条件
 
 kubectl logs spark-et-driver-savoir | grep 'a\|b'
-kubectl logs -n savoir savoir-recv2-d55c84956-lwt47 --tail 100000 | egrep 'savoir_data.*3ad16d61-de50-49d0-a7c5-04798e6a0838.*"result":{"code":3002'
+kubectl logs -n savoir savoir-recv2-d55c84956-lwt47 --tail 100000 | egrep 'savoir_data.*d931eb76-7703-4d8c-a240-8158a02ceeae.*"result":{"code":3002'
 netstat -an | grep -E "ESTABLISHED|WAIT"
 
 使用方式：egrep [OPTIONS] PATTERN [FILE...] 

@@ -458,6 +458,40 @@ http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.schedu
 	两者功能上几乎没有区别
 	通过 ++= 枚举元素进行添加，Map的相同键的元素会覆盖
 
-21. 
+21. ElasticSearch: [script] Too many dynamic script compilations within, max: [75/5m]
+	修改ES配置 5.x max_compilations_per_minute   6.x script.max_compilations_rate
+	动态修改:
+	PUT /_cluster/settings
+	{
+		"transient" : {
+			"script.max_compilations_rate" : "750/5m"
+		}
+	}
 	
+## APACHE SPARK -> FLINK
+1. flink中使用joda.DateTime
+	flink程序启动时提示 `class org.joda.time.DateTime does not contain a getter for field iMillis`
+	  `Class class org.joda.time.DateTime cannot be used as a POJO type because not all fields are valid POJO fields`
+	 因为DateTime中iMillis字段没有setter和getter，所以flink不能将其视为POJO类型（更多flink支持数据类型参见 https://ci.apache.org/projects/flink/flink-docs-stable/dev/types_serialization.html）
+	 
+	 如果使用了检查点（checkpoint）机制，需要设置jodatime的kyro序列化机制（跟spark-streaming是一样的处理）
+
+2. flink启动过程出现NPE （NullPointException）
+	因为代码里我将一个case class设置为null了，后将其改成Option[case class]的类型问题解决
+	建议：如果数据结构中可能存在空（null）的情况，使用类型Option而不是直接用null赋值
+	
+3. java.lang.NoClassDefFoundError: org/slf4j/LoggerFactory
+	在IDEA中程序可以执行，而打包的jar包无法运行
+	你必须指定一种SLF4J的实现jar包在你的classpath里面，和接口jar包一样
+	https://stackoverflow.com/questions/12926899/java-lang-noclassdeffounderror-org-slf4j-loggerfactory
+
+	<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-log4j12</artifactId>
+		<version>1.7.25</version>
+		<scope>test</scope>
+	</dependency>
+	
+	或者查看是否在maven shade插件中过滤了log相关jar
 	

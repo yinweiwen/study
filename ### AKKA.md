@@ -125,3 +125,5 @@ class AkkaQuickstartSpec(_system: ActorSystem)
 
 ## Actor Architecture
 ![](img/akka_architecture.png)
+
+[akka 配置说明](https://doc.yonyoucloud.com/doc/akka-doc-cn/2.3.6/scala/book/chapter2/09_configuration.html)
