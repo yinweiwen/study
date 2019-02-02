@@ -225,3 +225,22 @@ https://serverfault.com/questions/684771/best-way-to-disable-swap-in-linux
 	github.com >personal settings>SSH > New SSH Key
 	[ref](https://stackoverflow.com/questions/2643502/how-to-solve-permission-denied-publickey-error-when-using-git)
 	
+	
+## 别名 alias
+	
+	alias ka='kubectl get pods -n anxinyun'
+	alias
+	
+	在~/.bashrc文件中添加
+	alias ka='kubectl get pods -n anxinyun -o wide'
+	alias ks='kubectl get pods -n savoir -o wide'
+	alias ksa='kubectl get services -n anxinyun -o wide'
+	alias kss='kubectl get services -n savoir -o wide'
+	alias kla='kubectl logs -n anxinyun '
+	alias kls='kubectl logs -n savoir '
+	alias klat='kubectl logs -n anxinyun --tail 1000'
+	alias klst='kubectl logs -n savoir --tail 1000'
+
+## Linux <> Windows 文件互传
+	rz 
+	sz file

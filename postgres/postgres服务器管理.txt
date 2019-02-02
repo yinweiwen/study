@@ -122,6 +122,7 @@ show superuser_reserved_connections;
 	
 	pg_dump -h 127.0.0.1 -U FashionAdmin -d SavoirCloud > /tmp/sc.bak
 
+	(dropdb -U FashionAdmin SecureCloud)
 	createdb -h 127.0.0.1 -p 5432 -U FashionAdmin SecureCloud
 
 	psql -h 127.0.0.1 -U FashionAdmin -d SecureCloud < /tmp/sc.bak

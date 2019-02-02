@@ -195,28 +195,28 @@ org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.protocol.AlreadyBei
 	kubectl get nodes -o wide
 	发现kenerl和k8s版本不一致
 	解决方法：系统upgrade后，执行以下命令：
-		kubeadm reset 
-		systemctl stop kubelet
-		rm -rf /var/lib/cni/
-		rm -rf /var/lib/kubelet/*
-		rm -rf /run/flannel
-		rm -rf /etc/cni/
-		ifconfig cni0 down
-		ifconfig flannel.1 down
-		ip link delete cni0
-		ip link delete flannel.1
-		apt purge -y kubelet kubeadm kubectl kubernetes-cni 
-		systemctl daemon-reload
-		apt install kubernetes-cni=0.5.1-00 kubelet=1.8.2-00 kubeadm=1.8.2-00 kubectl=1.8.2-00
+kubeadm reset 
+systemctl stop kubelet
+rm -rf /var/lib/cni/
+rm -rf /var/lib/kubelet/*
+rm -rf /run/flannel
+rm -rf /etc/cni/
+ifconfig cni0 down
+ifconfig flannel.1 down
+ip link delete cni0
+ip link delete flannel.1
+apt purge -y kubelet kubeadm kubectl kubernetes-cni 
+systemctl daemon-reload
+apt install kubernetes-cni=0.5.1-00 kubelet=1.8.2-00 kubeadm=1.8.2-00 kubectl=1.8.2-00
 		
 		修改配置
-		vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
+		vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 		添加：
 		Environment="KUBELET_EXTRA_ARGS=--fail-swap-on=false"
 		重启服务
-		systemctl daemon-reload
-		systemctl restart kubelet
+systemctl daemon-reload
+systemctl restart kubelet
 		关闭交互分区
 
 		swapoff -a  
@@ -468,6 +468,9 @@ http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.schedu
 		}
 	}
 	
+	5.5.1
+	curl -XPUT iota-m2:9200/_cluster/settings -d '{"persistent" : {"script.max_compilations_per_minute" : "50"}}'
+	
 ## APACHE SPARK -> FLINK
 1. flink中使用joda.DateTime
 	flink程序启动时提示 `class org.joda.time.DateTime does not contain a getter for field iMillis`
@@ -494,4 +497,35 @@ http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.schedu
 	</dependency>
 	
 	或者查看是否在maven shade插件中过滤了log相关jar
+
+4. scala项目必须在Maven配置文件中指定scala.version属性
 	
+    <properties>
+        <scala.version>2.11</scala.version>
+    </properties>
+
+5. flink程序(k8s)启动后无法读取kafka
+	flink java.lang.RuntimeException: Unable to retrieve any partitions with KafkaTopicsDescriptor
+	或者
+	Committing offsets to Kafka takes longer than the checkpoint interval. Skipping commit of previous offsets because newer complete checkpoint offsets are available. This does not compromise Flink's checkpoint integrity.
+	
+	检查K8S DNS问题
+
+6. flink中报ES超时错误 [NOT SOLVED]
+	告警进程重启后又积压数据，报ES超时错误
+	java.lang.RuntimeException: An error occurred in ElasticsearchSink.
+	...
+	Caused by: java.io.IOException: request retries exceeded max retry timeout [30000]
+6.5. flink alarm kafka数据接收中断
+	jobmanager报错： Checkpoint 1066 of job 4e65b91bc4ff8a0dbdc2ffd422e1d471 expired before completing
+	
+7. hdfs 文件存储错误(et-hdfs进程)
+org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException): Failed to APPEND_FILE /savoir/structure_data/structure_1116/raw/2019/1/液压式静力水准仪-13.csv for DFSClient_NONMAPREDUCE_1314822252_27 on 10.8.25.214 because this file lease is currently owned by DFSClient_NONMAPREDUCE_1678645347_32 on 10.8.25.232
+
+8. kubenertes维护
+	 journalctl -eu kubelet
+	 上不了网怎么办 route add default gw 10.8.30.1
+	 service firewalld stop
+	 service ufw stop
+	 ufw disable
+	 systemctl disable firewalld

@@ -10,8 +10,10 @@
   
   #创建topic
   ./kafka-topics.sh --create --zookeeper node35:2181,node36:2181,node37:2181 --replication-factor 1 --partitions 3 --topic anxinyun_data
+  ./kafka-topics.sh --create --zookeeper test-n1:2181,test-n2:2181,test-n3:2181 --replication-factor 1 --partitions 3 --topic anxinyun_deliver
  
   ./kafka-console-producer.sh --broker-list 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data
+  ./kafka-console-producer.sh --broker-list test-n1:9092,test-n2:9092,test-n3:9092 --topic anxinyun_data
 
   ./kafka-console-consumer.sh --bootstrap-server 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data --from-beginning
   
