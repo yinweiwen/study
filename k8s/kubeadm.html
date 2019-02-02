@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<!-- saved from url=(0064)file:///C:/Users/rain/AppData/Local/Temp/MarkdownPadPreview.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>kubeadm</title>
+
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+<style type="text/css">
+.highlight  { background: #ffffff; }
+.highlight .c { color: #999988; font-style: italic } /* Comment */
+.highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
+.highlight .k { font-weight: bold } /* Keyword */
+.highlight .o { font-weight: bold } /* Operator */
+.highlight .cm { color: #999988; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #999999; font-weight: bold } /* Comment.Preproc */
+.highlight .c1 { color: #999988; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #999999; font-weight: bold; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #000000; background-color: #ffdddd } /* Generic.Deleted */
+.highlight .gd .x { color: #000000; background-color: #ffaaaa } /* Generic.Deleted.Specific */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #aa0000 } /* Generic.Error */
+.highlight .gh { color: #999999 } /* Generic.Heading */
+.highlight .gi { color: #000000; background-color: #ddffdd } /* Generic.Inserted */
+.highlight .gi .x { color: #000000; background-color: #aaffaa } /* Generic.Inserted.Specific */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #555555 } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #aaaaaa } /* Generic.Subheading */
+.highlight .gt { color: #aa0000 } /* Generic.Traceback */
+.highlight .kc { font-weight: bold } /* Keyword.Constant */
+.highlight .kd { font-weight: bold } /* Keyword.Declaration */
+.highlight .kp { font-weight: bold } /* Keyword.Pseudo */
+.highlight .kr { font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #445588; font-weight: bold } /* Keyword.Type */
+.highlight .m { color: #009999 } /* Literal.Number */
+.highlight .s { color: #d14 } /* Literal.String */
+.highlight .na { color: #008080 } /* Name.Attribute */
+.highlight .nb { color: #0086B3 } /* Name.Builtin */
+.highlight .nc { color: #445588; font-weight: bold } /* Name.Class */
+.highlight .no { color: #008080 } /* Name.Constant */
+.highlight .ni { color: #800080 } /* Name.Entity */
+.highlight .ne { color: #990000; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #990000; font-weight: bold } /* Name.Function */
+.highlight .nn { color: #555555 } /* Name.Namespace */
+.highlight .nt { color: #000080 } /* Name.Tag */
+.highlight .nv { color: #008080 } /* Name.Variable */
+.highlight .ow { font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #009999 } /* Literal.Number.Float */
+.highlight .mh { color: #009999 } /* Literal.Number.Hex */
+.highlight .mi { color: #009999 } /* Literal.Number.Integer */
+.highlight .mo { color: #009999 } /* Literal.Number.Oct */
+.highlight .sb { color: #d14 } /* Literal.String.Backtick */
+.highlight .sc { color: #d14 } /* Literal.String.Char */
+.highlight .sd { color: #d14 } /* Literal.String.Doc */
+.highlight .s2 { color: #d14 } /* Literal.String.Double */
+.highlight .se { color: #d14 } /* Literal.String.Escape */
+.highlight .sh { color: #d14 } /* Literal.String.Heredoc */
+.highlight .si { color: #d14 } /* Literal.String.Interpol */
+.highlight .sx { color: #d14 } /* Literal.String.Other */
+.highlight .sr { color: #009926 } /* Literal.String.Regex */
+.highlight .s1 { color: #d14 } /* Literal.String.Single */
+.highlight .ss { color: #990073 } /* Literal.String.Symbol */
+.highlight .bp { color: #999999 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #008080 } /* Name.Variable.Class */
+.highlight .vg { color: #008080 } /* Name.Variable.Global */
+.highlight .vi { color: #008080 } /* Name.Variable.Instance */
+.highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
+.pl-c {
+    color: #969896;
+}
+
+.pl-c1,.pl-mdh,.pl-mm,.pl-mp,.pl-mr,.pl-s1 .pl-v,.pl-s3,.pl-sc,.pl-sv {
+    color: #0086b3;
+}
+
+.pl-e,.pl-en {
+    color: #795da3;
+}
+
+.pl-s1 .pl-s2,.pl-smi,.pl-smp,.pl-stj,.pl-vo,.pl-vpf {
+    color: #333;
+}
+
+.pl-ent {
+    color: #63a35c;
+}
+
+.pl-k,.pl-s,.pl-st {
+    color: #a71d5d;
+}
+
+.pl-pds,.pl-s1,.pl-s1 .pl-pse .pl-s2,.pl-sr,.pl-sr .pl-cce,.pl-sr .pl-sra,.pl-sr .pl-sre,.pl-src,.pl-v {
+    color: #df5000;
+}
+
+.pl-id {
+    color: #b52a1d;
+}
+
+.pl-ii {
+    background-color: #b52a1d;
+    color: #f8f8f8;
+}
+
+.pl-sr .pl-cce {
+    color: #63a35c;
+    font-weight: bold;
+}
+
+.pl-ml {
+    color: #693a17;
+}
+
+.pl-mh,.pl-mh .pl-en,.pl-ms {
+    color: #1d3e81;
+    font-weight: bold;
+}
+
+.pl-mq {
+    color: #008080;
+}
+
+.pl-mi {
+    color: #333;
+    font-style: italic;
+}
+
+.pl-mb {
+    color: #333;
+    font-weight: bold;
+}
+
+.pl-md,.pl-mdhf {
+    background-color: #ffecec;
+    color: #bd2c00;
+}
+
+.pl-mdht,.pl-mi1 {
+    background-color: #eaffea;
+    color: #55a532;
+}
+
+.pl-mdr {
+    color: #795da3;
+    font-weight: bold;
+}
+
+.pl-mo {
+    color: #1d3e81;
+}
+.task-list {
+padding-left:10px;
+margin-bottom:0;
+}
+
+.task-list li {
+    margin-left: 20px;
+}
+
+.task-list-item {
+list-style-type:none;
+padding-left:10px;
+}
+
+.task-list-item label {
+font-weight:400;
+}
+
+.task-list-item.enabled label {
+cursor:pointer;
+}
+
+.task-list-item+.task-list-item {
+margin-top:3px;
+}
+
+.task-list-item-checkbox {
+display:inline-block;
+margin-left:-20px;
+margin-right:3px;
+vertical-align:1px;
+}
+</style>
+<!--<base href="file:\\\C:\Users\rain\Desktop\">--><base href=".">
+</head>
+<body>
+<h1>kubeadm安装kubernetes</h1>
+<h2>环境准备</h2>
+<h3>主机</h3>
+<p>可以用虚拟机（VirtualBox/Ubuntu 16.04），桥接网络，规划IP地址。例如：</p>
+<table>
+<thead>
+<tr>
+<th>hostname</th>
+<th>ip</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>iota-m1</td>
+<td>10.8.25.100</td>
+<td>kubernetes master</td>
+</tr>
+<tr>
+<td>iota-n1</td>
+<td>10.8.25.150</td>
+<td>node</td>
+</tr>
+<tr>
+<td>...</td>
+<td></td>
+<td></td>
+</tr></tbody></table>
+<h3>基础准备</h3>
+<p>规划好节点名称和ip，并修改所有机器的/etc/hosts文件，添加必要的记录<br>
+例如：</p>
+<pre><code>...
+10.8.25.100 iota-m1
+10.8.25.150 iota-n1
+...
+</code></pre>
+<blockquote>
+<p>在所有机器上，以root用户执行以下命令</p>
+</blockquote>
+<h4>apt支持HTTPS源</h4>
+<pre><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https
+</code></pre>
+<h4>安装curl工具</h4>
+<pre><code>apt-get install curl
+</code></pre>
+<h4>！！！忽略此步骤（增加google的安装源 key）</h4>
+<pre><code>curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+</code></pre>
+<blockquote>
+<p>如果此方式失败，请手动获取 <a href="https://packages.cloud.google.com/apt/doc/apt-key.gpg" rel="nofollow">https://packages.cloud.google.com/apt/doc/apt-key.gpg</a> 文件，存储在某目录，例如 /home/iota/k8s下，然后执行</p>
+<pre><code>apt-key add /home/iota/k8s/apt-key.gpg
+</code></pre>
+</blockquote>
+<h4>添加kubernetes的安装源镜像</h4>
+<blockquote>
+<p>使用的是ustc的镜像。</p>
+</blockquote>
+<pre><code>cat &lt;&lt;EOF &gt;/etc/apt/sources.list.d/kubernetes.list
+deb http://mirrors.ustc.edu.cn/kubernetes/apt kubernetes-xenial main
+EOF
+</code></pre>
+<h4>安装 kubelet kubeadm kubectl</h4>
+<pre><code>apt-get update
+kubernetes-cni=0.5.1-00 kubelet=1.8.2-00 kubeadm=1.8.2-00 kubectl=1.8.2-00 
+</code></pre>
+<h4>安装 docker</h4>
+<pre><code>apt-get install docker.io
+</code></pre>
+<h4>获取kubernetes环境所需要的基础镜像</h4>
+<blockquote>
+<p>需要拉取可用的镜像，并打标签。利用的是蜂巢资源</p>
+</blockquote>
+<ol>
+<li>拉取所需镜像</li>
+</ol>
+<pre><code>docker pull hub.c.163.com/ap6108/kubernetes-dashboard-init-amd64:v1.0.1
+docker pull hub.c.163.com/juranzhijia/kubernetes-dashboard-amd64:v1.7.1
+docker pull hub.c.163.com/k8s163/etcd-amd64:3.0.17
+docker pull hub.c.163.com/zhijiansd/k8s-dns-kube-dns-amd64:1.14.5
+docker pull hub.c.163.com/zhijiansd/k8s-dns-sidecar-amd64:1.14.5
+docker pull hub.c.163.com/zhijiansd/k8s-dns-dnsmasq-nanny-amd64:1.14.5
+docker pull hub.c.163.com/conformance/kube-apiserver-amd64:v1.8.2
+docker pull hub.c.163.com/conformance/kube-controller-manager-amd64:v1.8.2
+docker pull hub.c.163.com/conformance/kube-scheduler-amd64:v1.8.2
+docker pull hub.c.163.com/conformance/kube-proxy-amd64:v1.8.2
+docker pull hub.c.163.com/conformance/pause-amd64:3.0
+</code></pre>
+<ol start="2">
+<li>更改标签，以便kubeadm可以拉取到</li>
+</ol>
+<pre><code>docker tag hub.c.163.com/conformance/etcd-amd64:3.0.17 gcr.io/google_containers/etcd-amd64:3.0.17
+docker tag hub.c.163.com/conformance/kube-apiserver-amd64:v1.8.2 gcr.io/google_containers/kube-apiserver-amd64:v1.8.2
+docker tag hub.c.163.com/conformance/kube-controller-manager-amd64:v1.8.2 gcr.io/google_containers/kube-controller-manager-amd64:v1.8.2
+docker tag hub.c.163.com/conformance/kube-scheduler-amd64:v1.8.2 gcr.io/google_containers/kube-scheduler-amd64:v1.8.2
+docker tag hub.c.163.com/conformance/pause-amd64:3.0 gcr.io/google_containers/pause-amd64:3.0
+docker tag hub.c.163.com/conformance/kube-proxy-amd64:v1.8.2  gcr.io/google_containers/kube-proxy-amd64:v1.8.2
+docker tag hub.c.163.com/zhijiansd/k8s-dns-kube-dns-amd64:1.14.5 gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.5
+docker tag hub.c.163.com/zhijiansd/k8s-dns-sidecar-amd64:1.14.5 gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.5
+docker tag hub.c.163.com/zhijiansd/k8s-dns-dnsmasq-nanny-amd64:1.14.5 gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.5
+docker tag hub.c.163.com/ap6108/kubernetes-dashboard-init-amd64:v1.0.1 gcr.io/google_containers/kubernetes-dashboard-init-amd64:v1.0.1
+docker tag hub.c.163.com/juranzhijia/kubernetes-dashboard-amd64:v1.7.1 gcr.io/google_containers/kubernetes-dashboard-amd64:v1.7.1 
+docker tag hub.c.163.com/k8s163/etcd-amd64:3.0.17  gcr.io/google_containers/etcd-amd64:3.0.17 
+</code></pre>
+<h4>更改kubelet的启动参数(或者跳过此节，关闭交互分区，见下一节)</h4>
+<p>kubernetes的标准配置是禁用交换分区的，但是考虑到实际情况，暂时先通过配置项跳过。</p>
+<ol>
+<li>修改配置</li>
+</ol>
+<pre><code>vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
+
+添加：
+Environment="KUBELET_EXTRA_ARGS=--fail-swap-on=false"
+</code></pre>
+<ol start="2">
+<li>重启服务</li>
+</ol>
+<pre><code>systemctl daemon-reload
+systemctl restart kubelet
+</code></pre>
+<h4>关闭交互分区</h4>
+<pre><code>swapoff -a  
+
+删除 /etc/fstab 表中的交换分区记录
+</code></pre>
+<h3>Master</h3>
+<h4>初始化Master</h4>
+<blockquote>
+<p>其中：<br>
+--pod-network-cidr=10.244.0.0/16 为后续使用flannel准备<br>
+--skip-preflight-checks 跳过swap分区检查<br>
+--kubernetes-version=1.8.2 指定版本，否则又要去google拉取文件</p>
+</blockquote>
+<pre><code>kubeadm init --pod-network-cidr=10.244.0.0/16 --skip-preflight-checks --kubernetes-version=1.8.2
+</code></pre>
+<p>应得到类似以下输出：</p>
+<pre><code>[kubeadm] WARNING: kubeadm is in beta, please do not use it for production clusters.
+[init] Using Kubernetes version: v1.8.2
+[init] Using Authorization modes: [Node RBAC]
+[preflight] Skipping pre-flight checks
+[kubeadm] WARNING: starting in 1.8, tokens expire after 24 hours by default (if you require a non-expiring token use --token-ttl 0)
+[certificates] Generated ca certificate and key.
+[certificates] Generated apiserver certificate and key.
+[certificates] apiserver serving cert is signed for DNS names [iota-k1 kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 10.8.25.100]
+[certificates] Generated apiserver-kubelet-client certificate and key.
+[certificates] Generated sa key and public key.
+[certificates] Generated front-proxy-ca certificate and key.
+[certificates] Generated front-proxy-client certificate and key.
+[certificates] Valid certificates and keys now exist in "/etc/kubernetes/pki"
+[kubeconfig] Wrote KubeConfig file to disk: "admin.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "kubelet.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "controller-manager.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "scheduler.conf"
+[controlplane] Wrote Static Pod manifest for component kube-apiserver to "/etc/kubernetes/manifests/kube-apiserver.yaml"
+[controlplane] Wrote Static Pod manifest for component kube-controller-manager to "/etc/kubernetes/manifests/kube-controller-manager.yaml"
+[controlplane] Wrote Static Pod manifest for component kube-scheduler to "/etc/kubernetes/manifests/kube-scheduler.yaml"
+[etcd] Wrote Static Pod manifest for a local etcd instance to "/etc/kubernetes/manifests/etcd.yaml"
+[init] Waiting for the kubelet to boot up the control plane as Static Pods from directory "/etc/kubernetes/manifests"
+[init] This often takes around a minute; or longer if the control plane images have to be pulled.
+[apiclient] All control plane components are healthy after 49.502140 seconds
+[uploadconfig]&nbsp;Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[markmaster] Will mark node iota-k1 as master by adding a label and a taint
+[markmaster] Master iota-k1 tainted and labelled with key/value: node-role.kubernetes.io/master=""
+[bootstraptoken] Using token: 9418ef.829f26b57dd86cc7
+[bootstraptoken] Configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstraptoken] Configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstraptoken] Configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstraptoken] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[addons] Applied essential addon: kube-dns
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes master has initialized successfully!
+
+To start using your cluster, you need to run (as a regular user):
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  http://kubernetes.io/docs/admin/addons/
+
+You can now join any number of machines by running the following on each node
+as root:
+
+  kubeadm join --token 9418ef.829f26b57dd86cc7 10.8.25.100:6443 --discovery-token-ca-cert-hash sha256:1d8b9549ef43bcaee0053258ca64b00abdf2670d20e85302130e6051dd3a5827
+</code></pre>
+<blockquote>
+<p>记录并<strong>保存</strong>最后一行，用于节点加入：</p>
+<pre><code>kubeadm join --token 9418ef.829f26b57dd86cc7 10.8.25.100:6443 --discovery-token-ca-cert-hash sha256:1d8b9549ef43bcaee0053258ca64b00abdf2670d20e85302130e6051dd3a5827
+</code></pre>
+</blockquote>
+<h4>使得Master上的普通用户可以访问kubernetes</h4>
+<pre><code>mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+</code></pre>
+<h4>创建pod network</h4>
+<pre><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.9.1/Documentation/kube-flannel.yml
+</code></pre>
+<blockquote>
+<p>网络这里比较复杂，为了简化安装过程，两台设备的配置最好一样，多网卡的情况，需要规划好使用相关的设备口，如果不是默认设备网卡，需要修改kube-flannel.yml，保证使用的网口互通</p>
+</blockquote>
+<h3>节点</h3>
+<h4>加入</h4>
+<blockquote>
+<p>使用root用户执行</p>
+</blockquote>
+<pre><code>kubeadm join --token 9418ef.829f26b57dd86cc7 10.8.25.100:6443 --discovery-token-ca-cert-hash sha256:1d8b9549ef43bcaee0053258ca64b00abdf2670d20e85302130e6051dd3a5827 --skip-preflight-checks
+</code></pre>
+<p>重复其他节点。</p>
+<p>至此，kubernetes环境搭建完成，在Master上查看节点状况：</p>
+<pre><code>iota@iota-m1:~/k8s$ kubectl get nodes
+NAME      STATUS    ROLES     AGE       VERSION
+iota-m1   Ready     master    1h        v1.8.4
+iota-n1   Ready     &lt;none&gt;    1h        v1.8.4
+</code></pre>
+<h3>基本操作</h3>
+<blockquote>
+<p>这部分需要了解kubernetes的相关概念和yaml格式的规格文件如何编写</p>
+</blockquote>
+<p>查询</p>
+<pre><code>kubectl get --help
+kubectl get all --all-namespaces
+            pods
+            replicationcontrollers
+            replicasets
+            namespaces
+            services
+            deployments
+</code></pre>
+<p>创建</p>
+<pre><code>kubectl create --help
+</code></pre>
+<p>删除</p>
+<pre><code>kubectl delete --help
+</code></pre>
+<h3>辅助</h3>
+<h4>dashboard</h4>
+<p>目前kubernetes的dashboard权限限制较多，尽可能使用kubectl操作。</p>
+<h3>API访问集群</h3>
+<ul>
+<li>使用独立的命名空间</li>
+<li>提供一个用于调用Kubernetes API的 SeviceAccount / token。</li>
+<li>授予该ServiceAccount集群管理权限（ClusterRoleBinding），参考：<a href="https://kubernetes.io/docs/admin/authorization/rbac/" title="RBAC" rel="nofollow">RBAC</a></li>
+</ul>
+<pre><code>kubectl create namespace iota
+kubectl create serviceaccount iota -n iota
+</code></pre>
+<p>授权：</p>
+<pre><code>#file: cluster-admin.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: iota-cluster-admin-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: iota
+  namespace: iota
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+</code></pre>
+<pre><code>kubectl create -f cluster-admin.yaml
+</code></pre>
+
+
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->
+</body></html>

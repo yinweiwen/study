@@ -1,3 +1,5 @@
+package datamover;
+
 import org.elasticsearch.ElasticsearchTimeoutException;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -7,7 +9,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -27,6 +29,16 @@ import java.util.*;
 //import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 public class EsHelper {
+    public static String AGGREGATION = "anxinyun_aggregation";
+    public static String THEMES = "anxinyun_themes";
+    public static String RAW = "anxinyun_raws";
+
+    public static void SetPrefix(String prefix) {
+        AGGREGATION = prefix + "_aggregation";
+        THEMES = prefix + "_themes";
+        RAW = prefix + "_raws";
+    }
+
     private TransportClient client = null;
 
     private String clusterName;
@@ -81,8 +93,8 @@ public class EsHelper {
                 String nodeAddrPort[] = node.split(":");
                 if (nodeAddrPort.length != 2)
                     return false;
-//                client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(nodeAddrPort[0]), Integer.valueOf(nodeAddrPort[1])));
-                client.addTransportAddress(new TransportAddress(InetAddress.getByName(nodeAddrPort[0]), Integer.valueOf(nodeAddrPort[1])));
+                client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(nodeAddrPort[0]), Integer.valueOf(nodeAddrPort[1])));
+//                client.addTransportAddress(new TransportAddress(InetAddress.getByName(nodeAddrPort[0]), Integer.valueOf(nodeAddrPort[1])));
             }
             return true;
         } catch (UnknownHostException e) {
@@ -185,7 +197,7 @@ public class EsHelper {
     }
 
     public void migrateRawData(String device, String cs, int st, DateTime dtBegin, DateTime dtEnd, int hourDelay) {
-        SearchResponse scrollResp = client.prepareSearch("anxinyun_raws")
+        SearchResponse scrollResp = client.prepareSearch(RAW)
                 .setTypes("raw")
                 .setScroll(new TimeValue(mQueryTimeoutMillis))
                 .setQuery(QueryBuilders.boolQuery()
@@ -203,11 +215,11 @@ public class EsHelper {
             }
         }
         if (ss.size() > 0)
-            indexDocs("anxinyun_raws", "raw", ss);
+            indexDocs(RAW, "raw", ss);
     }
 
     public void migrateAggData(int stationId, int cs, DateTime dtBegin, DateTime dtEnd, int hourDelay) {
-        SearchResponse scrollResp = client.prepareSearch("anxinyun_aggregation")
+        SearchResponse scrollResp = client.prepareSearch(AGGREGATION)
                 .setTypes("agg")
                 .setScroll(new TimeValue(mQueryTimeoutMillis))
                 .setQuery(QueryBuilders.boolQuery()
@@ -223,11 +235,11 @@ public class EsHelper {
             }
         }
         if (ss.size() > 0)
-            indexDocs("anxinyun_aggregation", "agg", ss);
+            indexDocs(AGGREGATION, "agg", ss);
     }
 
     public void migrateThemeData(int stationId, int cs, int st, DateTime dtBegin, DateTime dtEnd, int hourDelay) {
-        SearchResponse scrollResp = client.prepareSearch("anxinyun_themes")
+        SearchResponse scrollResp = client.prepareSearch(THEMES)
                 .setTypes("theme")
                 .setScroll(new TimeValue(mQueryTimeoutMillis))
                 .setQuery(QueryBuilders.boolQuery()
@@ -244,7 +256,7 @@ public class EsHelper {
             }
         }
         if (ss.size() > 0)
-            indexDocs("anxinyun_themes", "theme", ss);
+            indexDocs(THEMES, "theme", ss);
     }
 
     public long delete(String indexName, String typeName, QueryBuilder query) {
@@ -273,5 +285,18 @@ public class EsHelper {
             Thread.sleep(mRetryLagMillis);
             return request(bulkRequest, tryLimit, timeoutMillis);
         }
+    }
+
+    public List<Map<String, Object>> queryThemeData(int structId, int factor, DateTime begin, DateTime end) {
+        SearchResponse sr = client.prepareSearch(THEMES)
+                .setTypes("theme")
+                .setScroll(new TimeValue(mQueryTimeoutMillis))
+                .setQuery(QueryBuilders.boolQuery()
+                        .must(QueryBuilders.termQuery("structure", structId))
+                        .must(QueryBuilders.termQuery("factor", factor))
+                        .must(QueryBuilders.rangeQuery("collect_time").gte(begin).lt(end)))
+                .addSort("collect_time", SortOrder.ASC)
+                .setSize(mQueryScrollSize).get();
+        return query(sr);
     }
 }
