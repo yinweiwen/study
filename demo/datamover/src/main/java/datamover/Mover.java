@@ -10,10 +10,10 @@ public class Mover {
 
         es.initHelper("anxin-cloud", "anxinyun-m2:9300,anxinyun-n1:9300,anxinyun-n2:9300,anxinyun-n3:9300");
 
-        DateTime dt1 = new DateTime(2019, 01, 28, 0, 0);
-        DateTime dt2 = new DateTime(2019, 02, 03, 10, 0);
+        DateTime dt1 = new DateTime(2019, 02, 05, 0, 0);
+        DateTime dt2 = new DateTime(2019, 02, 11, 17, 0);
         int hourDelay = 24;
-        int structId = 158;
+        int structId = 219;
 
         /**
          * id  |            iota_device_id            | iota_device_serial | sensor | params
@@ -30,15 +30,18 @@ public class Mover {
 //        es.migrateRawData("dbe4d5f5-a238-4089-83f4-331bbd04c971", "c95ccc34-f091-40ef-953e-3260d8f51959", structId, dt1, dt2, hourDelay);
 
         // 水
-        es.migrateThemeData(215, 814, structId, dt1, dt2, hourDelay);
+        es.migrateThemeData(215, 816, structId, dt1, dt2, hourDelay);
         // 电
-        es.migrateThemeData(216, 813, structId, dt1, dt2, hourDelay);
+        es.migrateThemeData(216, 815, structId, dt1, dt2, hourDelay);
         // 人
-//        es.migrateThemeData(211, 541, structId, dt1, dt2, hourDelay);
+        es.migrateThemeData(211, 817, structId, dt1, dt2, hourDelay);
+        // 环
+        es.migrateThemeData(212, 830, structId, dt1, dt2, hourDelay);
 
-        es.migrateAggData(215, 814, dt1, dt2, hourDelay);
-        es.migrateAggData(216, 813, dt1, dt2, hourDelay);
-//        es.migrateAggData(211, 541, dt1, dt2, hourDelay);
+        es.migrateAggData(215, 816, dt1, dt2, hourDelay);
+        es.migrateAggData(216, 815, dt1, dt2, hourDelay);
+        es.migrateAggData(211, 817, dt1, dt2, hourDelay);
+        es.migrateAggData(212, 830, dt1, dt2, hourDelay);
 
         System.out.println("finished");
     }

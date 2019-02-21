@@ -34,17 +34,18 @@ object MqttRen {
 		val client = new MqttClient("tcp://221.230.55.28:1883", "test-send-mqtt-client", new MemoryPersistence())
 		client.connect(connOpt)
 
-		val thingId = "9b1f09da-372b-4e10-9f58-ae4a84d1a66e"
-		val deviceId = "c95ccc34-f091-40ef-953e-3260d8f51959"
+		val thingId = "befb4db3-bdd8-46e7-baff-65780d4f43bb"
+		val deviceId = "ad4a2dfb-6177-44f6-93b8-e4f5ba6f93ee"
+//		val deviceId="8d18dc06-2059-4bf0-a254-29f721e4c64d"
 
-		val start = new DateTime(2019, 1, 10, 1, 0)
-		val end = new DateTime(2019, 1, 19, 3, 0)
-		val stepHour = 2
-		val stepFemaleVal: Double = 1
-		val randFemaleVal: Double = 1
+		val start = new DateTime(2019, 2, 3, 10, 0)
+		val end = new DateTime(2019, 2, 3, 10, 30)
+		val stepHour = 5
+		val stepFemaleVal: Double = 14
+		val randFemaleVal: Double = 10
 
-		val stepMaleVal: Double = 2
-		val randMaleVal: Double = 1
+		val stepMaleVal: Double = 0
+		val randMaleVal: Double = 0
 
 		val precision = 0
 
@@ -89,12 +90,12 @@ object MqttRen {
 
 				println(line)
 
-				client.publish("anxinyun_data2", new MqttMessage(line.getBytes("UTF-8")))
+				client.publish("anxinyun_data", new MqttMessage(line.getBytes("UTF-8")))
 
 				Thread.sleep(100)
 			}
 
-			time = time.plusHours(stepHour)
+			time = time.plusMinutes(stepHour)
 
 		}
 

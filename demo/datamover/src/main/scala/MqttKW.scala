@@ -31,7 +31,6 @@ object MqttKW {
 		val client = new MqttClient("tcp://221.230.55.28:1883", "test-send-mqtt-client", new MemoryPersistence())
 		client.connect(connOpt)
 
-		val thingId = "9b1f09da-372b-4e10-9f58-ae4a84d1a66e"
 		// 用电
 		//		val thingId = "9b1f09da-372b-4e10-9f58-ae4a84d1a66e"
 		//		val deviceId = "bff1c82a-6483-411f-a7e5-f539c751e70c"
@@ -44,13 +43,9 @@ object MqttKW {
 		//		val randVal = 0.1
 		//		val precision = 2
 
+		val thingId = "befb4db3-bdd8-46e7-baff-65780d4f43bb"
 		val devices = Array(
-			"05903f9e-0e06-4549-bd93-568a1455de66",
-			"44eb6790-3936-486f-918d-d80da9904191",
-			"93009e0a-1081-4cb4-8e60-ccd971d99a5e",
-			"00d0a409-691b-4052-85ff-3c9b63dc1c74",
-			"039e2412-770e-4099-b97d-b21ff138c9f7",
-			"2d366e3d-765c-4119-b970-1c56f7c72591"
+			"0eb4bd4c-4a41-416b-99c1-6d62917e9371","f3cd45ef-12f1-4f7b-8cb5-e596d5505d7f","aeac0ac4-e078-4760-8901-4375402fd8f5","b4616433-48cb-4a56-b4ea-de85ac21515a","47b65f77-85e2-4947-b3ed-40d51aa5d0ed","15e31a7b-0c3f-4174-954e-0e35d0aff276","877285ca-286a-4ff8-becb-709c9ddbb80d","22f97f0f-5b35-4c56-931a-5861f828a8a9","4c85fda4-0a7d-45b7-8b8a-fa8b2903bbaa","c3a33940-e743-40fa-9ea3-22cd7e36315a","21b06ace-a758-4bba-90f9-e72d21f700d9","bd215b9f-d8e6-4787-be5e-214d82c1335a","aea959b8-ea26-422d-9c39-e32c6b38b506","35ab973f-29f9-4da7-bce9-d0828ad6395a","1a6943a5-f391-49d6-988d-539989c9737e","cb9cc066-d6be-4e48-86a6-8851b2626d58","fbf95a4c-4dfa-4b5a-a094-05606ef0aa54","076c096c-7fa6-4a26-902f-3763679475e7"
 		)
 		devices.foreach(d => {
 			val data = IotaData("1b2d8739-627e-4b7d-9480-3eee6e9396fe",
@@ -58,7 +53,7 @@ object MqttKW {
 				d,
 				"715cc7f8-873a-48f5-a0c2-af6e8c9e89ab",
 				"dd1202cd-3e51-49d5-a326-e617f9d1008c",
-				new DateTime(2019, 1, 16, 12, 0), new DateTime(2019, 1, 16, 12, 0),
+				new DateTime(2019, 2, 3, 8, 0), new DateTime(2019, 2, 3, 8, 0),
 				IotaAcqResult(ErrorInfo(0, None, None), Some(Map(
 					"pitstate" -> "0"
 				)))
