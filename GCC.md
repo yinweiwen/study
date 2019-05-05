@@ -221,3 +221,44 @@ I帧：关键帧，采用帧内压缩技术。
 P帧：向前参考帧，在压缩时，只参考前面已经处理的帧。采用帧音压缩技术。
 B帧：双向参考帧，在压缩时，它即参考前而的帧，又参考它后面的帧。采用帧间压缩技术。
  GOP
+ 
+ 
+ 
+## CGO
+
+https://chai2010.cn/advanced-go-programming-book/ch2-cgo/readme.html
+
+https://github.com/golang/go/wiki/cgo
+
+> 编写C动态库
+// number.h
+int number_add_mod(int a, int b, int mod);
+
+// number.c
+#include "number.h"
+
+int number_add_mod(int a, int b, int mod) {
+    return (a+b)%mod;
+}
+
+// number.def
+LIBRARY number.dll
+
+EXPORTS
+number_add_mod
+
+linux下编译
+gcc -shared -o libnumber.so number.c
+windows下编译
+gcc -shared -o number.dll number.c
+
+CGO使用动态库，Linux下可以直接链接so文件，但是在Windows下必须为dll创建一个.a文件用于链接
+CGO无法使用windows下number.lib格式的链接库，
+$ dlltool -dllname number.dll --def number.def --output-lib libnumber.a
+
+window编译
+gcc -c number.c
+gcc -shared -o number.dll number.o -Wl,--out-implib,libnumber.dll.a
+
+
+

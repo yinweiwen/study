@@ -31,12 +31,12 @@ object MqttSW691 {
 		client.connect(connOpt)
 
 		val thingId = "eda323af-b141-4975-9a90-22b7f975485f"
-		val deviceId = "830c705c-b1ed-4244-831d-973d12e53ab2"
+		val deviceId = "7595f123-ae20-4bbb-be36-c7d525ebfdec"
 
-		val start = new DateTime(2019, 1, 22, 0, 0)
-		val end = new DateTime(2019, 1, 31, 13, 10)
+		val start = new DateTime(2019, 2, 22, 0, 0)
+		val end = new DateTime(2019, 2, 28, 13, 10)
 		val stepHour = 1
-		val stepVal: Double = 6.7 // mm 6700
+		val stepVal: Double = 2.5 // mm 6700
 
 		val randVal: Double = 0.1
 
@@ -66,7 +66,7 @@ object MqttSW691 {
 
 				println(line)
 
-				client.publish("anxinyun_data2", new MqttMessage(line.getBytes("UTF-8")))
+				client.publish("anxinyun_data", new MqttMessage(line.getBytes("UTF-8")))
 
 				Thread.sleep(100)
 			}

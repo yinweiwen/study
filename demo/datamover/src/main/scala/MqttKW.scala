@@ -25,6 +25,7 @@ object MqttKW {
 		  * 722 | 2d366e3d-765c-4119-b970-1c56f7c72591 |                  0 |    548 | {}     | 548 |       194 | 男厕3#（蹲） |    262 |          | {}     | f           |
 		  * 724 | eb71d42c-772e-4de0-8e1a-0dfcbf3c1025 |                  0 |    549 | {}     | 549 |       194 | 水表         |    260 |          | {}     | f           |
 		  *
+		  * 229 | c70eae8f-db00-4266-a275-987b9a081d80 |             23 | 武阳前进村公厕
 		  */
 		val connOpt = new MqttConnectOptions()
 		connOpt.setCleanSession(false)
@@ -43,9 +44,11 @@ object MqttKW {
 		//		val randVal = 0.1
 		//		val precision = 2
 
-		val thingId = "befb4db3-bdd8-46e7-baff-65780d4f43bb"
+		val thingId = "c70eae8f-db00-4266-a275-987b9a081d80"
 		val devices = Array(
-			"0eb4bd4c-4a41-416b-99c1-6d62917e9371","f3cd45ef-12f1-4f7b-8cb5-e596d5505d7f","aeac0ac4-e078-4760-8901-4375402fd8f5","b4616433-48cb-4a56-b4ea-de85ac21515a","47b65f77-85e2-4947-b3ed-40d51aa5d0ed","15e31a7b-0c3f-4174-954e-0e35d0aff276","877285ca-286a-4ff8-becb-709c9ddbb80d","22f97f0f-5b35-4c56-931a-5861f828a8a9","4c85fda4-0a7d-45b7-8b8a-fa8b2903bbaa","c3a33940-e743-40fa-9ea3-22cd7e36315a","21b06ace-a758-4bba-90f9-e72d21f700d9","bd215b9f-d8e6-4787-be5e-214d82c1335a","aea959b8-ea26-422d-9c39-e32c6b38b506","35ab973f-29f9-4da7-bce9-d0828ad6395a","1a6943a5-f391-49d6-988d-539989c9737e","cb9cc066-d6be-4e48-86a6-8851b2626d58","fbf95a4c-4dfa-4b5a-a094-05606ef0aa54","076c096c-7fa6-4a26-902f-3763679475e7"
+//			285ca-286a-4ff8-becb-709c9ddbb80d","22f97f0f-5b35-4c56-931a-5861f828a8a9","4c85fda4-0a7d-45b7-8b8a-fa8b2903bbaa","c3a33940-e743-40fa-9ea3-22cd7e36315a","21b06ace-a758-4bba-90f9-e72d21f700d9","bd215b9f-d8e6-4787-be5e-214d82c1335a","aea959b8-ea26-422d-9c39-e32c6b38b506","35ab973f-29f9-4da7-bce9-d0828ad6395a","1a6943a5-f391-49d6-988d-539989c9737e","cb9cc066-d6be-4e48-86a6-8851b2626d58","fbf95a4c-4dfa-4b5a-a094-05606ef0aa54","076c096c-7fa6-4a26-902f-3763679475e7"
+//			"99997f45-473b-47f5-b868-a491fa9ddf22","33a5d08b-2ece-4f8c-9d92-8719b433e21b","8cebb6d1-9003-4922-84cd-d7e2457fc567","46f01dd0-7cd2-41da-bbf1-9c9adb97619d","1531b67c-da0e-4a95-86f7-507154e935b6","dcaf7f91-e513-44f5-9315-4b1f2dd479b2","abab2fba-3f5f-4ce7-bd30-0486300eca88","15119bdb-caad-4325-b825-f8a9bb9e25f3","68d87dbe-6c04-4247-bcce-7f1d29be5ab0"
+			"048685d8-eec6-4624-88c9-19d595628175"," 0caed072-eba5-4db0-b68c-cadfa766a0a4"," 1b21912a-e50f-462f-9338-5b23f2f540c7"," 5484e2d8-8c9f-42ce-a95d-a012fbe3a10e"," c89ab24b-3fc1-4661-8dff-195a75de3ab0"," 4598bbad-87b1-42da-8748-1042798178bc"," 4cb8fd09-6708-49fa-b3dc-047519f594cf"," 7cf82bec-46ba-4958-9331-fb09fe993a72"," 1eea9f63-b6c5-4ad7-bffc-96badaae35aa"
 		)
 		devices.foreach(d => {
 			val data = IotaData("1b2d8739-627e-4b7d-9480-3eee6e9396fe",
@@ -53,7 +56,7 @@ object MqttKW {
 				d,
 				"715cc7f8-873a-48f5-a0c2-af6e8c9e89ab",
 				"dd1202cd-3e51-49d5-a326-e617f9d1008c",
-				new DateTime(2019, 2, 3, 8, 0), new DateTime(2019, 2, 3, 8, 0),
+				new DateTime(2019, 3, 10, 9, 40), new DateTime(2019, 3, 10, 9, 40),
 				IotaAcqResult(ErrorInfo(0, None, None), Some(Map(
 					"pitstate" -> "0"
 				)))
@@ -63,7 +66,7 @@ object MqttKW {
 
 			println(line)
 
-			client.publish("anxinyun_data2", new MqttMessage(line.getBytes("UTF-8")))
+			client.publish("anxinyun_data", new MqttMessage(line.getBytes("UTF-8")))
 
 			Thread.sleep(100)
 		})

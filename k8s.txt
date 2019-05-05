@@ -1,0 +1,28 @@
+## 安装redis集群
+ 安装nfs服务：
+ sudo apt install nfs-kernel-server
+ 修改配置文件
+ vi /etc/exports
+	/nfs/redis     10.8.25.0/24(rw,sync,no_root_squash)
+	/nfs/environment     10.8.25.0/24(rw,sync,no_root_squash)
+	/data *(rw,sync,no_subtree_check,no_root_squash)
+	
+ sudo service nfs-kernel-server restart
+ 
+ #显示已经mount到本机nfs目录的客户端机器。
+ sudo showmount -e localhost
+ #将配置文件中的目录全部重新export一次！无需重启服务。
+ sudo exportfs -rv
+ #查看NFS的运行状态
+ sudo nfsstat
+ #查看rpc执行信息，可以用于检测rpc运行情况
+ sudo rpcinfo
+ #查看网络端口，NFS默认是使用111端口。
+ sudo netstat -tu -4
+ 
+ 客户端 (k8s部署时不需要此步骤)
+ sudo apt install nfs-common
+ sudo showmount -e 192.168.3.167
+ sudo mount -t nfs 192.168.3.167:/data /mnt/data
+ 
+ https://www.jianshu.com/p/65c4baadf5d9

@@ -15,7 +15,8 @@
   ./kafka-console-producer.sh --broker-list 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data
   ./kafka-console-producer.sh --broker-list test-n1:9092,test-n2:9092,test-n3:9092 --topic anxinyun_data
 
-  ./kafka-console-consumer.sh --bootstrap-server 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data --from-beginning
+  ./kafka-console-consumer.sh --bootstrap-server anxinyun-m1:6667,anxinyun-n1:6667,anxinyun-n2:6667 --topic anxinyun_data --from-beginning
+  ./kafka-console-consumer.sh --bootstrap-server 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data
   
   // on windows
   // I:\WorkSpace\@JAVA\kafka_2.11-0.11.0.0\bin\windows>kafka-console-consumer.bat --bootstrap-server 10.8.30.117:9092 --topic important --from-beginning

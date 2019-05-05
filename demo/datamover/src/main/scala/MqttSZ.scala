@@ -31,8 +31,8 @@ object MqttSZ {
 		val thingId = "eda323af-b141-4975-9a90-22b7f975485f"
 		val deviceId = "de701ade-350c-4d63-922e-b9516fa1cc57"
 
-		val start = new DateTime(2019, 1, 22, 18, 0)
-		val end = new DateTime(2019, 1, 31, 13, 10)
+		val start = new DateTime(2019, 2, 25, 0, 0)
+		val end = new DateTime(2019, 2, 28, 13, 10)
 		val stepHour = 0.5
 
 		val precision = 2
@@ -69,7 +69,7 @@ object MqttSZ {
 
 				println(line)
 
-				client.publish("anxinyun_data2", new MqttMessage(line.getBytes("UTF-8")))
+				client.publish("anxinyun_data", new MqttMessage(line.getBytes("UTF-8")))
 
 				Thread.sleep(100)
 			}

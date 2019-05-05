@@ -219,6 +219,10 @@ public class EsHelper {
     }
 
     public void migrateAggData(int stationId, int cs, DateTime dtBegin, DateTime dtEnd, int hourDelay) {
+        migrateAggData(stationId, cs, dtBegin, dtEnd, hourDelay, 1);
+    }
+
+    public void migrateAggData(int stationId, int cs, DateTime dtBegin, DateTime dtEnd, int hourDelay, double coef) {
         SearchResponse scrollResp = client.prepareSearch(AGGREGATION)
                 .setTypes("agg")
                 .setScroll(new TimeValue(mQueryTimeoutMillis))
@@ -233,12 +237,25 @@ public class EsHelper {
             if (hourDelay != 0) {
                 item.put("date", DateTime.parse(item.get("date").toString()).plusHours(hourDelay));
             }
+
+            if (coef != 1) {
+                Map<String, Object> dt = (Map<String, Object>) item.get("data");
+                Set<String> keys = dt.keySet();
+                for (String k : keys) {
+                    dt.put(k, Double.parseDouble(dt.get(k).toString()) * coef);
+                }
+                item.put("data", dt);
+            }
         }
         if (ss.size() > 0)
             indexDocs(AGGREGATION, "agg", ss);
     }
 
     public void migrateThemeData(int stationId, int cs, int st, DateTime dtBegin, DateTime dtEnd, int hourDelay) {
+        migrateThemeData(stationId, cs, st, dtBegin, dtEnd, hourDelay, 1);
+    }
+
+    public void migrateThemeData(int stationId, int cs, int st, DateTime dtBegin, DateTime dtEnd, int hourDelay, double coef) {
         SearchResponse scrollResp = client.prepareSearch(THEMES)
                 .setTypes("theme")
                 .setScroll(new TimeValue(mQueryTimeoutMillis))
@@ -253,6 +270,14 @@ public class EsHelper {
             item.put("structure", st);
             if (hourDelay != 0) {
                 item.put("collect_time", DateTime.parse(item.get("collect_time").toString()).plusHours(hourDelay));
+            }
+            if (coef != 1) {
+                Map<String, Object> dt = (Map<String, Object>) item.get("data");
+                Set<String> keys = dt.keySet();
+                for (String k : keys) {
+                    dt.put(k, Double.parseDouble(dt.get(k).toString()) * coef);
+                }
+                item.put("data", dt);
             }
         }
         if (ss.size() > 0)
