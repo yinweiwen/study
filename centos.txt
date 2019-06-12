@@ -1,0 +1,132 @@
+1. CentOS网络设置 <https://www.cnblogs.com/zhouyalei/p/6273516.html>
+	随笔 - 86  文章 - 0  评论 - 63
+	centos如何设置固定IP
+	### centos6.5版本
+
+	编辑ifcfg-eth0
+
+	vi /etc/sysconfig/network-scripts/ifcfg-eth0
+	参照下面代码修改自己的配置
+
+	复制代码
+	###################################
+	DEVICE=eth0
+	TYPE=Ethernet
+	UUID=e8e5504f-6b1d-42b3-9b92-bd71a8b87517 <<
+	ONBOOT=yes
+	NM_CONTROLLED=yes
+	BOOTPROTO=none
+	HWADDR=00:0C:29:EC:45:D4 <<
+	IPADDR=192.168.16.90
+	PREFIX=24
+	GATEWAY=192.168.16.1
+	DNS1=114.114.114.114
+	DEFROUTE=yes
+	IPV4_FAILURE_FATAL=yes
+	IPV6INIT=no
+	NAME="System eth0"
+	####################################
+	复制代码
+	UUID和HWADDR保留自己的其余的用这个替换,  注意修改之前先备份,  免得改错了
+
+	编辑network
+
+	vi /etc/sysconfig/network
+	参照一下代码修改自己的配置, 也就改个网关地址
+
+	####################################
+	NETWORKING=yes
+	HOSTNAME=localhost.localdomain
+	GATEWAY=192.168.16.1
+	####################################
+	编辑resolv.conf
+
+	vi /etc/resolv.conf
+	这个一般不用改, 改了上面, 这个自动就改过来了
+
+	####################################
+	nameserver 192.168.16.1
+	####################################
+	最后重启网关配置
+
+	service network restart
+	然后ping www.baidu.com 测试一下网络配置是否完成
+
+	 
+
+	### centos7版本
+
+	使用场景, centos7, VMware Workstation Pro, 最小化安装之后, 执行ifconfig命令, 找不到eth0配置
+
+	有两个网卡配置
+
+	ens33(这里名称可能不同)
+
+	lo
+
+	解决思路:
+
+	1. 在/etc/sysconfig/network-scripts/下创建ifcfg-eth0配置文件, 并填入以下内容:
+
+	复制代码
+	DEVICE=eth0
+	TYPE=Ethernet
+	IPADDR=192.168.191.131 # ip地址
+	PREFIX=24
+	NETMASK=255.255.255.0 # 子网掩码
+	NETWORK=192.168.191.0 # ip段
+	GATEWAY=192.168.191.2 # 网关地址
+	BROADCAST=192.168.191.255 # 广播地址, 网关地址最后一位换成255
+	DEFROUTE=yes
+	ONBOOT=yes
+	USERCTL=yes
+	BOOTPROTO=static
+	NAME=eth0
+	IPV4_FAILURE_FATAL=yes
+	HWADDR=00:0c:29:b4:e3:22 # 这里填执行ifconfig命令后, ens33(这里名称可能不同)的mac地址
+	复制代码
+	2. 编辑/etc/sysconfig/network
+
+	NETWORKING=yes
+	HOSTNAME=localhost.localdomain
+	GATEWAY=192.168.191.2 #网关地址
+	3. 编辑/etc/resolv.conf
+
+	nameserver 192.168.191.2
+	nameserver 114.114.114.114
+	4.重启网络服务
+
+	systemctl restart network.service #重启网络服务
+	systemctl status network.service #查看网络服务状态
+	如果重启网路服务失败, 或者执行systemctl status network.service命令提示错误
+
+	复制代码
+	Starting network (via systemctl):  Job for network.service failed because the control process exited with error code. See "systemctl status network.service" and "journalctl -xe" for details
+
+	[root@localhost ~]# systemctl status network.service
+	● network.service - LSB: Bring up/down networking
+	   Loaded: loaded (/etc/rc.d/init.d/network; bad; vendor preset: disabled)
+	   Active: failed (Result: exit-code) since 日 2017-02-12 21:57:48 CST; 20s ago
+		 Docs: man:systemd-sysv-generator(8)
+	  Process: 3170 ExecStart=/etc/rc.d/init.d/network start (code=exited, status=1/FAILURE)
+	2月 12 21:57:48 localhost.localdomain network[3170]: RTNETLINK answers: File exists
+	2月 12 21:57:48 localhost.localdomain network[3170]: RTNETLINK answers: File exists
+	2月 12 21:57:48 localhost.localdomain network[3170]: RTNETLINK answers: File exists
+	2月 12 21:57:48 localhost.localdomain network[3170]: RTNETLINK answers: File exists
+	2月 12 21:57:48 localhost.localdomain network[3170]: RTNETLINK answers: File exists
+	2月 12 21:57:48 localhost.localdomain network[3170]: RTNETLINK answers: File exists
+	2月 12 21:57:48 localhost.localdomain systemd[1]: network.service: control process exited, code=exited status=1
+	2月 12 21:57:48 localhost.localdomain systemd[1]: Failed to start LSB: Bring up/down networking.
+	2月 12 21:57:48 localhost.localdomain systemd[1]: Unit network.service entered failed state.
+	2月 12 21:57:48 localhost.localdomain systemd[1]: network.service failed.
+	复制代码
+	那么删掉/etc/sysconfig/network-scripts/下多余的ifcfg-配置, 保留ifcfg-eth0和ifcfg-lo这两个配置
+
+	再次执行systemctl restart network.service 重启网络服务, 这时, 应该就不会报错了
+
+	提示这种错误, 还有可能是步骤一里面标红的地方     mac地址填错了
+
+	 
+
+	### 如果这么做局域网内可以访问, 但是无法访问外网的话, VMware里面虚拟机设置->网络适配器->从NAT模式改为桥接模式 
+	IP地址填写为和宿主机在一个IP段, 网关填写路由器IP

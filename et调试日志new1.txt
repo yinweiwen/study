@@ -609,3 +609,36 @@ Caused by: akka.pattern.AskTimeoutException: Ask timed out on [Actor[akka.tcp://
 		
 	2019-05-05 11:45:09,250 WARN  akka.remote.ReliableDeliverySupervisor                        - Association with remote system [akka.tcp://flink-metrics@flink-taskmanager-57f69bfd69-xr466:34809] has failed, address is now gated for [50] ms. Reason: [Association failed with [akka.tcp://flink-metrics@flink-taskmanager-57f69bfd69-xr466:34809]] Caused by: [flink-taskmanager-57f69bfd69-xr466: Name does not resolve]
 	2019-05-05 11:45:09,250 WARN  akka.remote.ReliableDeliverySupervisor                        - Association with remote system [akka.tcp://flink-metrics@flink-taskmanager-57f69bfd69-5ksrq:34919] has failed, address is now gated for [50] ms. Reason: [Association failed with [akka.tcp://flink-metrics@flink-taskmanager-57f69bfd69-5ksrq:34919]] Caused by: [flink-taskmanager-57f69bfd69-5ksrq: Name does not resolve]
+
+14. Flink 启动后无法读取kafka
+	环境(49华为云) 
+	现象：
+	Committing offsets to Kafka takes longer than the checkpoint interval. Skipping commit of previous offsets because newer complete checkpoint offsets are available. This does not compromise Flink's checkpoint integrity.
+	
+	 Error registering AppInfo mbean
+	javax.management.InstanceAlreadyExistsException: kafka.consumer:type=app-info,id=consumer-2
+	原因：
+	
+	
+15. DOCKERFILE中EntryPoint中执行bash脚本报错：
+	"exec format error"  -> 文件头加上 #!/bin/bash
+	"file not found" -> 可能是windows下创建的文件格式不正确，需要在linux下创建该文件
+
+16. 告警flink进程疑似内存溢出中断
+	OpenJDK 64-Bit Server VM warning: CodeCache is full. Compiler has been disabled.
+	OpenJDK 64-Bit Server VM warning: Try increasing the code cache size using -XX:ReservedCodeCacheSize=
+	CodeCache: size=245760Kb used=229411Kb max_used=235061Kb free=16348Kb
+	 bounds [0x00007f61b7de6000, 0x00007f61c6de6000, 0x00007f61c6de6000]
+	 total_blobs=63125 nmethods=62493 adapters=542
+	 compilation: enabled
+	 
+	 
+15. 告警flink进程redis报错：
+	akka.ConfigurationException: Dispatcher [rediscala.rediscala-client-worker-dispatcher] not configured
+	对比可运行版本和当前版本jar解压文件，发现reference.conf文件差异(新包中不含redisscala配置，是被quartz的配置替换了(reference.conf文件重名了!))
+	解决方法：shade构建时使用插件：
+	
+	<transformer
+			implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+		<resource>reference.conf</resource>
+	</transformer>

@@ -220,3 +220,58 @@ In Maven, enable resource filtering - this will cause Maven to copy that file in
       </resources>   
     </build>
 You can also get to other standard properties like project.name, project.description, or even arbitrary properties you put in your pom <properties>, etc. Resource filtering, combined with Maven profiles, can give you variable build behavior at build time. When you specify a profile at runtime with -PmyProfile, that can enable properties that then can show up in your build.
+
+
+1.maven私有仓库安装
+
+	[CentOS 7 下安装和配置 Sonatype Nexus 3.3](https://qizhanming.com/blog/2017/05/16/install-sonatype-nexus-oss-33-on-centos-7)
+
+	sudo curl -O https://sonatype-download.global.ssl.fastly.net/nexus/3/nexus-3.3.1-01-unix.tar.gz
+	tar -zxvf ...
+	ln -s nexus-3.3.1-01 nexus
+	useradd nexus
+	$ sudo chown -R nexus:nexus /opt/nexus
+	$ sudo chown -R nexus:nexus /opt/sonatype-work/
+	$ sudo vi /opt/nexus/bin/nexus.rc
+	#run_as_user="nexus"
+	安装服务(本例以 systemd 为例)
+	/etc/systemd/system/nexus.service
+	添加
+	```shell
+	[Unit]
+	Description=nexus service
+	After=network.target
+		
+	[Service]
+	Type=forking
+	ExecStart=/opt/nexus/bin/nexus start
+	ExecStop=/opt/nexus/bin/nexus stop
+	User=nexus
+	Restart=on-abort
+		
+	[Install]
+	WantedBy=multi-user.target
+	```
+	$ sudo systemctl daemon-reload
+	$ sudo systemctl enable nexus
+	$ sudo systemctl start nexus
+
+	查看服务
+
+	$ sudo systemctl status nexus
+	添加防火墙规则
+
+	$ sudo firewall-cmd --zone=public --permanent --add-port=8081/tcp
+	$ sudo firewall-cmd --reload 
+	
+	访问地址： http://ip:8081/
+	访问凭证(默认的用户名和密码)：
+
+	username: admin
+	password: admin123
+	
+	
+	# windows 下安装
+	https://www.sonatype.com/download-oss-sonatype
+	下载OSS版本的windows版本
+	

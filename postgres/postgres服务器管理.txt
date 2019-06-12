@@ -1,3 +1,12 @@
+## postgres安装
+apt update
+apt install postgresql postgresql-contrib
+
+vi /etc/postgresql/9.5/main/pg_hba.conf
+添加如下行：
+host    all             all             10.8.30.0/24            md5
+
+
 在磁盘上初始化一个数据库存储区域。 我们称之为一个数据库集簇（SQL 标准使用的术语是目录集簇）
 $ initdb -D /usr/local/pgsql/data
 $ pg_ctl -D /usr/local/pgsql/data initdb
@@ -143,8 +152,10 @@ psql -U postgres -f secure_cloud.sql
 
 pg_dump --dbname="Anxinyun0726" --file="anxinyun0726.sql" --create -U FashionAdmin
 
+复制数据到csv：
+psql
 
-
+\copy (Select * From foo) To '/tmp/test.csv' With CSV
 
 
 
