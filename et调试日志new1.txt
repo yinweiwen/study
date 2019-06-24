@@ -602,6 +602,38 @@ Caused by: akka.pattern.AskTimeoutException: Ask timed out on [Actor[akka.tcp://
 	at akka.actor.LightArrayRevolverScheduler$$anon$4.nextTick(LightArrayRevolverScheduler.scala:284)
 	at akka.actor.LightArrayRevolverScheduler$$anon$4.run(LightArrayRevolverScheduler.scala:236)
 	
+	差不多的问题：
+		2019-06-14 07:42:01,480 WARN  org.apache.flink.runtime.taskexecutor.TaskExecutor            - Could not send heartbeat to target with id 3f19b797fd46f27a86f571080bca7f7a.
+	java.util.concurrent.CompletionException: akka.pattern.AskTimeoutException: Ask timed out on [Actor[akka://flink/user/taskmanager_0#1723018049]] after [10000 ms]. Sender[null] sent message of type "org.apache.flink.runtime.rpc.messages.CallAsync".
+		at java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:292)
+		at java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:308)
+		at java.util.concurrent.CompletableFuture.uniAccept(CompletableFuture.java:647)
+		at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:632)
+		at java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:474)
+		at java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:1977)
+		at org.apache.flink.runtime.concurrent.FutureUtils$1.onComplete(FutureUtils.java:772)
+		at akka.dispatch.OnComplete.internal(Future.scala:258)
+		at akka.dispatch.OnComplete.internal(Future.scala:256)
+		at akka.dispatch.japi$CallbackBridge.apply(Future.scala:186)
+		at akka.dispatch.japi$CallbackBridge.apply(Future.scala:183)
+		at scala.concurrent.impl.CallbackRunnable.run(Promise.scala:36)
+		at org.apache.flink.runtime.concurrent.Executors$DirectExecutionContext.execute(Executors.java:83)
+		at scala.concurrent.impl.CallbackRunnable.executeWithValue(Promise.scala:44)
+		at scala.concurrent.impl.Promise$DefaultPromise.tryComplete(Promise.scala:252)
+		at akka.pattern.PromiseActorRef$$anonfun$1.apply$mcV$sp(AskSupport.scala:603)
+		at akka.actor.Scheduler$$anon$4.run(Scheduler.scala:126)
+		at scala.concurrent.Future$InternalCallbackExecutor$.unbatchedExecute(Future.scala:601)
+		at scala.concurrent.BatchingExecutor$class.execute(BatchingExecutor.scala:109)
+		at scala.concurrent.Future$InternalCallbackExecutor$.execute(Future.scala:599)
+		at akka.actor.LightArrayRevolverScheduler$TaskHolder.executeTask(LightArrayRevolverScheduler.scala:329)
+		at akka.actor.LightArrayRevolverScheduler$$anon$4.executeBucket$1(LightArrayRevolverScheduler.scala:280)
+		at akka.actor.LightArrayRevolverScheduler$$anon$4.nextTick(LightArrayRevolverScheduler.scala:284)
+		at akka.actor.LightArrayRevolverScheduler$$anon$4.run(LightArrayRevolverScheduler.scala:236)
+		at java.lang.Thread.run(Thread.java:748)
+	Caused by: akka.pattern.AskTimeoutException: Ask timed out on [Actor[akka://flink/user/taskmanager_0#1723018049]] after [10000 ms]. Sender[null] sent message of type "org.apache.flink.runtime.rpc.messages.CallAsync".
+		at akka.pattern.PromiseActorRef$$anonfun$1.apply$mcV$sp(AskSupport.scala:604)
+		... 9 more
+
 13. flink error:
 	未解决
 	Association with remote system [akka.tcp://flink-metrics@flink-taskmanager-] has failed, address is now gated for [50] ms. Reason: [Association failed with [akka.tcp://flink-metrics@flink-taskmanager-]] Caused by: [flink-taskmanager- Name does not resolve]
