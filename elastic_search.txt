@@ -80,3 +80,67 @@ https://blog.csdn.net/mgxcool/article/details/49250341
 /_cat/nodeattrs
 /_cat/repositories
 /_cat/snapshots/{repository}
+
+
+## ES Script
+
+> Stored Scripts
+
+获取当前所有脚本
+```shell
+GET _cluster/state/metadata?pretty&filter_path=**.stored_scripts
+```
+获取脚本信息
+```shell
+GET _scripts/savoir-alarm-update
+```
+新建脚本
+```shell
+curl -X POST "localhost:9200/_scripts/calculate-score" -H 'Content-Type: application/json' -d'
+{
+  "script": {
+    "lang": "painless",
+    "source": "Math.log(_score * 2) + params.my_modifier"
+  }
+}
+'
+```
+
+> Script Fields
+返回经过脚本加工的数据
+```json
+GET savoir_alarms/_search
+{
+  "query": {
+    "match_all": {}
+  },
+  "script_fields": {
+    "test1": {
+      "script": {
+        "lang": "painless",
+        "source":"doc['alarm_count'].value* params.factor",
+        "params": {
+          "factor":500
+        }
+      }
+    }
+  }
+}
+```
+
+使用`doc['my_field'].value`和`params['_source']['my_field']`区别：
+1. 前者将匹配项加载到内存(快)
+2. 后者每次使用时解析，执行慢
+3. 前者只支持简单数据类型(例如不能返回json对象)
+
+[脚本支持的语言](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting.html)
++ painless <built-in>
+	+ inline
+	+ stored
++ expression <built-in>
++ mustache <built-in>
++ java
+
+> Prefer parameters
+同样的脚本会编译后缓存，使用相同的脚本，并使用params可以提高脚本执行效率
+；脚本编译受限script.max_compilations_rate，超出会抛出异常

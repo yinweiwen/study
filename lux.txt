@@ -190,6 +190,20 @@ netstat -an | grep -E "ESTABLISHED|WAIT"
 	find . -type d -mindepth 1 -maxdepth 2  -ctime +10 | xargs rm -rf
 	...TO LERN MORE
 	
+	>>
+	-amin <分钟> 查找在指定时间曾被存取过的文件或目录
+	-anewer <参考文件或目录> 查找其存取时间交指定文件或目录的存取时间更新的
+	-atime<24小时数>：查找在指定时间曾被存取过的文件或目录，单位以24小时计算；
+	-depth 目录层次
+	-daystart 从本日开始计算时间
+	-empty 寻找空文件或文件夹
+	-name "*.txt" 查找文件名
+	-iname "*.txt" 同上，忽略大小写
+	find . -type f -size +10k 搜索大于10KB的文件
+	find . -maxdepth 3 -type f 向下最大深度限制为3
+	find . -mindepth 2 -type f 搜索出深度距离当前目录至少2个子目录的所有文件
+	find /usr/ -path "*local*" 路径匹配
+	find . -regex ".*\(\.txt\|\.pdf\)$" 基于正则表达式匹配文件路径
 	
 ## 后台启动进程
   *nohup 如果宿主ssh进程关闭，后台nohup进程也会被关闭
@@ -244,3 +258,40 @@ https://serverfault.com/questions/684771/best-way-to-disable-swap-in-linux
 ## Linux <> Windows 文件互传
 	rz 
 	sz file
+	
+## ElasticSearch数据导出
+	https://www.npmjs.com/package/elasticdump
+	
+	npm install elasticdump -g
+	
+	elasticdump \
+  --input=http://iota-m2:9200/aqi_division_hour \
+  --output=/home/anxin/tools/aqi_division_hour_mapping.json \
+  --type=mapping
+  
+  elasticdump \
+  --input=http://production.es.com:9200/my_index \
+  --output=http://staging.es.com:9200/my_index \
+  --type=analyzer
+elasticdump \
+  --input=http://production.es.com:9200/my_index \
+  --output=http://staging.es.com:9200/my_index \
+  --type=mapping
+  
+  curl -X PUT 'http://172.16.3.5:9200/shining_index' -d@/data/shining_index_mapping.json
+
+  
+  
+ ## Ubuntu 16.04 安装jenkins
+ https://www.jianshu.com/p/845f267aec52
+ 
+首先照着输入
+systemctl status jenkins.service
+看到
+Failed to start LSB: Start Jenkins at boot time
+
+>> 查看是否安装jdk
+>> 是否端口号重读，修改jenkins端口 https://blog.csdn.net/csfreebird/article/details/9033443
+ 
+jenkins上持续集成go项目：
+https://blog.csdn.net/aixiaoyang168/article/details/82965854

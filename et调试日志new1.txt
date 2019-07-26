@@ -641,7 +641,15 @@ Caused by: akka.pattern.AskTimeoutException: Ask timed out on [Actor[akka.tcp://
 		
 	2019-05-05 11:45:09,250 WARN  akka.remote.ReliableDeliverySupervisor                        - Association with remote system [akka.tcp://flink-metrics@flink-taskmanager-57f69bfd69-xr466:34809] has failed, address is now gated for [50] ms. Reason: [Association failed with [akka.tcp://flink-metrics@flink-taskmanager-57f69bfd69-xr466:34809]] Caused by: [flink-taskmanager-57f69bfd69-xr466: Name does not resolve]
 	2019-05-05 11:45:09,250 WARN  akka.remote.ReliableDeliverySupervisor                        - Association with remote system [akka.tcp://flink-metrics@flink-taskmanager-57f69bfd69-5ksrq:34919] has failed, address is now gated for [50] ms. Reason: [Association failed with [akka.tcp://flink-metrics@flink-taskmanager-57f69bfd69-5ksrq:34919]] Caused by: [flink-taskmanager-57f69bfd69-5ksrq: Name does not resolve]
-
+	
+	排查：
+	检查jobmanager容器内部hosts，仅发现 
+	```shell
+	# Kubernetes-managed hosts file.
+	127.0.0.1       localhost
+	...
+	10.244.3.172    flink-jobmanager-7d469bccdf-mfbh5
+	```
 14. Flink 启动后无法读取kafka
 	环境(49华为云) 
 	现象：
@@ -674,3 +682,23 @@ Caused by: akka.pattern.AskTimeoutException: Ask timed out on [Actor[akka.tcp://
 			implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 		<resource>reference.conf</resource>
 	</transformer>
+	
+16. ambari里启动hdfs的namenode时出现 | grep 'Safe mode is OFF'' returned 1.
+	解决方法： 关闭HDFS的safemode； 
+	$ su hdfs
+	$ hdfs dfsadmin -safemode leave
+	
+17. kubernetes创建pod一直处于pending状态，describe显示No nodes are available that match all of the predicates: Insufficient memory (3), PodToleratesNodeTaints (1).
+	> PodToleratesNodeTaints
+	/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+	+ Environment="DEF_ARGS=--max-pods=40"
+	+ ExecStart=/usr/bin/kubelet 。。。$DEF_ARGS
+	
+18. Redis-akka ,ET 启动测试用例时报错 :java.lang.ClassNotFoundException: akka.event.slf4j.Slf4jLog
+	手动增加引用：
+	
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j_2.11</artifactId>
+            <version>2.4.12</version>
+        </dependency>
