@@ -37,23 +37,23 @@ public class MoverXu {
         // "c95ccc34-f091-40ef-953e-3260d8f51959", structId, dt1, dt2, hourDelay);
 
         // 青山桥倾斜CX3：31、CX2：28
-        DateTime dt1 = new DateTime(2019, 2, 22, 0, 40);
-        DateTime dt2 = new DateTime(2019, 2, 28, 13, 00);
-        int hourDelay = 4920;
+        DateTime dt1 = new DateTime(2019, 9, 14, 13, 40);
+        DateTime dt2 = new DateTime(2019, 9, 14, 16, 00);
+        int hourDelay = 24;
         System.out.println(dt1 + " ~ " + dt2);
 
         EsHelper es = new EsHelper();
 
         es.initHelper("anxin-cloud", "anxinyun-m2:9300,anxinyun-n1:9300,anxinyun-n2:9300,anxinyun-n3:9300");
-//        es.migrateThemeData(31, 684, 199, dt1, dt2, hourDelay);
-//        es.migrateThemeData(28, 685, 199, dt1, dt2, hourDelay);
+        es.migrateThemeData(684, 684, 199, dt1, dt2, hourDelay);
+        es.migrateThemeData(685, 685, 199, dt1, dt2, hourDelay);
 
         // 路长乡政府734
-        dt1 = new DateTime(2019, 2, 25, 0, 30);
+        dt1 = new DateTime(2019, 9, 25, 0, 30);
         dt2 = new DateTime(2019, 2, 28, 13, 0);
         int hd2=672;
-        es.migrateThemeData(734, 693, 202, dt1, dt2, hd2);
-        es.migrateThemeData(734, 689, 200, dt1, dt2, hd2);
+      //  es.migrateThemeData(734, 693, 202, dt1, dt2, hd2);
+      //  es.migrateThemeData(734, 689, 200, dt1, dt2, hd2);
 
         // es.migrateAggData(215, 549, dt1, dt2, hourDelay);
         // es.migrateAggData(216, 550, dt1, dt2, hourDelay);

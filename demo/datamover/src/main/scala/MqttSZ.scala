@@ -31,8 +31,8 @@ object MqttSZ {
 		val thingId = "eda323af-b141-4975-9a90-22b7f975485f"
 		val deviceId = "de701ade-350c-4d63-922e-b9516fa1cc57"
 
-		val start = new DateTime(2019, 2, 25, 0, 0)
-		val end = new DateTime(2019, 2, 28, 13, 10)
+		val start = new DateTime(2019, 9, 9, 0, 0)
+		val end = new DateTime(2019, 9, 14, 16, 0)
 		val stepHour = 0.5
 
 		val precision = 2
