@@ -89,7 +89,7 @@ org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.protocol.AlreadyBei
 	问题分析： stackwork提示 容器内hosts无法连接外部kafka broker
 	解决：修改 kube-dns
 	
-	#kubectl get pod kube-dns-545bc4bfd4-qzcrt -n kube-system -o yaml --export -f dns/dns.yaml
+	#kubectl get pod kube-dns-6db897f9f-gmlcz -n kube-system -o yaml --export -f dns/dns.yaml
 	
 	kubectl get deploy kube-dns -o yaml -n kube-system > kube-deploy.yaml
 	
@@ -702,3 +702,153 @@ Caused by: akka.pattern.AskTimeoutException: Ask timed out on [Actor[akka.tcp://
             <artifactId>akka-slf4j_2.11</artifactId>
             <version>2.4.12</version>
         </dependency>
+		
+19. java.lang.NoClassDefFoundError: org/elasticsearch/common/transport/InetSocketTransportAddress
+	启动重计算进程时出现上述错误：
+	recalc进程又独立引用了ElasticSearch-Client6.3，去掉
+	comm_util已经引用
+	
+20. 安装k8s 14.3 
+	```bash
+	apt-get install -y kubelet=1.14.3-00 kubeadm=1.14.3-00 kubectl=1.14.3-00 kubernetes-cni=0.7.5-00
+	docker pull repository.anxinyun.cn/k8s/kube-apiserver:v1.14.3
+	docker pull repository.anxinyun.cn/k8s/kube-controller-manager:v1.14.3
+	docker pull repository.anxinyun.cn/k8s/kube-scheduler:v1.14.3
+	docker pull repository.anxinyun.cn/k8s/kube-proxy:v1.14.3
+	docker pull repository.anxinyun.cn/k8s/pause:3.1
+	docker pull repository.anxinyun.cn/k8s/etcd:3.3.10
+	docker pull repository.anxinyun.cn/k8s/coredns:1.3.1
+	
+	docker tag repository.anxinyun.cn/k8s/kube-apiserver:v1.14.3 k8s.gcr.io/kube-apiserver:v1.14.3
+	docker tag repository.anxinyun.cn/k8s/kube-controller-manager:v1.14.3 k8s.gcr.io/kube-controller-manager:v1.14.3
+	docker tag repository.anxinyun.cn/k8s/kube-scheduler:v1.14.3 k8s.gcr.io/kube-scheduler:v1.14.3
+	docker tag repository.anxinyun.cn/k8s/kube-proxy:v1.14.3 k8s.gcr.io/kube-proxy:v1.14.3
+	docker tag repository.anxinyun.cn/k8s/pause:3.1 k8s.gcr.io/pause:3.1
+	docker tag repository.anxinyun.cn/k8s/etcd:3.3.10 k8s.gcr.io/etcd:3.3.10
+	docker tag repository.anxinyun.cn/k8s/coredns:1.3.1 k8s.gcr.io/coredns:1.3.1
+	
+	MASTER:
+	kubeadm init --kubernetes-version=1.14.3 --apiserver-advertise-address=192.168.1.212 --pod-network-cidr=10.244.0.0/16
+	
+	NODES:
+	kubeadm join 10.8.30.36:6443 --token g76iaz.vh3mxrtn9873w4hs --discovery-token-ca-cert-hash sha256:81655beaf8744a1ee840e7fa7d6a8083b5c204dae7c7494d00d6b27860e91a08
+	```
+	
+	
+21. 启动Flink Alarm时报错
+	[未解决]
+	Failed Elasticsearch bulk request: Request cannot be executed; I/O reactor status: STOPPED
+	？？ 原因未知
+	重启后好了
+
+22. HDFS写文件报错
+	org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.server.namenode.SafeModeException): Cannot append to file/savoir/structure_data/structure_2043/raw/2019/9/轴力计ZCL-2-3.csv. Name node is in safe mode.
+	Resources are low on NN. Please add or free up more resources then turn off safe mode manually. NOTE:  If you turn off safe mode before adding resources, the NN will immediately return to safe mode. Use "hdfs dfsadmin -safemode leave" to turn safe mode off
+	
+	NameNode资源清理(dalianggejiejue)
+	
+23. Recalc进程异常
+	日志记录 ElasticSearch中
+	Exception in thread "Thread-3" Exception in thread "Thread-4" java.lang.ExceptionInInitializerError
+		at org.apache.logging.log4j.core.impl.Log4jLogEvent.createContextData(Log4jLogEvent.java:472)
+		
+24. Flink进程报错
+	[未解决]
+	org.apache.flink.runtime.taskexecutor.exceptions.TaskSubmissionException: No task slot allocated for job ID 86f84f68151c4664b0bfbc9d9886eaa2 and allocation ID AllocationID{6ad84c35694804b38fd3181398ef7d9b}.
+		at org.apache.flink.runtime.taskexecutor.TaskExecutor.submitTask(TaskExecutor.java:458)
+		at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+		at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+		at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+		at java.lang.reflect.Method.invoke(Method.java:498)
+		at org.apache.flink.runtime.rpc.akka.AkkaRpcActor.handleRpcInvocation(AkkaRpcActor.java:247)
+		at org.apache.flink.runtime.rpc.akka.AkkaRpcActor.handleRpcMessage(AkkaRpcActor.java:162)
+		at org.apache.flink.runtime.rpc.akka.AkkaRpcActor.onReceive(AkkaRpcActor.java:142)
+		at akka.actor.UntypedActor$$anonfun$receive$1.applyOrElse(UntypedActor.scala:165)
+		at akka.actor.Actor$class.aroundReceive(Actor.scala:502)
+		at akka.actor.UntypedActor.aroundReceive(UntypedActor.scala:95)
+		at akka.actor.ActorCell.receiveMessage(ActorCell.scala:526)
+		at akka.actor.ActorCell.invoke(ActorCell.scala:495)
+		at akka.dispatch.Mailbox.processMailbox(Mailbox.scala:257)
+		at akka.dispatch.Mailbox.run(Mailbox.scala:224)
+		at akka.dispatch.Mailbox.exec(Mailbox.scala:234)
+		at scala.concurrent.forkjoin.ForkJoinTask.doExec(ForkJoinTask.java:260)
+		at scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1339)
+		at scala.concurrent.forkjoin.ForkJoinPool.runWorker(ForkJoinPool.java:1979)
+		at scala.concurrent.forkjoin.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:107)
+		
+25. HDFS写文件报错java.io.IOException: Filesystem closed
+	at org.apache.hadoop.hdfs.DFSClient.checkOpen(DFSClient.java:808)
+	[尝试中]
+	https://www.playpi.org/2018122701.html
+	
+	当任务提交到集群上面以后，多个 datanode 在 getFileSystem 过程中，由于 Configuration 一样，会得到同一个 FileSystem。如果有一个 datanode 在使用完关闭连接，其它的 datanode 在访问时就会出现上述异常，导致数据缺失（如果数据恰好只存在一个 datanode 上面，可能没问题）。
+	
+	
+	*************************************************
+	*************************************************
+	*************************************************
+	*********************W O R K*********************
+	*************************************************
+	*************************************************
+	
+	1. ET有原始数据，没有主题数据：
+	 > 查看ET日志,看是否有异常(公式计算错误)
+	 > 查看设备绑定(是否绑定输出到监测原型)
+	 > 是否分组
+	 > 是否过滤(滑窗 blabla..)
+	 > 设备绑定是旧的(设备输出字段改过，工具ProductManager需要删除_cache重启)
+	 
+	 
+26. ★★★★ Flink 中使用 Lazing ★★★★
+	TaskManager中执行任务，好像并不能调用 启动Arguments中参数  <告警Flink中参数启用Extras字段实际无效的BUG>
+	
+27. ET  KAFKA报错
+	[WARN ] 2019-11-20 11:29:48,924 method:org.apache.kafka.clients.NetworkClient$DefaultMetadataUpdater.handleCompletedMetadataResponse(NetworkClient.java:968)
+	[Consumer clientId=consumer-1, groupId=et.mains3] Error while fetching metadata with correlation id 38 : {savoir_alarmMsg=LEADER_NOT_AVAILABLE, savoir_data=LEADER_NOT_AVAILABLE, savoir_agg=LEADER_NOT_AVAILABLE}
+	[WARN ] 2019-11-20 11:29:48,924 method:org.apache.kafka.clients.NetworkClient$DefaultMetadataUpdater.handleCompletedMetadataResponse(NetworkClient.java:968)
+	[Consumer clientId=consumer-1, groupId=et.mains3] Error while fetching metadata with correlation id 38 : {savoir_alarmMsg=LEADER_NOT_AVAILABLE, savoir_data=LEADER_NOT_AVAILABLE, savoir_agg=LEADER_NOT_AVAILABLE}
+
+28. deliver kafka提交超时
+	[WARN ] 2019-11-26 11:15:04,314 Auto-commit of offsets {anxinyun_deliver-0=OffsetAndMetadata{offset=20642, metadata=''}} failed for group deliver1: Offset commit failed with a retriable exception. You should retry committing offsets. The underlying error was: The request timed out.
+
+	2019-11-26 14:23:44,500 Auto-commit of offsets {anxinyun_deliver-0=OffsetAndMetadata{offset=20642, metadata=''}} failed for group deliver1: Commit cannot be completed since the group has already rebalanced and assigned the partitions to another member. This means that the time between subsequent calls to poll() was longer than the configured max.poll.interval.ms, which typically implies that the poll loop is spending too much time message processing. You can address this either by increasing the session timeout or by reducing the maximum size of batches returned in poll() with max.poll.records.
+
+29. MQTT big payload
+	问题描述：
+	mqtt接收消息超过500k时；接收进程连接断开，之后一直尝试重连
+	问题排查过程：
+	使用不同的mqtt配置参数和尝试不同的mqtt代理：
+	<clean.session:false QoS:2 代理Mosquitto>  x
+	<clean.session:false QoS:1 代理Mosquitto>  x
+	<clean.session:false QoS:0 代理Mosquitto>  x
+	<clean.session:false QoS:2 代理EMQ>  x ps.一个卵样
+	<clean.session:false QoS:1 代理EMQ>  x
+	<clean.session:false QoS:0 代理EMQ>  x
+	<修改发送端的QoS，同样无效>
+	<修改EMQX的mqtt.max_packet_size=100MB， 同样无效>
+		 env:
+        - name: EMQX_MQTT__MAX_PACKET_SIZE
+          value: 100MB
+	<尝试更换java MQTT-client库，Eclipse Paho ->FuseSource MqttClient >
+		https://github.com/eclipse/paho.mqtt.java
+		https://github.com/fusesource/mqtt-client
+		https://www.jianshu.com/p/95b4e349cde4
+		
+	√√√ 更换后mqtt接受不再报错，但是kafka报错了：
+	java.util.concurrent.ExecutionException: org.apache.kafka.common.errors.RecordTooLargeException: The request included a message larger than the max message size the server will accept.
+	kafka服务无法接收超过最大限制的数据包，于是谷歌后修改
+		https://my.oschina.net/shyloveliyi/blog/1620012
+		配置kafka server：
+			message.max.bytes=12695150
+		配置后错误没有了！！
+		
+	基于以上测试结果，于是在代码里用工厂模式实现了两种库的调用，开始自测，结果两种库的实现都能实现1M以上包的传输了（蒙比了）；
+	怀疑是kafka的那个异常被Paho内部吃掉了，导致Socket异常重启，于是kafka设置改回去再测试，果然Paho又报错开始重连了
+	解决办法:
+	kafkaProducer.send方法用 try-catch包住
+	引申：
+	之前进程也时常出现重连的问题，应该也是kafka-send超时之类的问题导致的.
+	总结：
+	这是一个异常未捕捉引发的血案，所以一切IO操作一定要做好异常处理，不然被第三方包吃掉异常，故障就真的不好定位了。
+	
+	

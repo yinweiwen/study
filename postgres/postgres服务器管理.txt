@@ -116,7 +116,7 @@ PGDATA目录下：
 ##2018 comming
 
 #清理空闲连接
-SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'SavoirCloud' AND pid <> pg_backend_pid() AND state = 'idle';
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'AnxinCloud' AND pid <> pg_backend_pid() AND state = 'idle';
 -- 当前活动连接
 select count(1) from pg_stat_activity;
 -- 显示最大连接数
@@ -158,7 +158,11 @@ psql
 \copy (Select * From foo) To '/tmp/test.csv' With CSV
 
 
-
+# 让自增 Seq (Serial) 跟上ID
+	PERFORM setval('"public"."T_DIM_FORMULA_PARA_FormulaParaID_seq"',(SELECT MAX(formula_para_id) FROM t_formula_para), true);
+	
+# pg_dump 导出
+pg_dump --dbname="haiwen1106" --file=/home/anxin/dump1.sql -h 10.8.30.32 --no-owner --column-inserts
 
 
 
