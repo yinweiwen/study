@@ -28,11 +28,11 @@ object MqttLGJYC {
 		val client = new MqttClient("tcp://221.230.55.28:1883", "test-send-mqtt-client", new MemoryPersistence())
 		client.connect(connOpt)
 
-		val thingId = "0657a719-abd5-4526-8b8d-16938301c0eb"
-		val deviceId = "32730dc3-0936-4c6d-b729-f42f54efdd41"
+		val thingId = "eda323af-b141-4975-9a90-22b7f975485f"
+		val deviceId = "53741486-9fbc-4662-9e4b-83bd68de86cc"
 
-		val start = new DateTime(2019, 9, 9, 0, 0)
-		val end = new DateTime(2019, 9, 14, 16, 30)
+		val start = new DateTime(2019, 11, 30, 0, 0)
+		val end = new DateTime(2019, 12, 4, 18, 0)
 		val stepHour = 0.5
 
 		val precision = 2

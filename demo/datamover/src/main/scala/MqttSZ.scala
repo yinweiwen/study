@@ -23,6 +23,18 @@ object MqttSZ {
 		  * 896 | de701ade-350c-4d63-922e-b9516fa1cc57 |                  0 |    690 | {}     | 690 |       200 | 水质     |    256 |                                                      | {}     | f           | {"latitude": 28.87694, "longitude": 115.385928, "divisionTypeId": "4", "fractureTypeId": "9"}
 		  *
 		  */
+
+		/**
+		  * df2ffa12-05a7-49bd-9e85-c639569e46ed
+		  *
+		  * 61e48245-30be-438d-93e8-d3ee6bfbb8e8 南幅盒式固定测斜仪
+		  * a72f4f8e-0aa8-4562-b8c5-ed95052f3cb5 北幅盒式固定测斜仪
+		  *
+		  * FS-HGC01
+		  * X方向角度 anglex °
+温度 temperature ℃
+Y方向角度 angley °
+		  */
 		val connOpt = new MqttConnectOptions()
 		connOpt.setCleanSession(false)
 		val client = new MqttClient("tcp://221.230.55.28:1883", "test-send-mqtt-client", new MemoryPersistence())
@@ -31,8 +43,8 @@ object MqttSZ {
 		val thingId = "eda323af-b141-4975-9a90-22b7f975485f"
 		val deviceId = "de701ade-350c-4d63-922e-b9516fa1cc57"
 
-		val start = new DateTime(2019, 9, 9, 0, 0)
-		val end = new DateTime(2019, 9, 14, 16, 0)
+		val start = new DateTime(2019, 12, 4, 12, 0)
+		val end = new DateTime(2019, 12, 4, 18, 0)
 		val stepHour = 0.5
 
 		val precision = 2

@@ -318,3 +318,8 @@ chown 1000:1000 /var/run/docker.sock
 
 ## k8s批量删除pod
 kubectl get pods -n savoir| grep savoir-jupyter | awk '{print $1}' | xargs kubectl delete pod -n savoir
+
+## mosquitto管理
+	ps -ef | grep mosq
+	
+	/etc/mosquitto/mosquitto.conf

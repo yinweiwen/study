@@ -124,6 +124,8 @@ show max_connections;
 -- 显示保留连接数
 show superuser_reserved_connections;
 
+PG执行Add column操作阻塞，问题未知；解决方法：重启pg服务
+
 
 ## 数据库备份和还原
 # 23test 
@@ -166,12 +168,41 @@ pg_dump --dbname="haiwen1106" --file=/home/anxin/dump1.sql -h 10.8.30.32 --no-ow
 
 
 
+# 时间处理：
+select s."SENSOR_LOCATION_DESCRIPTION",b."TEMPERATURE_VALUE",b."ACQUISITION_DATETIME" from "T_DIM_SENSOR" s,"T_THEMES_ENVI_TEMP_HUMI" b where s."SENSOR_ID"=b."SENSOR_ID" and b."ID" in (
+  select min("ID") from "T_THEMES_ENVI_TEMP_HUMI"  where "ACQUISITION_DATETIME">'2019-12-01' and "ACQUISITION_DATETIME"<'2019-12-11'
+  GROUP BY "SENSOR_ID",date_trunc('hour',"ACQUISITION_DATETIME"),floor(date_part('minute',"ACQUISITION_DATETIME")/30)
+) ORDER BY "ACQUISITION_DATETIME";
+以上sql：没30分钟取一条数据
+
+select now(); 
+select current_date;
+
+select date_part('day',now());
+
+select date_part('day',now()::timestamp-'2018-01-10 10:12:15::timestamp');
+
+select extract(day from now()-create_time) from t_test;
+
+select now()-interval '2 day';
+
+select date_trunc('month',now()); -- 本月第一天
 
 
+## upsert 
+insert into t_data_latest(sensor_id,safety_factor_type_id,acquisition_datetime,data)
+values(1,1,'2019-12-15','{1,2,3}') ON CONFLICT(sensor_id)
+    DO UPDATE set acquisition_datetime='2019-12-15 01:00:00',data='{2,null,1}';
 
 
-
-
+## windows 数据文件迁移
+9.6：
+[https://www.landui.com/help/show-3587.html](Windows如何设置或更改PostgreSQL数据目录位置)  [https://radumas.info/blog/tutorial/2016/08/08/Migrating-PostgreSQL-Data-Directory-Windows.html](%%)
+	修改注册表：
+	对应键值位置在"HKEY_LOCAL_MACHINESYSTEMCurrentControlSetServicespostgresql-x64-9.5ImagePath"，将“－D”后的目录名修改为新的数据目录位置即可，如果目录路径中含有空格，需要用引号引起。
+	移动文件。
+	启动时报超时错误：
+	pg_resetxlog.exe -f [pgData folder location]
 
 
 

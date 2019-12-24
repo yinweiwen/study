@@ -24,6 +24,13 @@ object MqttSW691 {
 		  * 900 | 5f83b25c-55a4-4600-b0e6-4004be0dfedd |                  0 |    691 | {}     | 691 |       200 | 水位     |     31 | image/5d64b984-73f3-4922-8136-03835fd3aac9/image.png | {}     | f           |
 		  * 896 | de701ade-350c-4d63-922e-b9516fa1cc57 |                  0 |    690 | {}     | 690 |       200 | 水质     |    256 |                                                      | {}     | f           | {"latitude": 28.87694, "longitude": 115.385928, "divisionTypeId": "4", "fractureTypeId": "9"}
 		  *
+		  * 7595f123-ae20-4bbb-be36-c7d525ebfdec   潦河水位  1
+		  * 830c705c-b1ed-4244-831d-973d12e53ab2  红旗水库水位  3
+		  *
+		  * 18310876-6206-4254-85af-9a2346437e49  潦河雨量计
+		  * ecba90f8-10c0-4c8d-9e49-064342059cb0  红旗水库雨量计
+		  *
+		  * 53741486-9fbc-4662-9e4b-83bd68de86cc  扬尘采集设备
 		  */
 		val connOpt = new MqttConnectOptions()
 		connOpt.setCleanSession(false)
@@ -33,12 +40,12 @@ object MqttSW691 {
 		val thingId = "eda323af-b141-4975-9a90-22b7f975485f"
 		val deviceId = "7595f123-ae20-4bbb-be36-c7d525ebfdec"
 
-		val start = new DateTime(2019, 4, 9, 0, 0)
-		val end = new DateTime(2019, 4, 19, 16, 0)
+		val start = new DateTime(2019, 11, 30, 0, 0)
+		val end = new DateTime(2019, 12, 4, 18, 0)
 		val stepHour = 1
-		val stepVal: Double = 2.8 // mm 6700
+		val stepVal: Double = 1000 // mm 6700
 
-		val randVal: Double = 0.1
+		val randVal: Double = 100
 
 		val precision = 2
 

@@ -851,4 +851,29 @@ Caused by: akka.pattern.AskTimeoutException: Ask timed out on [Actor[akka.tcp://
 	总结：
 	这是一个异常未捕捉引发的血案，所以一切IO操作一定要做好异常处理，不然被第三方包吃掉异常，故障就真的不好定位了。
 	
+30. k8s节点无法加入：
+	Unable to update cni config: No networks found in /etc/cni/net.d
+	https://www.cnblogs.com/zhongyuanzhao000/p/11401031.html
+	方法一：
+	​ 编辑 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf文件（有的是/usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf文件)，
+	​ 删除最后一行里的$KUBELET_NETWORK_ARGS 即可。
+	​ （该方法治标不治本，没能解决我的问题）
+
+	方法二：
+	​ 考虑到node节点的kubelet报错Unable to update cni config: No networks found in /etc/cni/net.d，并且master节点的/etc/cni/net.d目录里拥有10-flannel.conflist文件，
+	​ 我们可以把该文件从master节点复制到node节点的对应目录中，然后重启kubelet服务即可。
+	​ (该方法亡羊补牢，对我的问题也没用)
+
+	方法三：
+	​ 注意到master节点的/etc/cni/net.d/10-flannel.conflist文件是经过 安装flannel插件 才生成的，而node节点则是在master节点安装完flannel插件后才加入集群的，
+	​ 所以，我们不妨 先加入node节点，再执行 flannel插件的安装
 	
+	ps.重装k8s 14:
+	++ rm -rf /etc/kubernetes/
+	++ apt-get install -y kubelet=1.14.3-00 kubeadm=1.14.3-00 kubectl=1.14.3-00 kubernetes-cni=0.7.5-00
+	++ kubeadm join --token qy5bc1.x7ujv4ej14k6gl19 10.8.30.157:6443 --discovery-token-ca-cert-hash sha256:a78c42f3349699dff04b2f079968b126c030259974aae5d40813e2af0057c2dc
+	
+	
+31. Kafka 接收不到数据(et-upload)
+	[WARN ] 2019-12-13 10:21:27,763 method:org.apache.kafka.clients.consumer.internals.ConsumerCoordinator$4.onComplete(ConsumerCoordinator.java:649)
+Auto-commit of offsets {anxinyun_theme-0=OffsetAndMetadata{offset=97109483, metadata=''}} failed for group et.upload: Commit cannot be completed since the group has already rebalanced and assigned the partitions to another member. This means that the time between subsequent calls to poll() was longer than the configured max.poll.interval.ms, which typically implies that the poll loop is spending too much time message processing. You can address this either by increasing the session timeout or by reducing the maximum size of batches returned in poll() with max.poll.records.
