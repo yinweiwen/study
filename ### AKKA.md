@@ -127,3 +127,20 @@ class AkkaQuickstartSpec(_system: ActorSystem)
 ![](img/akka_architecture.png)
 
 [akka 配置说明](https://doc.yonyoucloud.com/doc/akka-doc-cn/2.3.6/scala/book/chapter2/09_configuration.html)
+
+
+## TODO Study
+Finagle 是JVM上的可扩展RPC框架(Remote Producure Call 远程过程调用框架) 用于构建高并行度的服务。
+Finagle使用统一的客户端和服务端API，基于不同的协议，为高性能和高并发而设计。
+Protocol agnostic（协议未知的） 
+By.Twitter
+
+[scala school](http://twitter.github.io/scala_school/searchbird.html)
+
+[ref]>>
+	
+	https://twitter.github.io/finagle/guide/Quickstart.html
+
+	http://thrift.apache.org/
+	
+	https://index.scala-lang.org/finagle/finch/finch-json-test/0.29.0?target=_2.12

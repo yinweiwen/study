@@ -13,10 +13,10 @@
   ./kafka-topics.sh --create --zookeeper test-n1:2181,test-n2:2181,test-n3:2181 --replication-factor 1 --partitions 3 --topic anxinyun_deliver
  
   ./kafka-console-producer.sh --broker-list 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data2
-  ./kafka-console-producer.sh --broker-list iota-m1:6667,iota-n1:6667,iota-n2:6667 --topic savoir_alarm
+  ./kafka-console-producer.sh --broker-list test-n1:9092,test-n2:9092,test-n3:9092,test-n4:9092,test-n5:9092 --topic savoir_data
 
   ./kafka-console-consumer.sh --bootstrap-server iota-m1:6667,iota-n1:6667,iota-n2:6667 --topic savoir_alarm --from-beginning
-  ./kafka-console-consumer.sh --bootstrap-server 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data2
+  ./kafka-console-consumer.sh --bootstrap-server test-n1:9092,test-n2:9092,test-n3:9092,test-n4:9092,test-n5:9092 --topic savoir_data
   
   // on windows
   // I:\WorkSpace\@JAVA\kafka_2.11-0.11.0.0\bin\windows>kafka-console-consumer.bat --bootstrap-server 10.8.30.117:9092 --topic important --from-beginning
