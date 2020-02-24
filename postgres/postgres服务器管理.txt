@@ -215,3 +215,10 @@ values(1,1,'2019-12-15','{1,2,3}') ON CONFLICT(sensor_id)
 	https://dba.stackexchange.com/questions/69464/postgres-table-growing-on-massive-updates
 	
 	解决：
+	
+## postgresql 数据库大小查看
+
+1. SELECT oid from pg_database where datname='postgres';
+到数据库数据所在目录下查找对应文件夹的大小即可
+
+2.select pg_size_pretty(pg_database_size('NBJJ_1114'));

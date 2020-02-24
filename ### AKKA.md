@@ -129,11 +129,45 @@ class AkkaQuickstartSpec(_system: ActorSystem)
 [akka 配置说明](https://doc.yonyoucloud.com/doc/akka-doc-cn/2.3.6/scala/book/chapter2/09_configuration.html)
 
 
-## TODO Study
+## Finagle
 Finagle 是JVM上的可扩展RPC框架(Remote Producure Call 远程过程调用框架) 用于构建高并行度的服务。
 Finagle使用统一的客户端和服务端API，基于不同的协议，为高性能和高并发而设计。
 Protocol agnostic（协议未知的） 
 By.Twitter
+
+Finagle 提供一下功能的鲁棒实现：
+> 连接池（connection pool）：带有限流（throttling）支持以防止 TCP 连接搅动（churn）；
+> 故障检测器（failure detector），用于识别太慢或者崩溃了的主机；
+> 失效备援策略（failover strategies），用于把流量从不健康的主机上引开；
+> 平衡负载器（load-balancer），包括“最少连接”和其它策略；以及
+> 背压（back-pressure）技术，用于保护服务器免受客户端滥用或者叠罗汉（或DoS攻击）。
+此外，Finagle 还让构造和部署下列服务变得容易：
++ 发布标准统计信息、日志和异常报告；
++ 支持跨协议的分布式追踪（以 Dapper 形式）；
++ 选择性地使用 ZooKeeper 用于集群管理；以及
++ 支持常见切分（sharding）策略。
+
+关键概念：
+Future  Services  Filters
+
+object Future {
+  …
+  def collect[A](fs: Seq[Future[A]]): Future[Seq[A]]
+  def join(fs: Seq[Future[_]]): Future[Unit]
+  def select(fs: Seq[Future[A]]) : Future[(Try[A], Seq[Future[A]])]
+}
+
+for..yield。。。 > 会把循环中的元素记下来，保存在集合中返回。
+```scala
+	for(i<- 1 to 5) yield i         >>  Vector(1,2,3,4,5)
+	
+	def scalaFiles=
+		for{
+			file<- filesHere
+			if file.isFile
+			if file.getName.endWith(".scala")
+		} yield file
+```
 
 [scala school](http://twitter.github.io/scala_school/searchbird.html)
 
@@ -143,4 +177,17 @@ By.Twitter
 
 	http://thrift.apache.org/
 	
+<<<<<<< .mine
 	https://index.scala-lang.org/finagle/finch/finch-json-test/0.29.0?target=_2.12
+
+=======
+	https://index.scala-lang.org/finagle/finch/finch-json-test/0.29.0?target=_2.12
+	
+>>>>>>> .theirs
+	http://www.voidcn.com/article/p-gklwnbqx-bnw.html
+<<<<<<< .mine
+
+=======
+	
+>>>>>>> .theirs
+REPL[交互式解释器]

@@ -366,4 +366,16 @@ offset.metadata.max.bytes = 1024
 		
 		
 ## KAFKA性能测试
- ♥♥♥ https://www.cnblogs.com/runnerjack/p/9105784.html ♥♥♥
+ ♥♥♥ https://www.cnblogs.com/runnerjack/p/9105784.html ♥♥♥\
+ 
+ ## Kafka Performance Tuning
+ [HERE](https://data-flair.training/blogs/kafka-performance-tuning/)
+ Producer:
++ Compression 减少网络io和延迟 但消耗cpu
++ Batch Size 分包大小的上限；提升该值可以提高吞吐量，但是会造成延迟问题latency
++ linger time 等待组包batch的时间，默认是0
++ Sync or Async
+ 
+ 
+ 
+ 

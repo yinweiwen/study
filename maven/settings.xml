@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+	<mirrors>
+		<mirror>
+			<id>central</id>
+			<mirrorOf>*</mirrorOf>
+			<name>FS-Maven Repositories</name>
+			<url>http://10.8.30.22:8081/repository/FS-Maven/</url>
+		</mirror>
+		<!-- 阿里云仓库 -->
+        <mirror>
+            <id>AliMaven</id>
+            <mirrorOf>central</mirrorOf>
+            <name>aliyun maven</name>
+            <url>http://maven.aliyun.com/nexus/content/repositories/central/</url>
+        </mirror>
+
+        <!-- 上海交通大学反向代理 -->
+        <mirror>
+            <id>sjtugmaven</id>
+            <name>sjtug maven</name>
+            <url>https://mirrors.sjtug.sjtu.edu.cn/maven-central/</url>
+            <mirrorOf>central</mirrorOf>
+        </mirror>
+
+        <!-- 华为云反向代理 -->
+        <mirror>
+            <id>huaweicloud</id>
+            <mirrorOf>*</mirrorOf>
+            <url>https://mirrors.huaweicloud.com/repository/maven/</url>
+        </mirror>
+	</mirrors>
+	<profiles>
+		<profile>
+			<id>FS-Maven</id>
+			<repositories>
+				<repository>
+					<id>FS-Maven</id>
+					<name>FS-Maven</name>
+					<url>http://10.8.30.22:8081/repository/FS-Maven/</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+				</repository>
+			</repositories>
+		</profile>
+
+	</profiles>
+
+	<!-- <localRepository>${env.MAVEN_REP_HOME}/.m2/repository</localRepository> -->
+	<interactiveMode>true</interactiveMode>
+	<usePluginRegistry>false</usePluginRegistry>
+	<offline>false</offline>
+	
+	<servers>
+		<server>
+			<id>fs-releases</id>
+			<username>admin</username>
+			<password>admin123</password>
+		</server>
+	</servers>
+</settings>
