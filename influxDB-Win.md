@@ -317,3 +317,52 @@ END
 
 ## DDL
 [官方文档](https://docs.influxdata.com/influxdb/v1.7/query_language/database_management/)
+
+
+## Kapacitor
+[官方文档](https://docs.influxdata.com/kapacitor/v1.5/)
+
+#### Key Feature
+
++ 处理批数据和流数据
++ 按计划查询InfluxDB中的数据，按照line protocol或其他influx支持的方法。
++ 进行InfluxQL支持的转换
++ 存储转换后的数据到InfluxDB
++ 增加用户定义函数检测异常
++ 和其他第三方工具集成：HipChat、Altera、Sensu、OagerDuty、Slack
+
+定义告警脚本，如cpu_alert.tick:
+```sql
+dbrp "telegraf"."autogen"
+
+stream
+    // Select the CPU measurement from the `telegraf` database.
+    |from()
+        .measurement('cpu')
+    // Triggers a critical alert when the CPU idle usage drops below 70%
+    |alert()
+        .crit(lambda: int("usage_idle") <  70)
+        // Write each alert to a file.
+        .log('/tmp/alerts.log')
+```
+`注意tick脚本中双引号和单引号的使用`：Double quotes denote data fields, single quotes string values, 如  `where(lambda: "host" == 'server1')`
+```sql
+# define  task:
+kapacitor define cpu_alert -tick cpu_alert.tick
+# show tasks:
+kapacitor list tasks
+# enable tasks
+kapacitor enable cpu_alert
+# show
+kapacitor show cpu_alert
+# 修改task
+使用相同的task名称重新define，将更新并reload任务TICKscript
+```
+
+
+## 问题记录
+#### influxdb unable to find time zone Asia/Shanghai
+`windows`系统中可能出现此问题 [ref](https://blog.csdn.net/tony121lee/article/details/90899099)   解决方法：安装go
+
+或者使用这种方法：
+拷贝go安装后的 $GOROOT\lib\time\zoneinfo.zip  ,在目标机器设置$GOROOT重启influxd即可

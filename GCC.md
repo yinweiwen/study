@@ -261,4 +261,41 @@ gcc -c number.c
 gcc -shared -o number.dll number.o -Wl,--out-implib,libnumber.dll.a
 
 
+## Scons
+[ref](https://blog.csdn.net/guotianqing/article/details/92003258)
+Scons是Python实现的自动化、跨平台、多语言、自动依赖分析的构建工具，用来代替（简化）make。
 
+helloworld的编译实例：
+```shell
+
+% cat SConstruct
+Program("hello.c")
+```
+`scons -c ` 执行清理任务
+`scons -Q` 减少冗余信息
+
+
+SCons 支持的编译类型有：
+
++ Program： 编译成可执行程序（在 Windows 平台上即是 exe 文件），这是最常用的一种编译类型。
++ Object： 只编译成目标文件。使用这种类型，编译结束后，只会产生目标文件。在 POSIX 系统中，目标文件以 .o 结尾，在 Windows平台上以 .OBJ 结尾。
++ Library： 编译成库文件。SCons 默认编译的库是指静态链接库。
++ StaticLibrary： 显示的编译成静态链接库，与上面的 Library 效果一样。
++ SharedLibrary： 在 POSIX 系统上编译动态链接库，在 Windows 平台上编译 DLL。
+
+复杂点的例子，编译 'helloscons2.c', 'file1.c', 'file2.c'
+```
+Program('hello-scons2',['helloscons2.c', 'file1.c', 'file2.c'],
+	LIBS='m',
+	LIBPATH=['/usr/lib'],
+	CCFLAGS='-DHELLOSCONS')
+
+LIBS: 需要链接的库
+LIBPATH: 链接库的搜索路径
+CCFLAGS: 编译选项。上例定义了宏 HELLOSCONS
+CPPPATH: 指定头文件路径
+
+# 指定g++编译环境
+env = Environment(CC = 'g++')
+env.Program("client", "client.c", LIBS = 'm', CPPPATH = '../include', CCFLAGS = '-std=c++11')
+```
