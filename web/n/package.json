@@ -1,0 +1,22 @@
+{
+  "name": "n",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "umi dev",
+    "build": "umi build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "umi": "^3.2.9",
+    "react":"^16.13.1",
+    "@umijs/preset-react":"^1",
+    "antd": "^4.4.1"
+  },
+  "dependencies": {
+  }
+}
