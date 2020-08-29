@@ -1,0 +1,61 @@
+h1{
+    font-size: 21px;
+    color: blueviolet;
+}
+.red{
+    color: red;
+}
+#ysd{
+    color: green;
+}
+
+.shi{
+    font-family: cursive,"隶属";
+    font-size: 20px;
+    font-style: italic;
+    font-weight: bold;
+}
+
+#miss{
+    color: red;
+    font-size: 15px;
+    border: 1px solid red;
+    width: 100px;
+}
+#miss2{
+    color: red;
+    font-size: 15px;
+    border: 1px solid red;
+    width: 100px;
+}
+
+/*文本样式*/
+.paragraph_head{
+    color: #00C;
+    text-align: center;
+    line-height: 25px;
+    text-decoration: underline;
+}
+.paragraph_body{
+     text-align: left;
+     text-indent: 2em;
+     line-height: 25px;
+ }
+
+/*超文本样式*/
+a:link{
+    color: black;
+    text-decoration: none;
+}
+a:visited{
+    color: green;
+    text-decoration: none;
+
+}
+a:hover{
+    color: red;
+    text-decoration: underline;
+}
+a:active{
+    color: yellow;
+}
