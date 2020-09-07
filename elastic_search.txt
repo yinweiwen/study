@@ -154,3 +154,27 @@ GET anxinyun_alarms/alarm/4506871f-5671-4c04-bf94-0338f8b3b69c/_update
     "state":1
   }
 }
+
+
+## 包含指定字段
+GET anxinyun_aggregation/_search
+{
+  "query": {
+    "exists": {
+      "field": "data.wqLevel"
+    }
+  }
+}
+
+## update_by_query
+GET anxinyun_aggregation/_update_by_query?timeout=20m
+{
+  "script":{
+    "source": "ctx._source['method']='wqi'"
+  },
+  "query": {
+    "exists": {
+      "field": "data.wqLevel"
+    }
+  }
+}

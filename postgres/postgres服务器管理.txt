@@ -116,7 +116,7 @@ PGDATA目录下：
 ##2018 comming
 
 #清理空闲连接
-SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND state = 'idle';
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND state = 'idle' AND datname='AnxinCloud';
 
 
 SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='SmartSign2' and pid <> pg_backend_pid();
@@ -247,3 +247,78 @@ and relname like 't_%' order by rowCounts desc;
   还原：
   psql -U postgres -d haiwen -f ./Desktop/schema.sql
   psql -U postgres -d haiwen -f ./Desktop/data.sql
+=======
+-- 查询索引大小
+select indexrelname, 
+       pg_size_pretty(pg_relation_size(indexrelid)) 
+from pg_stat_user_indexes 
+where schemaname = 'public' 
+order by pg_relation_size(indexrelid) desc; 
+
+-- 查询表大小
+select relname, 
+       pg_size_pretty(pg_relation_size(relid)) 
+from pg_stat_user_tables 
+where schemaname = 'public' 
+order by pg_relation_size(relid) desc; 
+
+
+copy (select st.name,f.name,f.id,f.proto,fpix from t_structure_type st,t_structure_type_factor sf,t_factor f
+LEFT JOIN
+  (SELECT proto,jsonb_agg((SELECT x FROM (SELECT faci.id,faci.name,faci.field_name,unit.name as unit_name) x)) AS fpix FROM t_factor_proto_item faci,t_item_unit unit
+  WHERE unit.item=faci.id AND unit.if_default GROUP BY proto) AS fpi ON fpi.proto=f.proto
+where sf.factor=f.id and st.id=sf.structure_type order by st.id,f.proto) to '/tmp/allfactors.txt';
+
+
+-- 查询某个表的所有外键约束
+
+SELECT x.table_name, x.column_name,x.constraint_name
+
+         FROM  information_schema.key_column_usage x
+
+      INNER JOIN  (SELECT  t.relname,
+
+                   a.conname
+
+             FROM  pg_constraint a
+
+             INNER JOIN pg_class ft
+
+                     ON ft.oid = a.confrelid
+
+             INNER JOIN pg_class t
+
+                     ON t.oid = a.conrelid
+
+            WHERE  a.contype = 'f'
+
+              AND  a.confrelid =
+
+                   (select e.oid
+
+                      from pg_class e
+
+                     where e.relname = 't_sensor')
+
+            ) tp
+
+      ON (x.table_name = tp.relname AND
+
+          x.constraint_name = tp.conname);
+		  
+## 查询物联网卡：
+// pg
+select t.id,t.name,t."createdAt",u.username,d.properties::json->'SIMNum' from "Thing" t,"Device" d,"User" u
+where d."thingId"=t.id and
+      t."belongTo"=u.id and
+      d."deviceMetaId" in (select id from "DeviceMeta" where name='DTU')
+and char_length((d.properties::json->'SIMNum')::varchar)>13;
+
+sqlserver
+select st.STRUCTURE_NAME_CN,REMOTE_DTU_SUBSCRIBER,u.PlatformId from T_DIM_STRUCTURE st,T_DIM_STRUCT_DTU sd,T_DIM_REMOTE_DTU d,T_DIM_USER u
+where st.IsDelete=0 and st.ID=sd.StructureId
+  and sd.DtuId=d.ID and st.owner=u.USER_NO
+and REMOTE_DTU_SUBSCRIBER is not null and len(replace(REMOTE_DTU_SUBSCRIBER,' ',''))>11;
+
+
+

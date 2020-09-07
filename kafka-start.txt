@@ -20,6 +20,10 @@
   
   // on windows
   // I:\WorkSpace\@JAVA\kafka_2.11-0.11.0.0\bin\windows>kafka-console-consumer.bat --bootstrap-server 10.8.30.117:9092 --topic important --from-beginning
+  
+  // 查看消费情况
+  ./kafka-consumer-groups.sh --new-consumer --bootstrap-server test-n1:9092 --list.
+  ./kafka-consumer-groups.sh --new-consumer --bootstrap-server 10.8.30.36:6667 --group et.mainxx --describe
 	
   # 查看topic  (describe)
   ./kafka-topics.sh --list --zookeeper node35:2181,node36:2181,node37:2181
@@ -377,5 +381,130 @@ offset.metadata.max.bytes = 1024
 + Sync or Async
  
  
+ ## 错误排查
+ 
+ LEADER_NOT_AVAILABLE
  
  
+ Error while fetching metadata with correlation id
+ 
+ 
+ 
+ amabari中所有节点心跳丢失，无法启动iota-m1上的kafka服务；
+
+查看ambari-agent日志：/var/log/ambari-agent# tail -f ambari-agent.log
+Traceback (most recent call last):
+  File "/usr/lib/python2.6/site-packages/ambari_agent/Controller.py", line 175, in registerWithServer
+    ret = self.sendRequest(self.registerUrl, data)
+  File "/usr/lib/python2.6/site-packages/ambari_agent/Controller.py", line 545, in sendRequest
+    raise IOError('Request to {0} failed due to {1}'.format(url, str(exception)))
+IOError: Request to https://iota-m1:8441/agent/v1/register/iota-n1 failed due to EOF occurred in violation of protocol (_ssl.c:590)
+ERROR 2020-06-16 21:09:28,836 Controller.py:227 - Error:Request to https://iota-m1:8441/agent/v1/register/iota-n1 failed due to EOF occurred in violation of protocol (_ssl.c:590)
+WARNING 2020-06-16 21:09:28,837 Controller.py:228 -  Sleeping for 5 seconds and then trying again 
+
+发现问题是https证书过期
+https://my.oschina.net/aubao/blog/1920933
+
+在每个ambari节点上修改
+vi /etc/ambari-agent/conf/ambari-agent.ini
+force_https_protocol=PROTOCOL_TLSv1_2
+然后，重启所有节点上ambari-agent：
+ambari-agent restart
+
+
+## Zookeeper:.
+[ref csdn](https://blog.csdn.net/java_66666/article/details/81015302)
+统一命名服务、状态同步服务、集群管理、分布式应用配置项的管理等
+zookeeper = 文件系统 + 监听通知机制
+
+znode（目录）
++ Persistent 持久
++ persistent-sequential 持久顺序编号
++ ephemeral 临时目录节点； 客户端端口连接后，节点被删除
++ ephemeral_sequential 临时顺序编号
+
+```shell
+zkServer.sh status [conf/zoo.cfg]
+
+
+zkCli.sh 
+help"
+stat path [watch]
+	set path data [version]
+	ls path [watch]
+	delquota [-n|-b] path
+	ls2 path [watch]
+	setAcl path acl
+	setquota -n|-b val path
+	history 
+	redo cmdno
+	printwatches on|off
+	delete path [version]
+	sync path
+	listquota path
+	rmr path
+	get path [watch]
+	create [-s] [-e] path data acl
+	addauth scheme auth
+	quit 
+	getAcl path
+	close 
+	connect host:port
+	
+create [-s] [-e] path data acl
+	-s: 创建顺序节点
+	-e：创建临时 ephemeral znode
+	path: znode目录路径 /xxx/xx
+	acl: 权限： world:anyone:crwa
+getAcl/setAcl: 设置权限：
+	默认 world:anyone cdrwa
+
+set path data [version]
+	version: 指定数据版本
+	
+get /iota/orchestration/Thing/1/resources
+	{...data....}
+	cZxid = 0x34001de68b 【创建节点ID】
+	ctime = Wed Jun 10 19:51:50 CST 2020 【create time】
+	mZxid = 0x3a0000013e 【修改节点的ID】
+	mtime = Thu Aug 06 10:15:16 CST 2020 【modify time】
+	pZxid = 0x34001de68b 【子节点的ID】
+	cversion = 0 【子节点的版本】
+	dataVersion = 12 【当前节点数据的版本】
+	aclVersion = 0 【权限的版本】
+	ephemeralOwner = 0x0 【时候临时节点 】
+	dataLength = 13971 【数据长度】
+	numChildren = 0 【子节点的数量】
+
+查询状态
+echo stat | nc 192.168.0.68 2181
+查询是否启动
+echo ruok | nc 192.168.0.68 2181
+查询没有处理的节点，临时节点
+echo dump | nc 192.168.0.68 2181
+查询服务器配置
+echo conf | nc 192.168.0.68 2181
+查询客户端连接
+echo cons | nc 192.168.0.68 2181
+查询环境变量
+echo envi | nc 127.0.0.1 2181
+查询健康信息
+echo mntr | nc 192.168.0.68 2181
+
+wchs watch信息； wchc session watchs; wchp path watchs;
+```
+
+Zookeeper集群模式：
+```shell
+# 数据目录
+dataDir=/tmp/zookeeper-1
+# 客户端端口
+clientPort=2181
+# Service.N = ip:通信端口：Leader选举端口
+server.1=127.0.0.1:2888:3888
+server.2=127.0.0.1:2889:3889
+server.3=127.0.0.1:2890:3890
+# tickTime 心跳间隔
+# initLimit Follow连接Leader的超时间隔数
+# syncLimit Leader和Follow通信超时时间间隔
+```

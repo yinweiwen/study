@@ -73,3 +73,38 @@ print('caption'.center(100))
 print('-2.12e2'.isnumeric())
 print('  name  '.strip())
 ```
+
+
+
+[镜像库]
+1. 
+国内源：
+清华：https://pypi.tuna.tsinghua.edu.cn/simple
+
+阿里云：http://mirrors.aliyun.com/pypi/simple/
+
+中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/
+
+华中理工大学：http://pypi.hustunique.com/
+
+山东理工大学：http://pypi.sdutlinux.org/ 
+
+豆瓣：http://pypi.douban.com/simple/
+
+note：新版ubuntu要求使用https源，要注意。
+
+例如：pip3 install -i https://pypi.doubanio.com/simple/ 包名
+
+2. 
+[linux] ~/.pip/pip.conf
+[windows] C:\Users\yww08\pip\pip.ini
+
+```
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+trusted-host = pypi.tuna.tsinghua.edu.cn
+disable-pip-version-check = true
+timeout = 120
+[install]
+trusted-host=mirrors.aliyun.com
+```
