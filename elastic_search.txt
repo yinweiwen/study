@@ -1,6 +1,6 @@
-#
+# ElasticSearch
 
-# http://10.8.30.37:5601/app/kibana
+### http://10.8.30.37:5601/app/kibana
 
 启动：
 	bin/elasticsearch -d
@@ -8,7 +8,17 @@
 	ps -ef | grep elastic
 	kill -9
 	
-安装head插件
+## 创建索引
+```
+PUT raw_data
+{
+ "mappings":{
+	...
+ }
+}
+```
+	
+### 安装head插件
 https://github.com/mobz/elasticsearch-head
 	git clone git://github.com/mobz/elasticsearch-head.git
 	cd elasticsearch-head
@@ -17,11 +27,11 @@ https://github.com/mobz/elasticsearch-head
 	open http://localhost:9100/
 
 
-安装x-pack监视性能：
+### 安装x-pack监视性能：
 	bin/elasticsearch-plugin install x-pack
  没学会。。。
  
-
+```
  ES性能监视
 	监视内存
 	ps -ef | grep elastic
@@ -35,6 +45,8 @@ https://github.com/mobz/elasticsearch-head
 		GET _cat/indices/savoir_raws
 				health status index uuid pri rep docs.count docs.deleted   store.size  pri.store.size
 				green open savoir_raws X3OCrzSwSwKEZrQhkn9Rrw 5 1 819361 0 118gb 57.2gb
+```
+
 +
 LUCENSE:
 document -> 索引和搜索的主要数据载体，对应写入到ES中的一个doc
@@ -162,6 +174,23 @@ GET anxinyun_aggregation/_search
   "query": {
     "exists": {
       "field": "data.wqLevel"
+    }
+  }
+}
+
+## ARRAY | NESTED 下字段查询
+GET savoir_alarms/_search
+{
+  "query": {
+    "nested": {
+      "path": "details",
+      "query": {
+        "bool": {
+          "must": [
+            {"exists": {"field": "details.alarm_pic"}}
+          ]
+        }
+      }
     }
   }
 }

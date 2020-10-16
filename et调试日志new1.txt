@@ -980,3 +980,7 @@ java.lang.NoSuchMethodError: org.apache.flink.api.java.ClosureCleaner.clean
 
 45. influx unable to find time zone Asia/Shanghai
 	要配置$GOROOT 见influx.md
+	
+46. kafka console producer 发送消息大小限制：
+	替代方法：
+	cat /tmp/1.txt | ./kafka-console-producer.sh --broker-list node38:6667 --topic anxinyun_data3

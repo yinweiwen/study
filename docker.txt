@@ -70,6 +70,9 @@ $ sudo nsenter --target 15230 --mount --uts --ipc --net --pid
 
 mount -t cifs //10.8.30.163/versions /var/jenkins-version -o rw
 
+例子:
+sudo nsenter --target `sudo docker inspect -f {{.State.Pid}} ed9440a72d72` --mount --uts --ipc --net --pid
+
 example 0.1: <docker 安装apach打开网站 保存例子> 
 docker run -i -t fedora bash
 yum update

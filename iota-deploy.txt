@@ -1,0 +1,237 @@
+# iOTA 环境搭建
+
+## Console
+
+http://10.8.30.38
+
+free-sun Co1iOTA
+
+关键：
+1.不需要配置cm
+2.配置nginx
+
+问题：
+1.163构建web无法使用
+2.图片无法存储
+
+## topic 和 index 准备
+### 创建ES索引
+```
+PUT raw_data ... alert_current ... alert_history
+{
+ "mappings":{
+	... ${in Iota\trunk\doc}
+ }
+}
+```
+
+创建索引别名
+```http
+POST /_aliases
+{
+  "actions": [
+    { "add":    { "alias": "raw_data_alias",  "index": "raw_data" }}, 
+    { "add":    { "alias": "alert_current_alias",  "index": "alert_current" }}, 
+    { "add":    { "alias": "alert_history_alias",  "index": "alert_history" }}, 
+  ]
+}
+```
+
+
+### 创建KAFKA Topic
+```
+./kafka-topics.sh --create --zookeeper node36:2181 --replication-factor 1 --partitions 3 --topic xx
+```
+1.RawData 接收数据主题
+2.InvokeCap/InvokeCapAck 能力请求应答主题
+3.Registry 注册器-用于将key注册到代理 例如soip:2222:12345678
+4.StreamMetrics 数据流量指标
+5.LinkStatMetrics 链路状态
+6.HeartBeat 服务心跳
+7.RunTestAck
+8.ScriptTest/ScriptTestAck 脚本测试
+9.TestProgress
+10.Alert 告警
+
+## background
+
+http://10.8.30.38:19081
+
+admin Iota123_
+
+## proxy
+启动报错
+Error loading shared library librdkafka.so.1: No such file or directory (needed by ./proxy)
+Error relocating ./proxy: rd_kafka_conf_destroy: symbol not found
+Error relocating ./proxy: rd_kafka_event_name: symbol not found
+Error relocating ./proxy: rd_kafka_queue_poll: symbol not found
+Error relocating ./proxy: rd_kafka_queue_get_consumer: symbol not found
+Error relocating ./proxy: rd_kafka_event_error_string: symbol not found
+Error relocating ./proxy: rd_kafka_topic_partition_list_add: symbol not found
+Error relocating ./proxy: rd_kafka_query_watermark_offsets: symbol not found
+
+使用iota/images/iota-proxy/Dockerfile构建
+
+### 读写redis报错：
+```
+panic: MISCONF Redis is configured to save RDB snapshots, but it is currently not able to persist on disk. Commands that may modify the data set are disabled, because this instance is configured to report errors during writes if RDB snapshotting fails (stop-writes-on-bgsave-error option). Please check the Redis logs for details about the RDB error.
+```
+发生这个错误很可能是因为被攻击了；修改服务对外端口（非默认端口）并重启容器；
+
+
+## messsage-center
+
+/etc/nginx/streams-available/message-server
+
+```
+    upstream web {
+        hash $remote_addr consistent;
+        server 10.8.30.38:5000 weight=5 max_fails=1 fail_timeout=20s;
+    }
+
+    server {
+        listen 9180;
+        proxy_pass web;
+    }
+```
+ln -s streams-available/message-server streams-enabled/message-server
+
+## orchestrator <dac编排器>
+```json
+{"o":"u","t":"Thing","k":{"id":"5a25dca1-a649-4c52-9f04-9a3a91f6d166"},"trigger":{"o":"c","t":"Layout","k":{"id":"58581a21-0a82-43cf-a758-4c1077ae280f"}}}
+```
+
+### 获取 kubernets service account token
+
+yaml'文件中查看使用的secret -> iotasecret
+
+```shell
+anxin@node38:~$ kubectl get secret -n iota
+NAME                  TYPE                                  DATA   AGE
+default-token-nrb7p   kubernetes.io/service-account-token   3      40d
+iotasecret            kubernetes.io/dockerconfigjson        1      40d
+
+anxin@node38:~$ kubectl get secret -n iota default-token-nrb7p -o yaml
+apiVersion: v1
+data:
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN5RENDQWJDZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJd01EZ3hNakE1TkRNeE0xb1hEVE13TURneE1EQTVORE14TTFvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTG41Ckx3YjhRK1NvaXhWQ1lyOFBUTW8xSzhrQ2FkNS9EbzB0T2xMenBvamZid1Ezc2pvS1lUN1R6L0hpYmpWYm1mTjQKZnJlaVo5emxvbmNZWHpBU0hvTlJDU3ErVWxiZHlWNlhOTTRQRDBaUkgxU21zUUgvN0FFTmNCd2wrYTJRNW1OcgpzYndSSFhwQm9BY1dFZk5LYVJydGdzRHRETEM3M2M4UzVWMHdNSlJ4VDFhMUxnWStJT1NsVVJWU0o5ME0rUjd0Ci9FZ2EvcU5GYkV5a3BUZkNCdzNhbWZiUmdJNjdlWHIwWGVyUDhYMEZCRm5HZ0N0VU1vdUUwbWE5ZTQveUtyYlMKdUNCR0xmVUlhSUNRdjBNelljNjdUSnRGRDdsenllZ2twNU5CbTVWR1JvelNPa0VBUDhSN0loRUE2ZnRoMStRTwpXN2ZXTUd6TXQwdURMY3RhQXk4Q0F3RUFBYU1qTUNFd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGNnU3K2dtRmgwN29EK3lTem03eHY0ekU3NlkKOTAzTjhDTnY5bnoxa0ZUbVZ6Uy92SDB2bDl1V2R0a0RvN1ZtTjdLMnJPVUw0Nk1XVUJEWXFyK21TRFRMaE9XdApaLzNyb1VnRHJvcS9OeFkwRno4U0J4SkM4VlZwYzUyNVdWKytnbEhhYThvV3N5Z1g4UE9qc1ZqR2xISnNjc0o5CkNzbG8raTdKeUppdnFhZDE0SnFzMldRaU1QRmprMUNvS29vVEhwU0NBMGpSQ2NwamtVS05PZmtCOU9IU3c4alAKK2d2aVYwTHRsVDJZM2xRTS9Nb25YeUE3ODhiQTJjbS92MXpRTFZNRFkvcWFkM2JzNFlsWmNGVGxiMTBQVTZVNQpIOHNXdDBJQmZyZkxlN2JUMjZoNVdjUEFQY3RtL3h3VERDellzL1h6bUxzTE1RdG5zS05aTUxMMllRTT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  namespace: aW90YQ==
+  token: ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklsSkZVa2R5UVZab1lYUmtVbXA2ZW5wNVNURk9TM2hSU0doeVh6RjFRMFEzZFhNNVZGUlFlRFV3WmpRaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUpwYjNSaElpd2lhM1ZpWlhKdVpYUmxjeTVwYnk5elpYSjJhV05sWVdOamIzVnVkQzl6WldOeVpYUXVibUZ0WlNJNkltUmxabUYxYkhRdGRHOXJaVzR0Ym5KaU4zQWlMQ0pyZFdKbGNtNWxkR1Z6TG1sdkwzTmxjblpwWTJWaFkyTnZkVzUwTDNObGNuWnBZMlV0WVdOamIzVnVkQzV1WVcxbElqb2laR1ZtWVhWc2RDSXNJbXQxWW1WeWJtVjBaWE11YVc4dmMyVnlkbWxqWldGalkyOTFiblF2YzJWeWRtbGpaUzFoWTJOdmRXNTBMblZwWkNJNkltWm1PV0kxT0RBMUxUTmlOelF0TkdGak5TMDVNVFprTFdVNE9ETmtaamczT1dFeFlpSXNJbk4xWWlJNkluTjVjM1JsYlRwelpYSjJhV05sWVdOamIzVnVkRHBwYjNSaE9tUmxabUYxYkhRaWZRLjBMaF9SamtVeEg4cUNDbXA1UHJhdUVnWURYdjN0RVdnaEUxdTE0NnVSTmh4Q3Q1MkVRTWtneWtYQkg2SW9teW9sYTZndm5WSUM5d0NzU05OQ2ZLZlprSFA5N053ejFIdWhPekdZaUFWSEJoaDBVV3pHZnVkZkpodlVjRy1KeVVfc3FzRnJRQ2RXOXFZejFvTWtFSzdweXBWN0Z3aWNYMmhkNVRfaFNBVVBMTlI2TS0zWk5UTjMyenRUaWtXUnNLb1EzUENzcDJuR0hLRHVTck9JR1BvTXJ2TW50d1VvcUxBbHhabC1yOTZtQ1F3elo0MHdKSlNBRWJUWnlSZF8xeU81bDh3dWk1cVIyTEZwc2ZLcjk2S2t1WnRmdVdMODExTG9JTnFYellZTUEzUUI2OU5ZTU9Gc3JjRFJZdlkybGM2aXVaQjhxUHNHSzdNRkRtZWZPcHRzZw==
+kind: Secret
+metadata:
+  annotations:
+    kubernetes.io/service-account.name: default
+    kubernetes.io/service-account.uid: ff9b5805-3b74-4ac5-916d-e883df879a1b
+  creationTimestamp: "2020-08-21T05:55:03Z"
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:ca.crt: {}
+        f:namespace: {}
+        f:token: {}
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubernetes.io/service-account.name: {}
+          f:kubernetes.io/service-account.uid: {}
+      f:type: {}
+    manager: kube-controller-manager
+    operation: Update
+    time: "2020-08-21T05:55:03Z"
+  name: default-token-nrb7p
+  namespace: iota
+  resourceVersion: "1818968"
+  selfLink: /api/v1/namespaces/iota/secrets/default-token-nrb7p
+  uid: 786da9b5-2211-461a-a227-b92bc1ffbc90
+type: kubernetes.io/service-account-token
+```
+上面的 data.token就是进程参数authToken （注意：base64解密）
+
+注意启动dac要修改：
+templates\iota-dac\pod-template.yml 中image和configmap正确
+
+启动 orchestrator (configjs中先把 rule规则引擎相关删掉  instance个数修改为2简化)
+
+ node index.js -h 0.0.0.0 -p 9281 -g postgres://FashionAdmin:123456@10.8.30.39:5432/iota_dev -r node38 -t 6378 -k node36:9092 -z node36:2181 -q node38:1883 -u https://node38:6443 -a eyJhbGciOiJSUzI1NiIsImtpZCI6IlJFUkdyQVZoYXRkUmp6enp5STFOS3hRSGhyXzF1Q0Q3dXM5VFRQeDUwZjQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJpb3RhIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tbnJiN3AiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImZmOWI1ODA1LTNiNzQtNGFjNS05MTZkLWU4ODNkZjg3OWExYiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDppb3RhOmRlZmF1bHQifQ.0Lh_RjkUxH8qCCmp5PrauEgYDXv3tEWghE1u146uRNhxCt52EQMkgykXBH6Iomyola6gvnVIC9wCsSNNCfKfZkHP97Nwz1HuhOzGYiAVHBhh0UWzGfudfJhvUcG-JyU_sqsFrQCdW9qYz1oMkEK7pypV7FwicX2hd5T_hSAUPLNR6M-3ZNTN32ztTikWRsKoQ3PCsp2nGHKDuSrOIGPoMrvMntwUoqLAlxZl-r96mCQwzZ40wJJSAEbTZyRd_1yO5l8wui5qR2LFpsfKr96KkuZtfuWL811LoINqXzYYMA3QB69NYMOFsrcDRYvY2lc6iuZB8qPsGK7MFDmefOptsg
+ 
+** 在本机启动运行一段时间，dac进程被关闭并重启：
+```Not receive heartBeat rightly, delete instance [0]```
+
+## DAC
+### KAFKA 报错
+```
+2020/10/09 14:40:27.337946 [E] [Kafka] send [Registry] error: kafka server: In the middle of a leadership election, there is currently no leader for this partition and hence it is unavailable for writes.
+2020/10/09 14:40:27.337999 [E] [Reg] send reg info failed, kafka server: In the middle of a leadership election, there is currently no leader for this partition and hence it is unavailable for writes
+```
+解决：
+配置的broker少写了一个，加上好了
+
+### 关于zookeeper中资源分配
+```shell
+[zk: localhost:2181(CONNECTED) 20] ls2 /iota/orchestration/Thing/0
+[resources, _reload, tmp]
+
+[zk: localhost:2181(CONNECTED) 31] get /iota/orchestration/Thing/0/resources
+{"ids":["0001920b-c613-4a0e-88f8-ffed16840242","000832bc-dcf1-48c9-ab83-ceabf0429a5c","00234591-3c96-4ff0-a4df-ea20df3d2976","0023c853-cbf7-447b-92c4-9c8b6812679b","002a1b6a-65b7-4644-891b-8a060102a2e6","00922dd3-fa96-4a6f-8a02-197fe08cc0b2","00923f48-8489-46b0-9d1c-4fc69da4e4f6","00b2c1fb-9554-4383-a3df-391c3511673f","00d41f11-1ad3-4abe-8dc7-f05852f1a10a","00d53fe0-526d-471e-833c-a6eb89620770","00d9c170-575c-4650-a40e-daf38bab7880","00f0ac7a-4570-4d5c-868c-12206b0a6961","00f75828-6486-477b-9571-5ce7e659befe" ...]}
+```
+
+## Alert 
+```
+debug: [iOTA-ALERT] duplicated alert status=firing, alertname=LinkStatus, deviceId=b0485019-b51c-4f72-b6c6-a0da520b42e1, instance=10.244.1.192:19201, job=iOTA-DAC, kubernetes_pod_name=iota-dac-8, monitor=codelab-monitor, thingId=db11b93c-b968-4924-8da8-a20eb82cac2f, userId=c9989314-4834-479b-bbdc-009a686b21c3, , startsAt=2020-09-10T05:09:11.996993995Z, endsAt=2020-09-10T08:03:36.996993995Z, generatorURL=http://iota-prometheus-767b8674bf-57hwf:19090/graph?g0.expr=iota_dac_device_status+%3D%3D+0&g0.tab=1, id=9848a8055f86b09b69220051804ba624e5f65497
+```
+
+启动服务>
++ iota-prometheus
+	抓取数据？
++ iota-alertmanager
+	prom告警服务根据设定规则产生告警
++ iota-alert-server 
+	alertmanager的一个客户端服务，持久化告警
+
+### Prometheus AlertManager
+特性：
+1.Grouping 分组
+2.Inhibition 抑制
+3.Silences 静默
+4.Client behavior
+5.High Availability
+
+### Iota AlertServer
+功能：存储ES 推送Kafka(Alert)
+
+## DAC-TEST 协议脚本测试
+代码和dac目录一致，主方法在：
+`src\iota\driver\test\main\main.go`
+
+```插播
+DAC Jenkins：
+CGO_ENABLED=0 go build -ldflags "-extldflags -static " -ldflags "-X main.VERSION=1.0.0 -X 'main.SVN_REVISION=$SVN_REVISION_1' -X 'main.BUILD_NUMBER=$BUILD_NUMBER' -X 'main.BUILD_TIME=$BUILD_TIMESTAMP' -X 'main.GO_VERSION=`go version`'" -tags netgo -a -v -o ../../$BUILD_NUMBER/dac
+```
+
+
+## 规则引擎
+
+[node-red](https://nodered.org/docs/user-guide)
+
+```
+npm install -g --unsafe-perm node-red
+# 启动
+node-red 
+```
+
+
+
+## 调试
+
+## Schema 和 Dimension 的区别是什么？
+维度 Dimension 包括 方案(Schema)和能力使用(Cap Invoker)
+方案指定调度方案，重复方式有周期、定量、一次性、监听
+任务(Task)是方案的一次实例，是一次能力调用
+--- DAC --- 
+任务调用执行器*(Driver),最终执行器调用沙箱(SandBox)执行通道(Channel)中数据处理。
+Sandbox中包含Start、Stop、onData等方法，作为协议处理器。
+start -> ctx.ssend -> ctx.done
+start -> ctx.asend -> onData -> ctx.notify
