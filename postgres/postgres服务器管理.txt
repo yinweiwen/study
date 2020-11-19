@@ -9,6 +9,7 @@ host    all             all             10.8.30.0/24            md5
 
 在磁盘上初始化一个数据库存储区域。 我们称之为一个数据库集簇（SQL 标准使用的术语是目录集簇）
 $ initdb -D /usr/local/pgsql/data
+-- 
 $ pg_ctl -D /usr/local/pgsql/data initdb
 启动数据库服务器
 $ postgres -D /usr/local/pgsql/data
@@ -321,4 +322,8 @@ where st.IsDelete=0 and st.ID=sd.StructureId
 and REMOTE_DTU_SUBSCRIBER is not null and len(replace(REMOTE_DTU_SUBSCRIBER,' ',''))>11;
 
 
+## 数据库自动备份
 
+https://www.cnblogs.com/telwanggs/p/11547370.html
+
+https://www.jianshu.com/p/b2c254897071

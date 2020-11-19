@@ -984,3 +984,13 @@ java.lang.NoSuchMethodError: org.apache.flink.api.java.ClosureCleaner.clean
 46. kafka console producer 发送消息大小限制：
 	替代方法：
 	cat /tmp/1.txt | ./kafka-console-producer.sh --broker-list node38:6667 --topic anxinyun_data3
+	
+	
+47.
+sudo docker save -o /home/user/images/ubuntu_14.04.tar ubuntu:14.04
+
+docker load --input mediaPusherImage.tar 
+docker run --name mediaPusher -d -p 9090:9090 -p 1935:1935 anxinyun/mediapusher:m0 /bin/bash /app/mediaPusherBin/startBackground.sh
+
+48. 查看linux下文件夹大小
+du -h --max-depth=1 ./

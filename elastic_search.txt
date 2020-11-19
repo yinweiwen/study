@@ -207,3 +207,62 @@ GET anxinyun_aggregation/_update_by_query?timeout=20m
     }
   }
 }
+
+## aggs
+### TOP HIT EX.
+GET anxinyun_themes/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "structure": {
+              "gte": 10,
+              "lte": 2000
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 0, 
+  "aggs": {
+    "struct": {
+      "terms": {
+        "field": "structure",
+        "size": 10000
+      },
+      "aggs": {
+        "LATEST": {
+          "top_hits": {
+            "size": 1,
+            "sort": [
+              {
+                "collect_time": {
+                  "order": "desc"
+                }
+              }  
+            ],
+            "_source": {
+              "includes": ["structure","collect_time"]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+## ES-DUMP
+
+```
+docker run --rm -ti -v /data:/tmp elasticdump/elasticsearch-dump \
+  --input=http://10.8.25.211:9200/raw_data \
+  --output=/tmp/my_index_mapping.json \
+  --type=data \
+  --searchBody='{"query": { "bool": { "must": [{"term": {"deviceId": {"value": "e155b882-d2df-4092-b57d-0a02fae8fca6"}}}, { "range": { "triggerTime": { "lt": "2020-10-24T00:00:00.000+08:00","gt":"2020-10-01T00:00:00.000+08:00" } } } ] } } }'
+  
+
+docker run --rm -ti elasticdump/elasticsearch-dump  -v /data:/tmp --input=./data1.json --output=http://10.8.30.36:9200 --type=data
+```

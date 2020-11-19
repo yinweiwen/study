@@ -37,6 +37,9 @@ sudo cp influxdb_2.0.0-alpha.21_linux_amd64/{influx,influxd} /usr/local/bin/
 
 `sudo influxd`
 
+启动：chronograf
+ `docker run -p 8888:8888 -d chronograf:latest`
+
 ### Set up InfluxDB | CLI(command line interface)
 
 #### CLI
@@ -76,7 +79,18 @@ drop measurement disk_free
 
 # 数据保存策略
 show retention policies on "db_name"
+
+name    duration shardGroupDuration replicaN default
+----    -------- ------------------ -------- -------
+autogen 0s       168h0m0s           1        true
+duration - 持续时间，0代表无限制
+shardGroupDuration--shardGroup的存储时间，shardGroup是InfluxDB的一个基本储存结构，应该大于这个时间的数据在查询效率上应该有所降低
+replicaN--全称是REPLICATION，副本个数
+default--是否是默认策略
+
 create retention policy "rp_name" on "db_name" duration 3w replication 1 default
+
+ALTER RETENTION POLICY "autogen" ON "IotaRaw" DURATION 1825d DEFAULT
 ```
 
 #### CQ 连续查询

@@ -24,6 +24,8 @@
   // 查看消费情况
   ./kafka-consumer-groups.sh --new-consumer --bootstrap-server test-n1:9092 --list.
   ./kafka-consumer-groups.sh --new-consumer --bootstrap-server 10.8.30.36:6667 --group et.mainxx --describe
+  
+  ./kafka-consumer-groups.sh --describe --group savoir.master.server --zookeeper iota-m2:2181
 	
   # 查看topic  (describe)
   ./kafka-topics.sh --list --zookeeper node35:2181,node36:2181,node37:2181
@@ -59,6 +61,13 @@
   ls /brokers/topics
   rmr /brokers/topics/anxinyun_data2
   删除完成后重启zookeeper和kafka服务；
+  
+  
+  # 常见问题：
+  1. Offset commit failed with a retriable exception
+  consumer提交异常； https://blog.csdn.net/hanghangde/article/details/97945315
+  
+  session.timeout.ms => consumer-group检查组内成员掉线的时间； 消费逻辑处理时间太长导致，两次poll间隔不能超过此阈值；
   
   
 	

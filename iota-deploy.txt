@@ -218,10 +218,22 @@ CGO_ENABLED=0 go build -ldflags "-extldflags -static " -ldflags "-X main.VERSION
 
 ```
 npm install -g --unsafe-perm node-red
-# 启动
+
+> 启动
 node-red 
 ```
 
+IOTA_RULES_ENGINE_MODE : single(单例) instance（多列）
+/iota/orchestration/Rule
+
+MQTT订阅 cm/notify 响应函数 onRuleChange > delete/upldateRule > Engine.runner.add/remove/updateFlow
+
+
++ 页面报错
+‘规则由于缺少节点类型而停止’ 构建问题? 用以太商店的iota.store版本
+
++ node-red中配置的mqtt节点不断断开
+将`configMap 配置 IOTA_RULES_ENGINE_MODE: instance`
 
 
 ## 调试
@@ -235,3 +247,14 @@ node-red
 Sandbox中包含Start、Stop、onData等方法，作为协议处理器。
 start -> ctx.ssend -> ctx.done
 start -> ctx.asend -> onData -> ctx.notify
+
+## 以太商用
+configMap中用到ES的：
+iota-consumer
+iota-message-center
+iota-alert-server
+iota-console
+iota-logstash
+iota-nb-orchestrator
+iota-orchestrator
+iota-raw-data-logstash
