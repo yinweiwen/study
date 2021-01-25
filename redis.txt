@@ -197,3 +197,9 @@ ubuntu 16:
 	>> Failed opening the RDB file root (in server root dir /var/spool/cron) for saving: Read-only file system 疑似被攻击了，
 	redis-cli config get dir
 	redis-cli config get dbfilename
+	
+# Redis 集群安装
+[ref](https://www.cnblogs.com/super-chao/p/9329018.html)
+
+# Jedis 使用问题汇总
+[didi的blog](https://blog.didispace.com/Jedis%E5%B8%B8%E8%A7%81%E5%BC%82%E5%B8%B8%E6%B1%87%E6%80%BB/)

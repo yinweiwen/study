@@ -205,6 +205,18 @@ netstat -an | grep -E "ESTABLISHED|WAIT"
 	find /usr/ -path "*local*" 路径匹配
 	find . -regex ".*\(\.txt\|\.pdf\)$" 基于正则表达式匹配文件路径
 	
+## 磁盘空间 和 查找大文件
+```bash
+find / -type f -size +200M 2>/dev/null|xargs du -shm|sort -nr|awk '{print $2}'|ls -l
+
+ls -ll
+du -h –max-depth=1 *  可以查看当前目录下各文件、文件夹的大小
+du -sh 查询当前目录总大小
+
+```
+
+
+	
 ## 后台启动进程
   *nohup 如果宿主ssh进程关闭，后台nohup进程也会被关闭
   建议使用 screen

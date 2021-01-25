@@ -994,3 +994,30 @@ docker run --name mediaPusher -d -p 9090:9090 -p 1935:1935 anxinyun/mediapusher:
 
 48. 查看linux下文件夹大小
 du -h --max-depth=1 ./
+
+49. zhiwuyun环境k8s容器创建失败
+1月 05 14:13:16 anxin-m2 kubelet[25157]: E0105 14:13:16.298912   25157 pod_workers.go:182] Error syncing pod 597a7d8e-4d24-11eb-ad00-c81f66cfe365 ("es-log-clear-1609610400-45sbg_savoir(597a7d8e-4d24-11eb-ad00-c81f66cfe365)"), skipping: failed to "CreatePodSandbox" for "es-log-clear-1609610400-45sbg_savoir(597a7d8e-4d24-11eb-ad00-c81f66cfe365)" with CreatePodSandboxError: "CreatePodSandbox for pod \"es-log-clear-1609610400-45sbg_savoir(597a7d8e-4d24-11eb-ad00-c81f66cfe365)\" failed: rpc error: code = Unknown desc = failed pulling image \"gcr.io/google_containers/pause-amd64:3.0\": Error response from daemon: Get https://gcr.io/v2/: net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)"
+
+问题：k8s部署容器时需要pause-amd64:3.0这个镜像，翻墙才能下载
+解决：下载阿里镜像后提交到私库
+docker pull registry.cn-hangzhou.aliyuncs.com/google-containers/pause-amd64:3.0
+修改/etc/kubernetes/kubelet配置文件，在KUBELET_ARGS后加
+--pod_infra_container_image=registry.cn-hangzhou.aliyuncs.com/google-containers/pause-amd64:3.0
+// 我们的环境 
+vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+docker tag hub.c.163.com/conformance/pause-amd64:3.0 gcr.io/google_containers/pause-amd64:3.0
+
+50. POI执行OOM
+在生成nbjj季报表时报错 GC overhead limit exceeded
+使用了库poi-tl生成word模板报表
+-XX:+UseParallelGC -Xms xxxm
+https://stackoverflow.com/questions/49066977/writing-large-of-data-to-excel-gc-overhead-limit-exceeded
+
+51. flink执行报错
+ java.lang.IllegalArgumentException: The scheme (hdfs://, file://, etc) is null. Please specify the file system scheme explicitly in the URI.
+ 
+ 解决：flink配置conf/flink-conf.yaml 中state.checkpoints.dir中URI必须包含前缀scheme(hdfs://, file://)
+ 
+ 
+52.
+ 

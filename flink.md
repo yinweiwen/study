@@ -5,7 +5,7 @@
 $ mvn archetype:generate                               \
       -DarchetypeGroupId=org.apache.flink              \
       -DarchetypeArtifactId=flink-quickstart-scala     \
-      -DarchetypeVersion=1.8.0
+      -DarchetypeVersion=1.9.0
 ```
 
 dependency：

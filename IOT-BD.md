@@ -6,6 +6,8 @@
 
 [几种时序库的测试 TimeSeriersDB-Benchmarks](https://github.com/micli/timeseriesdb-benchmarks/blob/main/docs/index.md)
 
+[DolphinDB与InfluxDB对比测试报告](https://zhuanlan.zhihu.com/p/42287416)
+
 # InfluxDB
 
 # DolphinDB

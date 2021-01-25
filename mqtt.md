@@ -179,3 +179,113 @@ PUBLISH
 				port 1883
 				protocol mqtt
 				<Configuring Bridges> ...
+				
+# EMQX
+[offical 4.1](https://docs.emqx.cn/cn/broker/v4.1)
+
+安装 `sudo apt install emqx`
+
+启动 `emqx start` / `emqx_ctl status`
+或 `systemctl start emqx`
+
+
+### 配置说明
+`/etc/emqx/etc`
+
+```
+listener.<Protocol>.<Listener Name>.xxx
+zone.<Zone Name>.xxx
+```
+
+### Dashboard
+![overview](img/emq.dashboard-overview.583aad51.png)
+
+![topic metrics](img/emq.topic.metrics.png)
+
+### 日志追踪
+
+## 功能
+
+### 保留消息
+publish报文时指定Retain为1.除了被正常转发以外，保留消息会被存储在服务端
+
+### 共享订阅
+多个订阅者之间实现负载均衡的订阅方式
+```bash
+                                                   [subscriber1] got msg1
+             msg1, msg2, msg3                    /
+[publisher]  ---------------->  "$share/g/topic"  -- [subscriber2] got msg2
+                                                 \
+                                                   [subscriber3] got msg3
+```
+```bash
+$share/<group-name>/topic 带群组的共享订阅。属于同一个群组内部的订阅者将以负载均衡接收消息（类似kafka groupId）
+$queue/topic `$share`订阅的一种特例，相当于在同一订阅组
+```
+
+### 延迟发布
+$delayed/{DelayInterval(单位是秒)}/{TopicName}
+
+### 代理订阅
+需开启内置模块：emqx_mod_subscription 
+
+```bash
+module.subscription.1.topic = client/%c
+module.subscription.2.topic = user/%u
+module.subscription.2.qos = 2
+module.subscription.2.nl  = 1 <MQTT V5>
+```
+客户端连上之后代理会自动订阅 clinet/clientId和user/username 这两个主题
+
+### 消息桥接
+1. RPC 只能EMQX之间,效率高
+2. MQTT 和其他MQTT broker之间
+
+RPC配置
+```bash
+bridge.mqtt.emqx2.address = emqx2@192.168.1.2
+bridge.mqtt.emqx2.forwards = sensor1/#,sensor2/#
+bridge.mqtt.emqx2.mountpoint = bridge/emqx2/${node}/
+```
+MQTT配置
+```
+bridge.mqtt.aws.address = 211.182.34.1:1883
+bridge.mqtt.aws.proto_ver = mqttv4
+bridge.mqtt.aws.clientid/username/password/keepalice/clean_start/reconnect_interval ...
+```
+
+### 主题重写
+module.rewrite.pub.rule.<number> = 主题过滤器 正则表达式 目标表达式
+
+如：module.rewrite.sub.rule.1 = y/+/z/# ^y/(.+)/z/(.+)$ y/z/$2
+
+结果 y/a/z/b -> y/z/b
+
+
+## 常见问题
+1. [warning] <<"iota_data_sender">>@10.244.0.0:55676 [Channel] Dropped the qos2 packet 37923 due to awaiting_rel is full.
+
+
+
+2.  [warning] <<"savoir.receive.xsx">>@10.244.0.0:57644 [Session] Dropped msg due to mqueue is full: Message(Id=xx, QoS=2, Topic=savoir_data, From=<<"iota_data_sender">>, Flags=[], Headers=#{peerhost => {10,244,0,0},
+  proto_ver => 3,protocol => mqtt,username => undefined})
+
+修改后的deploy.yaml文件如下：
+  ```yaml
+spec:
+  template:
+    spec:
+      containers:
+      - name: emq
+        image: emqx/emqx:latest
+        env:
+          - name: EMQX_NAME
+            value: "emqx"
+          - name: EMQX_ZONE__EXTERNAL__MAX_AWAITING_REL
+            value: "10000"
+          - name: EMQX_ZONE__EXTERNAL__AWAIT_REL_TIMEOUT
+            value: "300s"
+          - name: EMQX_ZONE__EXTERNAL__MAX_MQUEUE_LEN
+            value: "0"
+
+  ```

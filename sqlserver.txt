@@ -57,3 +57,30 @@ end
 go
 --查看已注册的链接服务器
 exec sp_linkedservers
+
+## SQLSERVER 维护
+2021-01-18 18:29:08,431 ERROR System.Reflection.TargetInvocationException: An exception occurred during the operation, making the result invalid.  Check InnerException for exception details. ---> System.Data.SqlClient.SqlException: SQL Server 检测到基于一致性的逻辑 I/O 错误 pageid 不正确(应为 1:1035264，但实际为 0:105283)。在文件 'D:\data1\YJBMonitors.mdf' 中、偏移量为 0x000001f9800000 的位置对数据库 ID 7 中的页 (1:1035264) 执行 读取 期间，发生了该错误。SQL Server 错误日志或系统事件日志中的其他消息可能提供了更详细信息。这是一个威胁数据库完整性的严重错误条件，必须立即纠正。请执行完整的数据库一致性检查(DBCC CHECKDB)。此错误可以由许多因素导致；有关详细信息，请参阅 SQL Server 联机丛书。
+
+```
+alter   database  YJBMonitors  set   single_user   with   rollback   immediate 
+
+DBCC CHECKDB('YJBMonitors',REPAIR_FAST)
+
+alter   database  YJBMonitors  set   multi_user  with   rollback   immediate 
+```
+
+### YJP 导出脚本
+select h.HotPointNO,d.Data,d.CollectTime from MainStreeData d,HotPoint h where d.HotPointID=h.HotPointID and CollectTime between '2020-01-01' and '2021-01-01';
+
+select s.SensorID as 传感器ID,s.Position,ss.MeasuringPoint,b.AvgData,b.AvgTime from BarStrain b,Sensor s,SensorSet ss where b.SensorID=s.SensorID
+and s.SensorTypeID=6 and ss.SensorID=s.SensorID and b.AvgTime between '2020-01-01' and '2021-01-01' order by b.AvgTime ;
+
+select s.SensorID as 传感器ID,s.Position,d.Data,d.CollectTime from DisplacementData d,Sensor s where d.SensorID=s.SensorID and s.SensorTypeID=2
+and d.CollectTime between '2020-01-01' and '2021-01-01' order by d.CollectTime;
+
+select s.SensorID as 传感器ID,s.Position,d.Data,d.CollectTime from TempData d,Sensor s where d.SensorID=s.SensorID and s.SensorTypeID=1
+and d.CollectTime between '2020-01-01' and '2021-01-01' order by d.CollectTime;
+
+select s.SensorID as 传感器ID,s.Position,d.WindSpeed,d.WindAngle,d.WindDirection,d.WindElevation,d.CollectTime from WindData d,Sensor s where d.SensorID=s.SensorID and s.SensorTypeID=1
+and d.CollectTime between '2020-01-01' and '2021-01-01' order by d.CollectTime;
+
