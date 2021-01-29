@@ -289,3 +289,32 @@ spec:
             value: "0"
 
   ```
+  
+  
+## Apache Apollo
+```shell
+# ./mybroker/bin/apollo-broker run  
+
+    _____                .__  .__  
+   /  _  \ ______   ____ |  | |  |   ____  
+  /  /_\  \\____ \ /  _ \|  | |  |  /  _ \  
+ /    |    \  |_> >  <_> )  |_|  |_(  <_> )  
+ \____|__  /   __/ \____/|____/____/\____/  
+         \/|__|  Apache Apollo (1.7.1)  
+
+
+Loading configuration file '/home/tarena/project/MQTT/apache-apollo-1.7.1/bin/mybroker/etc/apollo.xml'.  
+INFO  | OS     : Linux 3.2.0-23-generic-pae (Ubuntu 12.04 LTS)  
+INFO  | JVM    : Java HotSpot(TM) Server VM 1.8.0_144 (Oracle Corporation)  
+INFO  | Apollo : 1.7.1 (at: /home/tarena/project/MQTT/apache-apollo-1.7.1)  
+INFO  | OS is restricting the open file limit to: 100000  
+INFO  | Accepting connections at: tcp://0.0.0.0:61613  
+INFO  | Accepting connections at: tls://0.0.0.0:61614  
+INFO  | Starting store: leveldb store at /home/tarena/project/MQTT/apache-apollo-1.7.1/bin/mybroker/data  
+INFO  | Accepting connections at: ws://0.0.0.0:61623/  
+INFO  | Accepting connections at: wss://0.0.0.0:61624/  
+INFO  | Administration interface available at: https://127.0.0.1:61681/  
+INFO  | Administration interface available at: http://127.0.0.1:61680/ 
+```
+
+管理界面：http://127.0.0.1:61680/ 默认 admin password

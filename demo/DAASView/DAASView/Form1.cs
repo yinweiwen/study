@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -55,6 +56,41 @@ namespace DAASView
             }
         }
 
+        private string fileType = "cloudVib"; // dat/odb
+        private string CheckFileType(FileInfo fi)
+        {
+            try
+            {
+                CloudVibFileTitle title;
+                double[] org;
+                string err;
+                if (!ReadCloudVibFile(fi.FullName, out title, out org, out err))
+                {
+                    using (var sr = new StreamReader(fi.FullName))
+                    {
+                        var line = sr.ReadLine();
+                        if (!string.IsNullOrEmpty(line))
+                        {
+                            double d;
+                            if (double.TryParse(line, out d))
+                            {
+                                return "dat";
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    return "cloud_vib";
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            return "";
+        }
+
         private void LoadPath(string p)
         {
             var dir = new DirectoryInfo(p);
@@ -68,33 +104,66 @@ namespace DAASView
             tb.Columns.Add("pp", typeof(double));
             tb.Columns.Add("time");
             tb.Columns.Add("data", typeof(object));
+            if (files.Any())
+            {
+                fileType = CheckFileType(files.First());
+            }
             foreach (var fi in files)
             {
                 try
                 {
-                    CloudVibFileTitle title;
-                    double[] org;
-                    string err;
-                    if (!ReadCloudVibFile(fi.FullName, out title, out org, out err))
+                    switch (fileType)
                     {
-                        continue;
-                    }
-                    var ch = title.CHNum;
-                    var mod = title.DeviceID.ToString();
-                    var time = new DateTime(2000 + title.year, title.mon, title.day, title.hour, title.min, title.sec);
-                    var pp = org.Max() - org.Min(); // 峰峰
-                    var max = org.OrderBy(Math.Abs).Last();
+                        case "cloudVib":
+                            {
+                                CloudVibFileTitle title;
+                                double[] org;
+                                string err;
+                                if (!ReadCloudVibFile(fi.FullName, out title, out org, out err))
+                                {
+                                    continue;
+                                }
+                                var ch = title.CHNum;
+                                var mod = title.DeviceID.ToString();
+                                var time = new DateTime(2000 + title.year, title.mon, title.day, title.hour, title.min, title.sec);
+                                var pp = org.Max() - org.Min(); // 峰峰
+                                var max = org.OrderBy(Math.Abs).Last();
 
-                    var nr = tb.NewRow();
-                    nr["file"] = fi.Name;
-                    nr["module"] = mod;
-                    nr["ch"] = ch;
-                    nr["count"] = org.Length;
-                    nr["max"] = max;
-                    nr["pp"] = pp;
-                    nr["time"] = time;
-                    nr["data"] = org;
-                    tb.Rows.Add(nr);
+                                var nr = tb.NewRow();
+                                nr["file"] = fi.Name;
+                                nr["module"] = mod;
+                                nr["ch"] = ch;
+                                nr["count"] = org.Length;
+                                nr["max"] = max;
+                                nr["pp"] = pp;
+                                nr["time"] = time;
+                                nr["data"] = org;
+                                tb.Rows.Add(nr);
+                            }
+                            break;
+                        case "dat":
+                            {
+                                string mod;
+                                int ch;
+                                DateTime time;
+                                double[] org;
+                                ParseVibDat(fi.FullName, out mod, out ch, out time, out org);
+                                var pp = org.Max() - org.Min(); // 峰峰
+                                var max = org.OrderBy(Math.Abs).Last();
+
+                                var nr = tb.NewRow();
+                                nr["file"] = fi.Name;
+                                nr["module"] = mod;
+                                nr["ch"] = ch;
+                                nr["count"] = org.Length;
+                                nr["max"] = max;
+                                nr["pp"] = pp;
+                                nr["time"] = time;
+                                nr["data"] = org;
+                                tb.Rows.Add(nr);
+                        }
+                            break;
+                    }
                 }
                 catch (Exception)
                 {
@@ -104,6 +173,33 @@ namespace DAASView
 
             dgv.DataSource = tb;
             dgv.Update();
+        }
+
+        public static void ParseVibDat(string f, out string mod, out int ch, out DateTime time, out double[] datas)
+        {
+            //10587_1_20210129000005436.dat
+            var sps = Path.GetFileNameWithoutExtension(f).Split('_');
+            mod = sps[0];
+            ch = int.Parse(sps[1]);
+            time = DateTime.ParseExact(sps[2], new[] { "yyyy-MM-dd HH:mm:ss.fff", "yyyyMMddHHmmssfff", "yyyyMMddHHmmss","yyyy-MM-dd HH:mm:ss" }, null, DateTimeStyles.None);
+            var res = new List<double>();
+            using (var sr = new StreamReader(f))
+            {
+                var line = sr.ReadLine();
+                while (!string.IsNullOrEmpty(line))
+                {
+                    try
+                    {
+                        res.Add(double.Parse(line));
+                    }
+                    catch (Exception)
+                    {
+                        break;
+                    }
+                    line = sr.ReadLine();
+                }
+            }
+            datas = res.ToArray();
         }
 
         public static bool ParseCloudVib(string path)

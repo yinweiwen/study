@@ -1019,5 +1019,21 @@ https://stackoverflow.com/questions/49066977/writing-large-of-data-to-excel-gc-o
  解决：flink配置conf/flink-conf.yaml 中state.checkpoints.dir中URI必须包含前缀scheme(hdfs://, file://)
  
  
-52.
+52. Could not locate executable null\bin\winutils.exe in the Hadoop binaries
  
+	+ Download winutils.exe
+	+ Create folder, say C:\winutils\bin
+	+ Copy winutils.exe inside C:\winutils\bin
+	+ Set environment variable HADOOP_HOME to C:\winutils
+
+
+53. flink getSuperClassOrInterfaceName null (FLINK 闭包检查 报错)
+
+	类中不能有object对象
+	类构造参数中尽量使用简单类型
+	
+54. mqtt数据丢失
+	代理 apollo
+	java:paho
+
+	解决：client.id不能包含"."
