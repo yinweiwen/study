@@ -327,3 +327,175 @@ and REMOTE_DTU_SUBSCRIBER is not null and len(replace(REMOTE_DTU_SUBSCRIBER,' ',
 https://www.cnblogs.com/telwanggs/p/11547370.html
 
 https://www.jianshu.com/p/b2c254897071
+
+## pg_dump 备份
+### Options
+```
+dbname
+指定数据库的名称，如果没有指定,会引用环境变量 PGDATABASE， 如果环境变量没有设置,那么会指定使用用户名来连接。
+
+-a 
+--data-only
+只转储数据,而不是架构(数据的定义)。表中的数据，大对象的序列值被转储。此选项与specifying --section=data类似。
+
+-b 
+--blobs
+包含大对象，当指定参数为 --schema, --table, or --schema-only 是该动作默认执行，所以-b选项只在选择性转储数据时有用。
+
+-c 
+--clean
+输出在创建数据库创建命令之前先清理（删除）该数据库对象的命令
+此选项只对纯文本格式有意义的。对于归档格式，你可以在调用pg_restore时指定该选项
+
+-C 
+--create
+以一条创建该数据库本身并且与这个数据库联接等命令开头进行输出。 (如果是这种形式的脚本，那么你在运行脚本之前和哪个数据库联接就 不重要了。) ，此选项只对纯文本格式有意义的。对于归档格式，你可以在调用pg_restore时指定该选项。
+
+-E encoding
+--encoding=encoding
+指定字符集编码。 默认情况下使用数据库编码。 (另一个方法是设置 PGCLIENTENCODING环境来达到同样的结果
+
+-f file 
+--file=file
+把输出发往指定的文件．如果忽略这些，则使用标准输出。
+
+-F format 
+--format=format
+选择输出的格式。 如下:
+
+p 
+plain
+输出一个纯文本 SQL 脚本文件( 默认)
+
+c 
+custom
+输出一个自定义格式用于pg_store 。最灵活的输出格式,它允许恢复过程中手动选择和重新排序的档案条目。默认压缩。
+
+d 
+directory
+输出一个目录格式的存档用于pg_restore输入。 这将创建带有一个存储每张表和BLOB数据的文件的目录，加上一个所谓的内容文件表用机器可以读取的格式 描述转储对象, 这种格式pg_restore可以读取。 默认压缩
+
+t 
+tar
+输出适合输入到 pg_restore 里的tar归档文件． 使用这个归档允许在恢复数据库时重新排序和/或把表结构排除在外． 同时也可能可以在恢复的时候限制对哪些数据进行恢复
+
+-i 
+--ignore-version
+一个工具选项,现在被忽略了.
+
+-n schema 
+--schema=schema
+指定输出的框架名。指定的框架将被输出转储。
+
+-N schema 
+--exclude-schema=schema
+排除输出的框架名。指定的框架将不被输出。
+
+
+-o 
+--oids
+为每个表都输出对象标识（OID）． 如果你的应用在某种程度上引用了OID字段的话，(比如，在外键约束中 用到)． 那么使用这个选项． 否则，不应该使用这个选项
+
+-O 
+--no-owner
+不把对象的所有权设置为对应源数据库。 
+
+这个选项只是对纯文本格式有意义．对于其它格式，在你调用 pg_restore 的时候你可以声明该选项.
+
+-R 
+--no-reconnect
+此选项已经过时的，但可以向后兼容.
+
+-s 
+--schema-only
+只输出架构（数据定义），不输出数据。
+
+-S username 
+--superuser=username
+在某些场合，pg_dump 创建的脚本或者归档需要有 超级用户访问的权限，比如在关闭触发器或者为大纲元素甚至所有属性时． 这个选项声明在这些场合时使用的用户名
+
+-t table 
+--table=table
+只输出表 table的数据
+
+-T table 
+--exclude-table=table
+不输出表table的数据
+
+-v 
+--verbose
+声明冗余模式。 这样将令 pg_dump 在标准错误上打印 进度信息.
+
+-V 
+--version
+输出pg_dump的版本信息然后退出.
+
+-x 
+--no-privileges 
+--no-acl
+避免输出 ACL（赋予/撤消 命令）和表的所有者关系信息
+
+-Z 0..9 
+--compress=0..9
+声明在那些支持压缩的格式中使用的压缩级别．零意味着没有 压缩 （目前只有客户化格式支持压缩） 
+
+--no-security-labels
+不转储安全标签.
+
+--no-tablespaces
+不输出选择表空间命令.
+
+--no-unlogged-table-data
+不转储没有日志记录的表的内容
+
+--quote-all-identifiers
+强制引用所有标识符 ，这可能用于转储迁移到未来的版本引入额外的关键字.
+
+-? 
+--help
+显示帮助并退出.
+
+以下选项控制数据库连接参数.
+
+-h host 
+--host=host
+声明运行服务器 的机器的主机名．缺省是使用本地Unix主控套接字，而不是一个 IP 联接． 如果主机名以斜扛开头，则它被用做到 Unix 域套接字的路径
+
+-p port 
+--port=port
+声明服务器 正在侦听并等待联接的TCP/IP 端口或本地 Unix 主控套接字文件句柄． 缺省的端口号是5432，或者环境变量 PGPORT 的值（如果存在）
+
+-U username 
+--username=username
+以给出用户身分联接
+
+-w 
+--no-password          从来不需要密码提示 
+-W 
+--password
+强制口令提示．如果服务器需要口令认证，那么这个动作应该自动发生
+
+
+--role=rolename
+指定一个角色的名字是用来创建转储
+
+```
+
+备份脚本
+```bash
+@ECHO OFF
+@setlocal enableextensions
+@cd /d "%~dp0"
+SET PGPATH="C:\Program Files\PostgreSQL\9.5\bin\pg_dump"
+SET SVPATH=F:\
+SET PRJDB=NBJJ_1114
+SET DBUSR=postgres
+SET DBROLE=postgres
+FOR /F "TOKENS=1,2,3 DELIMS=/ " %%i IN ('DATE /T') DO SET d=%%i-%%j-%%k
+FOR /F "TOKENS=1,2,3 DELIMS=: " %%i IN ('TIME /T') DO SET t=%%i%%j%%k
+SET DBDUMP=%PRJDB%_%d%_%t%.backup
+@ECHO OFF
+%PGPATH% -h localhost -p 5432 -U %DBUSR% --role %DBROLE% -w -F c -b -v -f %SVPATH%%DBDUMP% %PRJDB% 
+echo Backup Taken Complete %SVPATH%%DBDUMP%
+pause
+```

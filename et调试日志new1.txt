@@ -1013,6 +1013,8 @@ docker tag hub.c.163.com/conformance/pause-amd64:3.0 gcr.io/google_containers/pa
 -XX:+UseParallelGC -Xms xxxm
 https://stackoverflow.com/questions/49066977/writing-large-of-data-to-excel-gc-overhead-limit-exceeded
 
+实战中使用  -Xmx16384m -Xms16384m 解决
+
 51. flink执行报错
  java.lang.IllegalArgumentException: The scheme (hdfs://, file://, etc) is null. Please specify the file system scheme explicitly in the URI.
  
@@ -1037,3 +1039,17 @@ https://stackoverflow.com/questions/49066977/writing-large-of-data-to-excel-gc-o
 	java:paho
 
 	解决：client.id不能包含"."
+	
+
+55. hdfs写入失败(et-hdfs-gateway进程)
+org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException): Failed to APPEND_FILE .... because this file lease is currently owned by ....
+
+Slow ReadProcessor read fields took 49152ms (threshold=30000ms); ack: seqno: 0 reply: SUCCESS downstreamAckTimeNanos: 0 flag: 0, targets: [DatanodeInfoWithStorage[10.8.30.117:50010,DS-cc98f7d8-c4f6-477b-9bff-bfced3de30f8,DISK]]
+
+Slow waitForAckedSeqno took 68831ms (threshold=30000ms).
+
+56. Redis Cluster 方法报错
+Redis官方推介的库Jedis使用过程中出现（尤其使用keys和scan方法时）
+no way to dispatch this command to redis cluster because keys have different slots。
+
+修改了redis的引擎，改用luttence后解决。 

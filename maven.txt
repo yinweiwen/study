@@ -275,3 +275,55 @@ You can also get to other standard properties like project.name, project.descrip
 	https://www.sonatype.com/download-oss-sonatype
 	下载OSS版本的windows版本
 	
+	
+## 包冲突管理
+
+mvn dependency:tree -Dverbose -Dincludes=io.netty
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building comm_utils 3.0
+[INFO] ------------------------------------------------------------------------
+[INFO]
+[INFO] --- maven-dependency-plugin:2.8:tree (default-cli) @ comm_utils ---
+[INFO] free-sun.com.cn:comm_utils:jar:3.0
+[INFO] +- org.apache.kafka:kafka_2.11:jar:0.11.0.3:compile
+[INFO] |  \- org.apache.zookeeper:zookeeper:jar:3.4.10:compile
+[INFO] |     \- (io.netty:netty:jar:3.10.5.Final:compile - omitted for conflict with 3.6.2.Final)
+[INFO] +- org.apache.hadoop:hadoop-hdfs:jar:2.7.4:compile
+[INFO] |  +- io.netty:netty:jar:3.6.2.Final:compile
+[INFO] |  \- io.netty:netty-all:jar:4.0.23.Final:compile
+[INFO] \- io.lettuce:lettuce-core:jar:6.0.2.RELEASE:compile
+[INFO]    +- io.netty:netty-common:jar:4.1.56.Final:compile
+[INFO]    +- io.netty:netty-handler:jar:4.1.56.Final:compile
+[INFO]    |  +- (io.netty:netty-common:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]    |  +- io.netty:netty-resolver:jar:4.1.56.Final:compile
+[INFO]    |  |  \- (io.netty:netty-common:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]    |  +- io.netty:netty-buffer:jar:4.1.56.Final:compile
+[INFO]    |  |  \- (io.netty:netty-common:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]    |  +- (io.netty:netty-transport:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]    |  \- io.netty:netty-codec:jar:4.1.56.Final:compile
+[INFO]    |     +- (io.netty:netty-common:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]    |     +- (io.netty:netty-buffer:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]    |     \- (io.netty:netty-transport:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]    \- io.netty:netty-transport:jar:4.1.56.Final:compile
+[INFO]       +- (io.netty:netty-common:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]       +- (io.netty:netty-buffer:jar:4.1.56.Final:compile - omitted for duplicate)
+[INFO]       \- (io.netty:netty-resolver:jar:4.1.56.Final:compile - omitted for duplicate)
+
+netty版本冲突：
+删除hadoop的引用，修改kafka中旧版本netty
+```xml
+<dependency>
+	<groupId>org.apache.kafka</groupId>
+	<artifactId>kafka_${scala.version}</artifactId>
+	<version>0.11.0.3</version>
+	<exclusions>
+		<exclusion>
+			<!--过滤旧版本netty <-> lettuce-->
+			<groupId>*</groupId>
+			<artifactId>netty</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
+```
