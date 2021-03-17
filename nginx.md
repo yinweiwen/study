@@ -1,4 +1,8 @@
-NGINX
+## NGINX
+
+### 安装nginx
+https://blog.csdn.net/qq_37345604/article/details/90034424
+
 
 ```json
 ...              #全局块

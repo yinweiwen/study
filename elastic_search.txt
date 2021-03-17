@@ -199,8 +199,8 @@ GET savoir_alarms/_search
 GET anxinyun_aggregation/_update_by_query?timeout=20m
 {
   "script":{
-    "source": "ctx._source['method']='wqi'"
-  },
+    "source": "ctx._source['data']['physicalvalue']=ctx._source['data']['physicalvalue']*10"
+  },,
   "query": {
     "exists": {
       "field": "data.wqLevel"
@@ -266,3 +266,58 @@ docker run --rm -ti -v /data:/tmp elasticdump/elasticsearch-dump \
 
 docker run --rm -ti elasticdump/elasticsearch-dump  -v /data:/tmp --input=./data1.json --output=http://10.8.30.36:9200 --type=data
 ```
+
+## ES 数据导出到CSV
+[https://www.cnblogs.com/sanduzxcvbnm/p/12092412.html](https://www.cnblogs.com/sanduzxcvbnm/p/12092412.html)
+
+logstash.yml
+```yml
+path.config: /usr/share/logstash/conf.d/*.conf
+path.logs: /var/log/logstash
+```
+
+convert_csv.conf
+```yml
+input {
+ elasticsearch {
+    hosts => "localhost:9200"
+    index => "anxinyun_weather"
+    query => '{  
+    "query": {
+        "bool": {
+		  "must": [
+			{"term": {
+			  "cityName.keyword": {
+				"value": "南昌"
+			  }
+			}},
+			{
+			  "term": {
+				"dataType.keyword": {
+				  "value": "hour"
+				}
+			  }
+			}
+		  ]
+		}
+      }
+    }'
+  }
+}
+ 
+output {
+  csv {
+    # This is the fields that you would like to output in CSV format.
+    # The field needs to be one of the fields shown in the output when you run your
+    # Elasticsearch query
+ 
+    fields => ["cityName", "precip", "time"]
+  
+    # This is where we store output. We can use several files to store our output
+    # by using a timestamp to determine the filename where to store output.    
+    path => "/tmp/csv-export.csv"
+  }
+}
+```
+docker run --rm -ti -v /home/anxinyun/logstash/data:/tmp -v /home/anxinyun/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml -v /home/anxinyun/logstash/conf.d/:/usr/share/logstash/conf.d/ logstash:6.8.2
+

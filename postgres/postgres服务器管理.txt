@@ -112,7 +112,7 @@ PGDATA目录下：
 		
 系统表：
 
-
+## REINDEX { INDEX | TABLE | DATABASE | SYSTEM } name [ FORCE ]
 
 ##2018 comming
 
@@ -498,4 +498,15 @@ SET DBDUMP=%PRJDB%_%d%_%t%.backup
 %PGPATH% -h localhost -p 5432 -U %DBUSR% --role %DBROLE% -w -F c -b -v -f %SVPATH%%DBDUMP% %PRJDB% 
 echo Backup Taken Complete %SVPATH%%DBDUMP%
 pause
+```
+
+## 查询表被哪些表应用
+```sql
+
+SELECT oid, relname FROM pg_class WHERE oid in
+(
+SELECT conrelid FROM pg_CONSTRAINT WHERE confrelid in (
+    SELECT oid FROM pg_class WHERE relname = 'DeviceMeta'
+    )
+);
 ```

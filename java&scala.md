@@ -83,3 +83,11 @@ def testUpload(): Unit ={
 var ss: MonitorService =new MonitorService(wsdlLocation.get)
 ...
 ```
+
+
+## scala par 指定线程数
+val ses = ...().par
+
+ses.tasksupport = new ForkJoinTaskSupport(new ForkJoinPool(4))
+
+ses.map{case (h, (start, end)) => ..... 
