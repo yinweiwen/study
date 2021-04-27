@@ -5,6 +5,62 @@ NOOBS
 启动redis服务： redis-server [redis.windows.conf]
 启动客户端: redis-cli.exe -h 127.0.0.1 -p 6379
 
+
+## 删除Keys：
+```shell
+
+# redis-cli keys "user*" | xargs redis-cli del
+(integer) 2
+# 删除成功
+
+# 删除当前数据库中的所有Key 
+> flushdb 
+
+# 删除所有数据库中的key 
+> flushall
+
+# 删除一个不存在的 key
+redis> EXISTS lisi
+(integer) 0
+
+# 同时删除多个 key
+del k1 k2 k3
+
+## 不阻塞
+redis-cli -h anxin-m2 -p 6379 --scan --pattern '/_iota_api*' | xargs redis-cli -h anxin-m2 -p 6379 del
+```
+
+
+
+## 集群模式下删除多个keys
+redis-cli  cluster nodes | grep master
+```
+编写redis_del.sh脚本
+
+#!/bin/bash
+
+redis_comm=/usr/local/redis/bin/redis-cli
+
+redis_ser01=172.18.18.107
+
+redis_ser02=172.18.18.108
+
+redis_ser03=172.18.18.109
+
+
+
+$redis_comm -c -h $redis_ser01  keys $1 | xargs -i ./redis-cli -h $redis_ser01 del {}
+
+$redis_comm -c -h $redis_ser02  keys $1 | xargs -i ./redis-cli -h $redis_ser02 del {}
+
+$redis_comm -c -h $redis_ser03  keys $1 | xargs -i ./redis-cli -h $redis_ser03 del {}
+
+
+
+redis-cli -c -h 10.96.5.67 -a Fas_123 --scan --pattern '/_iota_api*' | xargs redis-cli -h 10.96.5.67 -a Fas_123  del
+redis-cli -c -h 10.96.5.67 -a Fas_123 keys '/_iota_api*' | xargs redis-cli -c -h 10.96.5.67 -a Fas_123  del
+```
+
 配置：
 	config get *
 	config set loglevel "notice"

@@ -321,3 +321,9 @@ output {
 ```
 docker run --rm -ti -v /home/anxinyun/logstash/data:/tmp -v /home/anxinyun/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml -v /home/anxinyun/logstash/conf.d/:/usr/share/logstash/conf.d/ logstash:6.8.2
 
+
+## kibana 使用的lucene语法：
+https://zhuanlan.zhihu.com/p/33791813
+https://segmentfault.com/a/1190000002972420
+
+双引号匹配短语 ""

@@ -1053,3 +1053,67 @@ Redis官方推介的库Jedis使用过程中出现（尤其使用keys和scan方�
 no way to dispatch this command to redis cluster because keys have different slots。
 
 修改了redis的引擎，改用luttence后解决。 
+
+
+57. flink kafka 偏移量提交问题
+```
+2021-03-29 11:25:48,847 ERROR org.apache.kafka.clients.consumer.internals.ConsumerCoordinator  - [Consumer clientId=consumer-24, groupId=et.mainx] Offset commit failed on partition anxinyun_capture_data-1 at offset 0: The coordinator is not aware of this member.
+2021-03-29 11:25:48,847 WARN  org.apache.kafka.clients.consumer.internals.ConsumerCoordinator  - [Consumer clientId=consumer-24, groupId=et.mainx] Asynchronous auto-commit of offsets {anxinyun_capture_data-1=OffsetAndMetadata{offset=0, metadata=''}} failed: Commit cannot be completed since the group has already rebalanced and assigned the partitions to another member. This means that the time between subsequent calls to poll() was longer than the configured max.poll.interval.ms, which typically implies that the poll loop is spending too much time message processing. You can address this either by increasing the session timeout or by reducing the maximum size of batches returned in poll() with max.poll.records.
+
+简单翻译一下，“位移提交失败，原因是消费者组开启了rebalance且已然分配对应分区给其他消费者。这表明poll调用间隔超过了max.poll.interval.ms的值，这通常表示poll循环中的消息处理花费了太长的时间。解决方案有两个：1. 增加session.timeout.ms值；2. 减少max.poll.records值”
+	
+	1. group.max.session.timeout.ms in the server.properties > session.timeout.ms in the consumer.properties.
+	2. group.min.session.timeout.ms in the server.properties < session.timeout.ms in the consumer.properties.
+	3. request.timeout.ms > session.timeout.ms and fetch.max.wait.ms
+	4. (session.timeout.ms)/3 > heartbeat.interval.ms
+	5. session.timeout.ms > Worst case processing time of Consumer Records per consumer poll(ms).
+	
+修改和增加max.poll.interval.ms(默认5分钟)到1800s无效，尝试提高session.timeout.ms(默认30s)无效
+
+尝试在flink中使用checkpoint机制提交offset，无效 (https://blog.csdn.net/qq_37332702/article/details/107617253)
+
+因为同时报错：
+‘Offset commit failed on partition xxxxxxxxxx at offset 25: The coordinator is not aware of this member.’
+尝试更换一个groupid好了 (https://blog.csdn.net/yang_zzu/article/details/107786332)
+
+
+```
+
+58. [Producer clientId=producer-1] Got error produce response in correlation id 6262947 on topic-partition anxinyun_data-3, splitting and retrying (3 attempts left). Error: MESSAGE_TOO_LARGE
+MESSAGE_TOO_LARGE kafka写入失败
+
+59. MQTT丢失连接后重连后，订阅失败：报错
+Connection lost (32109) - java.net.SocketException: Broken pipe (Write failed)
+	at org.eclipse.paho.client.mqttv3.internal.CommsSender.handleRunException(CommsSender.java:194)
+	at org.eclipse.paho.client.mqttv3.internal.CommsSender.run(CommsSender.java:171)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.net.SocketException: Broken pipe (Write failed)
+	at java.net.SocketOutputStream.socketWrite0(Native Method)
+	at java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:111)
+	at java.net.SocketOutputStream.write(SocketOutputStream.java:155)
+	at java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:82)
+	at java.io.BufferedOutputStream.flush(BufferedOutputStream.java:140)
+	at org.eclipse.paho.client.mqttv3.internal.wire.MqttOutputStream.flush(MqttOutputStream.java:49)
+	at org.eclipse.paho.client.mqttv3.internal.CommsSender.run(CommsSender.java:149)
+	... 1 more
+    报错后又断连
+    
+    重启进程还是报错：
+    reason:2
+    msg: Invalid client ID
+    loc: Invalid client ID
+    cause:null
+    excep:Invalid client ID(2)
+    Invalid Client ID(2)
+    at ....createMqttException(ExceptionHelper.java:31)
+    at ....notifyReceiveAck(ClientState.java:1040)
+    
+    修改ClientID后重启成功
+    
+    【未解决】
+  
+  
+60. Flink 启动 redis create异常
+java.lang.ClassCastException: interface akka.serialization.Serializer is not assignable from class akka.remote.serialization.MiscMessageSerializer
+
+Redis中使用了akka，改用redis库，修正

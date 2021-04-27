@@ -63,6 +63,11 @@ InfluxDB shell version: 1.7.7
 ```
 
 #### 操作
+
+https://jasper-zhang1.gitbooks.io/influxdb/content/Query_language/schema_exploration.html
+
+补充笔记 https://www.yuque.com/xingo/iiul0g/edif49
+
 ```shell
 ## 数据库操作
 show databases
@@ -76,6 +81,9 @@ show measurements
 insert disk_free,hostname=server01 value=312421i
 ## 删除表
 drop measurement disk_free
+
+##  SHOW SERIES
+
 
 # 数据保存策略
 show retention policies on "db_name"

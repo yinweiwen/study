@@ -3,6 +3,15 @@
 ### 安装nginx
 https://blog.csdn.net/qq_37345604/article/details/90034424
 
+1. 启动
+./nginx
+
+2. 检查配置
+./nginx -t
+
+3. 软更新
+./nginx -s reload
+
 
 ```json
 ...              #全局块

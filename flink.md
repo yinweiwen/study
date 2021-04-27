@@ -1,6 +1,7 @@
-[ref](https://ci.apache.org/projects/flink/flink-docs-release-1.8/)
+[官网](https://ci.apache.org/projects/flink/flink-docs-release-1.8/)
 
-## 创建Flink Maven项目
+##  创建Flink Maven项目
+
 ```
 $ mvn archetype:generate                               \
       -DarchetypeGroupId=org.apache.flink              \
@@ -31,8 +32,8 @@ dependency：
 ```
 ## API基础概念
 
+### File Sink
 
-## File Sink
 在项目中添加引用
 ```xml
 <dependency>
@@ -46,6 +47,7 @@ dependency：
 
 ```
 #### Bucketing File Sink
+
 Bucket: 分桶策略 （无界数据流按指定策略划分）
 + BasePathBucketer 不分桶
 + DateTimeBucketer 基于系统时间
@@ -68,6 +70,7 @@ BucketingSink sink = new BucketingSink<T>("") //文件目录地址
 ```
 
 #### Streaming File Sink (@Flink>=1.6)
+
 分桶策略：BucketAssigner
 + BasePathBucketAssigner  不分桶，所有文件写入根目录
 + DateTimeBucketAssigner 基于系统时间(yyyy-MM-dd–HH)分桶
@@ -82,7 +85,60 @@ BucketingSink sink = new BucketingSink<T>("") //文件目录地址
 + SimpleStringEncoder  __forRawFormat__ 基于行存储
 + BulkWriterFactory __forBulkFormat__  按列存储，批量编码方式，可以将输出结果用 Parquet 等格式进行压缩存储
 
+
+
 ## Flink1.12 版本
+
 [Flink 1.12 Doc](https://ci.apache.org/projects/flink/flink-docs-release-1.12/dev/connectors/streamfile_sink.html)
 
 
+
+## Metrics
+
+Flink的指标获取
+
+Flink supports `Counters`, `Gauges`, `Histograms` and `Meters`.
+
+```scala
+class MyMapper extends RichMapFunction[String,String] {
+  @transient private var counter: Counter = _
+
+  override def open(parameters: Configuration): Unit = {
+    counter = getRuntimeContext()
+      .getMetricGroup()
+      .counter("myCounter")
+  }
+
+  override def map(value: String): String = {
+    counter.inc()
+    value
+  }
+}
+```
+
+Gauge:
+
+```scala
+new class MyMapper extends RichMapFunction[String,String] {
+  @transient private var valueToExpose = 0
+
+  override def open(parameters: Configuration): Unit = {
+    getRuntimeContext()
+      .getMetricGroup()
+      .gauge[Int, ScalaGauge[Int]]("MyGauge", ScalaGauge[Int]( () => valueToExpose ) )
+  }
+
+  override def map(value: String): String = {
+    valueToExpose += 1
+    value
+  }
+}
+```
+
+[Metrics]:https://ci.apache.org/projects/flink/flink-docs-release-1.9/monitoring/metrics.html
+
+
+
+已经集成到Dashboard：
+
+![image-20210421140209482](imgs/flink/image-20210421140209482.png)
