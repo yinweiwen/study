@@ -1,0 +1,5 @@
+.user {
+    color: #c8c8c8;
+    overflow:hidden;
+    text-overflow: ellipsis;
+}

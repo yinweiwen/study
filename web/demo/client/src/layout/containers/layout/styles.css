@@ -1,0 +1,43 @@
+:global(#layout .logo) {
+  height: 32px;  
+  border-radius: 6px;
+  margin: 16px;
+}
+
+:global(#layout .ant-layout-sider .anticon) {
+  font-size: 16px;
+  margin-left: 8px;
+}
+
+:global(#sider .ant-menu-item) {
+  height: 64px;
+}
+
+:global(#sider .ant-menu-item-selected) {
+  background-color: #108ee9
+}
+
+:global(#sider .sider-item-text) {
+  text-align: center;
+  margin-top: -20px;
+}
+
+:global(#nav .ant-menu) {
+  line-height: 63px;
+}
+
+:global(#sider .ant-menu-item a) {
+  color: #fff;
+  text-decoration: none;
+}
+
+:global(.ant-menu-item .sc) {
+  font-size: 13px;
+  min-width: 14px;
+  margin-right: 8px;
+}
+:global(.ant-menu-submenu .sc) {
+  font-size: 13px;
+  min-width: 14px;
+  margin-right: 8px;
+}

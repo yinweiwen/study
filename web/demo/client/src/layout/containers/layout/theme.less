@@ -1,0 +1,69 @@
+@font-size-base         : 13px;
+@text-color             : #666;
+@icon-url               : "/assets/fonticon/iconfont";
+
+.@{menu-prefix-cls} {
+  &-dark,
+  &-dark &-sub {
+    color: #999;
+    background: #404040;
+  }
+
+  &-dark &-inline&-sub {
+    background: #333;
+  }
+
+  &-dark&-horizontal {
+    border-bottom-color: #404040;
+  }
+
+  &-dark&-horizontal > &-item,
+  &-dark&-horizontal > &-submenu {
+    border-color: #404040;
+    border-bottom: 0;
+    top: 0;
+  }
+
+  &-dark &-item,
+  &-dark &-item > a {
+    color: #cecece;
+  }
+
+  &-dark&-inline,
+  &-dark&-vertical {
+    border-right: 0;
+  }
+
+  &-dark&-inline &-item,
+  &-dark&-vertical &-item {
+    border-right: 0;
+    margin-left: 0;
+    left: 0;
+  }
+
+  &-dark &-item:hover,
+  &-dark &-item-active,
+  &-dark &-submenu-active,
+  &-dark &-submenu-selected,
+  &-dark &-submenu:hover,
+  &-dark &-submenu-title:hover {
+    background-color: transparent;
+    color: #fff;
+    > a {
+      color: #fff;
+    }
+  }
+
+  &-dark &-item-selected {
+    border-right: 0;
+    color: #fff;
+    > a,
+    > a:hover {
+      color: #fff;
+    }
+  }
+
+  &-dark&-inline &-item-selected {
+    background-color: @primary-color;
+  }
+}
