@@ -10,7 +10,7 @@ import React from 'react';
 
 import Layout from './layout';
 import Auth from './sections/auth';
-import Struct from './sections/struct';
+import Default from './sections/default';
 
 class App extends React.Component {
     constructor(props) {
@@ -19,8 +19,7 @@ class App extends React.Component {
 
     render() {
         document.title = this.props.projectName;
-        let sections = [
-            Struct,            
+        let sections = [    
             Auth
         ];
 

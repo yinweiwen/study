@@ -54,3 +54,6 @@
   address: [32m'127.0.0.1'[39m,
   port: [33m4000[39m
 }
+2021-04-29 16:56:06.029 - [34mdebug[39m: [FS-LOGGER] Init.
+2021-04-29 17:36:05.520 - [34mdebug[39m: [FS-LOGGER] Init.
+2021-04-29 17:37:15.098 - [34mdebug[39m: [FS-LOGGER] Init.
