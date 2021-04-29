@@ -18,12 +18,6 @@ args.option(['u', 'api-url'], 'webapi的URL');
 
 const flags = args.parse(process.argv);
 
-if (!flags.apiUrl) {
-    console.log('缺少启动参数，异常退出');
-    args.showHelp();
-    process.exit(-1);
-}
-
 const product = {
     port: flags.port || 8080,
     staticDirs: [path.join(__dirname, './client')],

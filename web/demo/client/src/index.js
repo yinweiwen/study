@@ -9,7 +9,11 @@
 import React from 'react';
 import { render } from 'react-dom';
 import App from './app';
+import { LocaleProvider } from 'antd';
+import zh_CN from 'antd/lib/locale-provider/zh_CN';
 
 render((
-    <App projectName="桥梁安全监测系统" />
+    <LocaleProvider locale={zh_CN}>
+        <App projectName="桥梁安全监测系统" />
+    </LocaleProvider>
 ), document.getElementById('App'));
