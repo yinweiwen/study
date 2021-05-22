@@ -1117,3 +1117,27 @@ Caused by: java.net.SocketException: Broken pipe (Write failed)
 java.lang.ClassCastException: interface akka.serialization.Serializer is not assignable from class akka.remote.serialization.MiscMessageSerializer
 
 Redis中使用了akka，改用redis库，修正
+
+
+61. MQTT 使用过程的问题 n
+MQTT重连后，订阅消息时报错 （另外收到一条信息）
+SEVERE: receiver.production20429120721: Timed out as no activity, keepAlive=60,000,000,000 lastOutboundActivity=8,545,217,349,987,626 lastInboundActivity=8,545,157,349,155,183 time=8,545,277,349,973,460 lastPing=8,545,217,349,991,742
+
+https://blog.csdn.net/u012134942/article/details/103965155
+显然是因为emqx服务发送数据快，程序处理数据慢。审查代码才发现业务数据已经多线程处理，但emqx客户端的上下线消息并没有多线程处理，处理速度慢，导致tcp连接接收buffer被占满。
+
+
+62. ES REST Client java报错
+i use
+BulkResponse bulkResponse = restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+Accidental occurrence
+java.lang.IllegalStateException: Request cannot be executed; I/O reactor status: STOPPED at org.apache.http.util.Asserts.check(Asserts.java:46) at org.apache.http.impl.nio.client.CloseableHttpAsyncClientBase.ensureRunning(CloseableHttpAsyncClientBase.java:90) at org.apache.http.impl.nio.client.InternalHttpAsyncClient.execute(InternalHttpAsyncClient.java:123) at org.elasticsearch.client.RestClient.performRequestAsync(RestClient.java:531) at org.elasticsearch.client.RestClient.performRequestAsyncNoCatch(RestClient.java:516) at org.elasticsearch.client.RestClient.performRequest(RestClient.java:228) at org.elasticsearch.client.RestHighLevelClient.internalPerformRequest(RestHighLevelClient.java:1593) at org.elasticsearch.client.RestHighLevelClient.performRequest(RestHighLevelClient.java:1563) at org.elasticsearch.client.RestHighLevelClient.performRequestAndParseEntity(RestHighLevelClient.java:1525) at org.elasticsearch.client.RestHighLevelClient.bulk(RestHighLevelClient.java:416)
+
+https://github.com/elastic/elasticsearch/issues/39946
+https://github.com/elastic/elasticsearch/issues/42061
+https://github.com/elastic/elasticsearch/issues/42133
+https://github.com/elastic/elasticsearch/issues/45115
+https://github.com/elastic/elasticsearch/issues/49124
+
+63. 容器中暴露udp端口
+docker run -p 19600:19600/udp repository.anxinyun.cn/anxinyun/iota-device-proxy:5.21-05-12
