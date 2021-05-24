@@ -62,7 +62,7 @@
 4. 业务改造： 下游写流量的拦截、防止污染BI报表、线上推荐算法等
 5. 数据平台：基础数据准备、模型构造、链路构造
 6. 流量平台：压测控制中心、压测引擎
-7. 影子表：
+7. 影子表
 8. 中间件：压测流量的标识
 9. 安全机制
 
@@ -210,7 +210,7 @@ public class D {
 
 ### [主流框架适配](https://github.com/alibaba/Sentinel/wiki/%E4%B8%BB%E6%B5%81%E6%A1%86%E6%9E%B6%E7%9A%84%E9%80%82%E9%85%8D)
 
-其他几个框架先忽略，主要学习RocketMQ中的限流思想、适配的框架主要有：
+其他几个框架先忽略，主要学习RocketMQ中的限流思想。适配的框架主要有：
 
 Spring Boot/Spring Cloud / Web Servlet / Apache Dubbo /gPRC / Apache HttpClient / OkHttp / Reactor / Spring Cloud Gateway
 
