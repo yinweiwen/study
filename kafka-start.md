@@ -1,45 +1,52 @@
 
   bin/zkServer.sh start-foreground
   #windows zkServer.cmd (不要start)
-  
- 
+
+
   bin/kafka-server-start.sh config/server.properties
   #windows>>  bin/windows/kafka-server-start ../../config/server.properties
- 
+
   ./http_server -addr ":8011" -brokers "10.8.30.173:9092"
-  
+
   #创建topic
   ./kafka-topics.sh --create --zookeeper node35:2181,node36:2181,node37:2181 --replication-factor 1 --partitions 3 --topic anxinyun_data
   ./kafka-topics.sh --create --zookeeper test-n1:2181,test-n2:2181,test-n3:2181 --replication-factor 1 --partitions 3 --topic anxinyun_deliver
- 
+
   ./kafka-console-producer.sh --broker-list 10.8.30.35:6667,10.8.30.36:6667,10.8.30.37:6667 --topic anxinyun_data2
   ./kafka-console-producer.sh --broker-list test-n1:9092,test-n2:9092,test-n3:9092,test-n4:9092,test-n5:9092 --topic savoir_data
 
   ./kafka-console-consumer.sh --bootstrap-server iota-m1:6667,iota-n1:6667,iota-n2:6667 --topic savoir_alarm --from-beginning
   ./kafka-console-consumer.sh --bootstrap-server test-n1:9092,test-n2:9092,test-n3:9092,test-n4:9092,test-n5:9092 --topic savoir_data
-  
+
   // on windows
   // I:\WorkSpace\@JAVA\kafka_2.11-0.11.0.0\bin\windows>kafka-console-consumer.bat --bootstrap-server 10.8.30.117:9092 --topic important --from-beginning
-  
+
   // 查看消费情况
   ./kafka-consumer-groups.sh --new-consumer --bootstrap-server test-n1:9092 --list.
   ./kafka-consumer-groups.sh --new-consumer --bootstrap-server 10.8.30.36:6667 --group et.mainxx --describe
-  
+
   ./kafka-consumer-groups.sh --describe --group savoir.master.server --zookeeper iota-m2:2181
   ./kafka-consumer-groups.sh  --bootstrap-server anxinyun-m1:6667 --group et.mainx --describe
 	
   # 查看topic  (describe)
   ./kafka-topics.sh --list --zookeeper node35:2181,node36:2181,node37:2181
-  
+
   ./kafka-topics.sh --zookeeper node35:2181,node36:2181,node37:2181  --describe  --topic anxinyun_data
   ```bash
 	Topic:anxinyun_data	PartitionCount:1	ReplicationFactor:1	Configs:
 	Topic: anxinyun_data	Partition: 0	Leader: 1003	Replicas: 1003	Isr: 1003
   ```
-  
-  # 修改分区
+
+## 工具
+
+### [Offset Explorer 2.1](https://www.kafkatool.com/download.html)
+
+
+
+# 修改分区
+
   ./kafka-topics.sh --zookeeper node35:2181,node36:2181,node37:2181 --alter --topic anxinyun_data --partitions 3
-  
+
   # 修改副本
   `increase-replication-factor.json`
   ``` json
@@ -51,8 +58,9 @@
 	]}
   ```
   kafka-reassign-partitions --zookeeper node35:2181,node36:2181,node37:2181 --reassignment-json-file increase-replication-factor.json --execute
-  
-  ## ambari 中kafka的broker.id
+
+## ambari 中kafka的broker.id
+
   在server.properties中log.dir中meta.properties
   ```
   #
@@ -60,8 +68,8 @@
 version=0
 broker.id=1004
   ```
-  
-  
+
+
   # 删除topic
   ./kafka-topics.sh --delete --zookeeper node35:2181,node36:2181,node37:2181 --topic anxinyun_data
   如果 `delete.topic.enable=true` 则直接删除，否则topic仅仅被标记为删除
@@ -70,42 +78,45 @@ broker.id=1004
   ls /brokers/topics
   rmr /brokers/topics/anxinyun_data2
   删除完成后重启zookeeper和kafka服务；
-  
-  
+
+
   # 常见问题：
   1. Offset commit failed with a retriable exception
-  consumer提交异常； https://blog.csdn.net/hanghangde/article/details/97945315
-  
+
+    consumer提交异常； https://blog.csdn.net/hanghangde/article/details/97945315
+
   session.timeout.ms => consumer-group检查组内成员掉线的时间； 消费逻辑处理时间太长导致，两次poll间隔不能超过此阈值；
-  
-  
-	
-	
-  SPARK 
+
+
+
+
+## SPARK
+
   启动master	./sbin/start-master.sh
   启动slaves	./sbin/start-slave.sh <worker#> <master-spark-URL>
   启动shell		./bin/spark-shell --master spark://IP:PORT
-		count.saveAsTextFile("README.md")  不带file://的话，默认保存到hdfs中
+​		count.saveAsTextFile("README.md")  不带file://的话，默认保存到hdfs中
 
 报错 java.lang.NumberFormatException: For input string: "E:\xxx\xx"
 zoo.cfg
 用zkServer start命令报如题的错误，改为直接用zkServer启动则ok
 dataDir=E:/★Coding/1workspace/zookeeper-3.4.10/data
 		
-Eclipse
+
+## Eclipse
 
 Windows——>Preferences——>Java-->Editor-->Content Asist，在Auto activation triggers for Java后面的文本框里只有一个“.”。现在你将其改为“.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ”即可
 
+## windows下部署hadoop
 
-windows下部署hadoop
 Error: JAVA_HOME is incorrectly set.
 解决方法： JAVA_HOME不能包含空格
 找不到hadoop和yarn文件
 解决方法：hadooponwindows-master.zip解压替换hadoop中bin目录 （http://blog.csdn.net/antgan/article/details/52067441）
 http://localhost:50070
 
+## linq<==>scala
 
-linq<==>scala
 Select is map, 
 Aggregate is reduce (or fold),
  SelectMany is flatMap,
@@ -115,7 +126,7 @@ Aggregate is reduce (or fold),
  First is find
  Any is exists
  All is forall
- 
+
  Spark Stream中 Partitioner是个什么鬼？？？
 
 hdfs namenode -format
@@ -124,7 +135,8 @@ start-dfs.cmd 中修改
 start "Apache Hadoop Distribution" %HADOOP_BIN_PATH%\..\bin\hadoop.cmd namenode
 start "Apache Hadoop Distribution" %HADOOP_BIN_PATH%\..\bin\hadoop.cmd datanode
 
-nexus
+### nexus
+
 http://localhost:8081/
 http://books.sonatype.com/nexus-book/reference3/install.html#installation-java
 nexus.exe /install <optional-service-name>
@@ -132,16 +144,18 @@ nexus.exe /start <optional-service-name>
 nexus.exe /stop <optional-service-name>
 nexus.exe /uninstall <optional-service-name>
 
-maven项目支持scala(IDEA)
+### maven项目支持scala(IDEA)
+
 File>ProjectStructure>Library>+ScalaSDK  (可能要download)
- 
- 
- 
- postgres备份
+
+
+
+###  postgres备份
+
  pg_dump -h host1 dbname | psql -h host2 dbname  
+
  
- 
- 
+
  #!/bin/sh
 for host in node-1 node-2 node-3
 do
@@ -159,7 +173,9 @@ do
 	echo "$host kafka&zookeeper is stopping"
 done
 
-## kafka常见参数说明：https://www.cnblogs.com/weixiuli/p/6413109.html
+## [kafka常见参数说明](https://www.cnblogs.com/weixiuli/p/6413109.html)
+
+```shell
 一、相关参数配置
 
 ############################ System #############################
@@ -170,23 +186,33 @@ broker.id=0
 port=9092
 #监听地址，不设为所有地址
 host.name=debugo01
- 
-# 处理网络请求的最大线程数
+
+处理网络请求的最大线程数
+
 num.network.threads=2
-# 处理磁盘I/O的线程数
+
+处理磁盘I/O的线程数
+
 num.io.threads=8
-# 一些后台线程数
+
+一些后台线程数
+
 background.threads = 4
-# 等待IO线程处理的请求队列最大数
+
+等待IO线程处理的请求队列最大数
+
 queued.max.requests = 500
- 
-#  socket的发送缓冲区（SO_SNDBUF）
+
+socket的发送缓冲区（SO_SNDBUF）
+
 socket.send.buffer.bytes=1048576
-# socket的接收缓冲区 (SO_RCVBUF)
+
+socket的接收缓冲区 (SO_RCVBUF)
+
 socket.receive.buffer.bytes=1048576
 # socket请求的最大字节数。为了防止内存溢出，message.max.bytes必然要小于
 socket.request.max.bytes = 104857600
- 
+
 ############################# Topic #############################
 # 每个topic的分区个数，更多的partition会产生更多的segment file
 num.partitions=2
@@ -196,7 +222,7 @@ auto.create.topics.enable =true
 default.replication.factor =1
 # 消息体的最大大小，单位是字节
 message.max.bytes = 1000000
- 
+
 ############################# ZooKeeper #############################
 # Zookeeper quorum设置。如果有多个使用逗号分割
 zookeeper.connect=debugo01:2181,debugo02,debugo03
@@ -204,42 +230,42 @@ zookeeper.connect=debugo01:2181,debugo02,debugo03
 zookeeper.connection.timeout.ms=1000000
 # ZooKeeper集群中leader和follower之间的同步实际
 zookeeper.sync.time.ms = 2000
- 
+
 ############################# Log #############################
 #日志存放目录，多个目录使用逗号分割
 log.dirs=/var/log/kafka
- 
+
 # 当达到下面的消息数量时，会将数据flush到日志文件中。默认10000
 #log.flush.interval.messages=10000
 # 当达到下面的时间(ms)时，执行一次强制的flush操作。interval.ms和interval.messages无论哪个达到，都会flush。默认3000ms
 #log.flush.interval.ms=1000
 # 检查是否需要将日志flush的时间间隔
 log.flush.scheduler.interval.ms = 3000
- 
+
 # 日志清理策略（delete|compact）
 log.cleanup.policy = delete
 # 日志保存时间 (hours|minutes)，默认为7天（168小时）。超过这个时间会根据policy处理数据。bytes和minutes无论哪个先达到都会触发。
 log.retention.hours=168
 # 日志数据存储的最大字节数。超过这个时间会根据policy处理数据。
 #log.retention.bytes=1073741824
- 
+
 # 控制日志segment文件的大小，超出该大小则追加到一个新的日志segment文件中（-1表示没有限制）
 log.segment.bytes=536870912
 # 当达到下面时间，会强制新建一个segment
 log.roll.hours = 24*7
 # 日志片段文件的检查周期，查看它们是否达到了删除策略的设置（log.retention.hours或log.retention.bytes）
 log.retention.check.interval.ms=60000
- 
+
 # 是否开启压缩
 log.cleaner.enable=false
 # 对于压缩的日志保留的最长时间
 log.cleaner.delete.retention.ms = 1 day
- 
+
 # 对于segment日志的索引文件大小限制
 log.index.size.max.bytes = 10 * 1024 * 1024
 #y索引计算的一个缓冲区，一般不需要设置。
 log.index.interval.bytes = 4096
- 
+
 ############################# replica #############################
 # partition management controller 与replicas之间通讯的超时时间
 controller.socket.timeout.ms = 30000
@@ -253,7 +279,7 @@ controlled.shutdown.enable = false
 controlled.shutdown.max.retries = 3
 # 每次关闭尝试的时间间隔
 controlled.shutdown.retry.backoff.ms = 5000
- 
+
 # 如果relicas落后太多,将会认为此partition relicas已经失效。而一般情况下,因为网络延迟等原因,总会导致replicas中消息同步滞后。如果消息严重滞后,leader将认为此relicas网络延迟较大或者消息吞吐能力有限。在broker数量较少,或者网络不足的环境中,建议提高此值.
 replica.lag.max.messages = 4000
 #leader与relicas的socket超时时间
@@ -270,7 +296,7 @@ replica.fetch.min.bytes =1
 num.replica.fetchers = 1
 # 每个replica将最高水位进行flush的时间间隔
 replica.high.watermark.checkpoint.interval.ms = 5000
- 
+
 # 是否自动平衡broker之间的分配策略
 auto.leader.rebalance.enable = false
 # leader的不平衡比例，若是超过这个数值，会对分区进行重新的平衡
@@ -279,7 +305,7 @@ leader.imbalance.per.broker.percentage = 10
 leader.imbalance.check.interval.seconds = 300
 # 客户端保留offset信息的最大空间大小
 offset.metadata.max.bytes = 1024
- 
+
 #############################Consumer #############################
 
 		# Consumer端核心的配置是group.id、zookeeper.connect
@@ -305,7 +331,7 @@ offset.metadata.max.bytes = 1024
 		auto.offset.reset = largest
 		/*
 		kafka + zookeeper,当消息被消费时,会向zk提交当前groupId的consumer消费的offset信息,当consumer再次启动将会从此offset开始继续消费.
-
+	
 		在consumter端配置文件中(或者是ConsumerConfig类参数)有个"autooffset.reset"(在kafka 0.8版本中为auto.offset.reset),有2个合法的值"largest"/"smallest",默认为"largest",此配置参数表示当此groupId下的消费者,在ZK中没有offset值时(比如新的groupId,或者是zk数据被清空),consumer应该从哪个offset开始消费.
 		1、largest表示接受接收最大的offset(即最新消息),
 		2、smallest表示最小offset,即从topic的开始位置消费所有消息.
@@ -385,32 +411,39 @@ offset.metadata.max.bytes = 1024
 		queue.enqueue.timeout.ms = -1
 		# 异步模式下，每次发送的消息数，当queue.buffering.max.messages或queue.buffering.max.ms满足条件之一时producer会触发发送。
 		batch.num.messages=200
-		
-		
+
+```
+
+
+​		
 ## KAFKA性能测试
  ♥♥♥ https://www.cnblogs.com/runnerjack/p/9105784.html ♥♥♥\
- 
- ## Kafka Performance Tuning
+
+## Kafka Performance Tuning
+
  [HERE](https://data-flair.training/blogs/kafka-performance-tuning/)
  Producer:
+
 + Compression 减少网络io和延迟 但消耗cpu
 + Batch Size 分包大小的上限；提升该值可以提高吞吐量，但是会造成延迟问题latency
 + linger time 等待组包batch的时间，默认是0
 + Sync or Async
- 
- 
+
+
  ## 错误排查
- 
+
  LEADER_NOT_AVAILABLE
- 
- 
+
+
  Error while fetching metadata with correlation id
+
  
- 
- 
+
  amabari中所有节点心跳丢失，无法启动iota-m1上的kafka服务；
 
 查看ambari-agent日志：/var/log/ambari-agent# tail -f ambari-agent.log
+
+```shell
 Traceback (most recent call last):
   File "/usr/lib/python2.6/site-packages/ambari_agent/Controller.py", line 175, in registerWithServer
     ret = self.sendRequest(self.registerUrl, data)
@@ -419,18 +452,30 @@ Traceback (most recent call last):
 IOError: Request to https://iota-m1:8441/agent/v1/register/iota-n1 failed due to EOF occurred in violation of protocol (_ssl.c:590)
 ERROR 2020-06-16 21:09:28,836 Controller.py:227 - Error:Request to https://iota-m1:8441/agent/v1/register/iota-n1 failed due to EOF occurred in violation of protocol (_ssl.c:590)
 WARNING 2020-06-16 21:09:28,837 Controller.py:228 -  Sleeping for 5 seconds and then trying again 
+```
+
+
 
 发现问题是https证书过期
 https://my.oschina.net/aubao/blog/1920933
 
 在每个ambari节点上修改
+
+```shell
 vi /etc/ambari-agent/conf/ambari-agent.ini
-force_https_protocol=PROTOCOL_TLSv1_2
-然后，重启所有节点上ambari-agent：
+```
+
+```force_https_protocol=PROTOCOL_TLSv1_2```
+然后，重启所有节点上`ambari-agent`：
+
+```shell
 ambari-agent restart
+```
 
 
-## Zookeeper:.
+
+## Zookeeper:
+
 [ref csdn](https://blog.csdn.net/java_66666/article/details/81015302)
 统一命名服务、状态同步服务、集群管理、分布式应用配置项的管理等
 zookeeper = 文件系统 + 监听通知机制

@@ -419,3 +419,24 @@ ToDo
 https://www.cnblogs.com/luozhiyun/tag/Sentinel/
 
 ToDo
+
+
+
+# 其他
+
+## azure
+
+[Iot Hub配额和节流](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-quotas-throttling )
+
+ IoT Hub 处理突发流量的方法： 突发流量请求的前几个会被立即处理，后续请求会被放进队列，并以限制速率处理。流量整形。 如果违规继续，最终队列将填满，IoT Hub返回429 ThrottlingException拒绝请求。
+
+
+
+# 结论
+
+Sentinel比较适用于无状态请求，例如网站用户的业务请求（调用RESTful API）。在我们物联网数据处理场景中，不是很适用。
+
+流量整形的匀速模式，没有办法对突发数据进行缓存，不能满足我们‘先缓存，漫处理’，保证数据（突发性数据前部分）不丢失的场景。
+
+放弃该方案。 Sad！
+

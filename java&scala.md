@@ -37,8 +37,8 @@ wsdl2java.bat -p wsdl.jiangsu -d wsdljiangsutest  -encoding utf-8 -client http:/
 		
 		  目前ET中数据上报多采用调用wenservice服务的方式，包括青岛数据上报和江苏省级平台数据上报。
   第三方服务提供WSDL uri路径，在java/scala程序中可以通过工具解析出客户端代码，方便程序调用。
-  
-  
+
+
 #### 使用 apache的wsdl2java工具
 
 [下载地址](http://cxf.apache.org/download.html)
@@ -84,8 +84,71 @@ var ss: MonitorService =new MonitorService(wsdlLocation.get)
 ...
 ```
 
+直接HTTP推送webservice
+
+使用 SoapUI 工具可以调试saop接口
+
+![image-20210528104928682](imgs/java&scala/image-20210528104928682.png)
+
+scala代码段：
+
+```scala
+val xml =
+                        <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:tem="http://tempuri.org/">
+                            <soap:Header/>
+                            <soap:Body>
+                                <tem:TransOthDevMonData>
+                                    <!--Optional:-->
+                                    <tem:userName>
+                                        {cfg.user}
+                                    </tem:userName>
+                                    <!--Optional:-->
+                                    <tem:passWord>
+                                        {cfg.pwd}
+                                    </tem:passWord>
+                                    <!--Optional:-->
+                                    <tem:deviceCode>
+                                        {hdc.deviceCode}
+                                    </tem:deviceCode>
+                                    <!--Optional:-->
+                                    <tem:groupName>
+                                        {gpn}
+                                    </tem:groupName>
+                                    <!--Optional:-->
+                                    <tem:fileByte>
+                                        {Codec.encodeBase64(bts)}
+                                    </tem:fileByte>
+                                </tem:TransOthDevMonData>
+                            </soap:Body>
+                        </soap:Envelope>
+                    val req = Http("https://monitor.051mos.com/WebService/TransOtherDeviceData.asmx")
+                        .header("Content-Type", "application/soap+xml")
+                        .header("charset", "UTF-8")
+                        .header("action", "\"http://tempuri.org/TransOthDevMonData\"")
+                        .header("User-Agent", "Apache-HttpClient/4.5.5 (Java/12.0.1)")
+                        .header("Connection", "Keep-Alive")
+                        .header("Host", "monitor.051mos.com")
+                        .header("Accept-Encoding", "gzip,deflate")
+                        .postData(xml.toString)
+                    info(s"[huhanggaotie] post $req")
+                    val resp = req.asString
+                    s"Status:${resp.code} Body:${resp.body}"
+```
+
+怎么都调不通怎么办？
+
+他们提供的C#程序可以调试，想抓取C#调用的HTTP请求
+
+方法2：
+
+使用Fiddler Everywhere抓HTTP包 
+
+![image-20210528151558228](imgs/java&scala/image-20210528151558228.png)
+
+在java程序中copy此请求
 
 ## scala par 指定线程数
+
 val ses = ...().par
 
 ses.tasksupport = new ForkJoinTaskSupport(new ForkJoinPool(4))

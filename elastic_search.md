@@ -1,14 +1,14 @@
 # ElasticSearch
 
-### http://10.8.30.37:5601/app/kibana
-
 启动：
 	bin/elasticsearch -d
 关闭：
 	ps -ef | grep elastic
 	kill -9
 	
+
 ## 创建索引
+
 ```
 PUT raw_data
 {
@@ -17,8 +17,9 @@ PUT raw_data
  }
 }
 ```
-	
+
 ### 安装head插件
+
 https://github.com/mobz/elasticsearch-head
 	git clone git://github.com/mobz/elasticsearch-head.git
 	cd elasticsearch-head
@@ -30,7 +31,7 @@ https://github.com/mobz/elasticsearch-head
 ### 安装x-pack监视性能：
 	bin/elasticsearch-plugin install x-pack
  没学会。。。
- 
+
 ```
  ES性能监视
 	监视内存
@@ -342,3 +343,11 @@ https://zhuanlan.zhihu.com/p/33791813
 https://segmentfault.com/a/1190000002972420
 
 双引号匹配短语 ""
+
+## ES管理工具
+
+### cerebro
+
+docker run -p 9000:9000 lmenezes/cerebro
+
+![image-20210602091818019](imgs/elastic_search/image-20210602091818019.png)
