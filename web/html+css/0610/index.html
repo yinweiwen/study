@@ -1,0 +1,191 @@
+<html>
+<head>
+<meta http-equiv="refresh"  content="3000; http://www.www.w3cschool.cn"/>
+<style type="text/css">
+a {
+    background-color: grey;
+    color:white;
+    padding:0.5em;
+}
+
+.myclass {
+    color:red;
+    border: thin solid black;
+    padding: 1px;
+}
+
+a:link,a:visited{
+    text-decoration: underline;
+    color: #6A5ACD;
+    background-color: transparent;
+}
+
+a:hover,a:active{
+    text-decoration: underline overline;
+    color: #191970;
+    background-color: #C9C3ED;
+}
+
+thead th{
+    text-align:left;
+    background:grey;
+    color:white;
+}
+
+tbody th{
+    text-align:right;
+    background:lightgrey;
+    color:grey;
+}
+</style>
+<script>
+    document.write("this is external script");
+</script>
+<script defer src="simple.js"></script>
+<script async src="simple.js"></script>
+</head>
+<body>
+   <p>This is a test.</p>
+   <hr/>
+   this is test <cite>cite a quota</cite>.
+   I like <span class="myclass">CSS</span>.
+   
+    <blockquote cite="http://en.wikipedia.org/wiki/Cascading_Style_Sheets">
+  Cascading Style Sheets (CSS) is a style sheet language used for
+  describing the look and formatting of a document written in a markup language.
+  </blockquote>
+   <a href="https://www.w3cschool.cn">www.w3cschool.cn</a>
+   <a href="mailto://yww0828@126.com">写信给yww</a>
+   <ul>
+      <li><a href="#">A</a></li>
+      <li><a href="#">B</a></li>
+      <li><a href="#">C</a></li>
+      <li><a href="#">D</a></li>
+    </ul>
+    
+    <ol type="a" start=4>
+        <li>HTML</li>
+        <li>CSS</li>
+        <li>XML</li>
+    </ol>
+    
+    <p>
+        <a href="http://www.baidu.com">
+            <img src="E:\Github\study\imgs\flink\image-20210421140209482.png"
+                alt="flink img"
+                width="600"
+                height="300"/>
+        </a>
+    </p>
+    
+     <table>
+    <thead>
+      <tr>
+        <th>A</th>
+        <th>B</th>
+        <th>C</th>
+        <th>D</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Favorite:</th>
+        <td>XML</td>
+        <td>HTML</td>
+        <td>CSS</td>
+      </tr>
+      <tr>
+        <th>2nd Favorite:</th>
+        <td>Java</td>
+        <td>Javascript</td>
+        <td>Oracle</td>
+      </tr>
+      <tr>
+        <th>3rd Favorite:</th>
+        <td>C#</td>
+        <td>MySQL</td>
+        <td>PHP</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <!-- object embed   -->
+  <object width="560" height="320"
+    data="http://www.youtube.com/v/qzA60hHca9s"
+    type="application/x-shockwave-flash">
+    <param name="allowFullScreen" value="true" />
+  </object>
+  
+  <datalist id="citylst">
+    <option value="beijing" label="First"/>
+    <option value="shanghai"/>
+    <option value="zhenjiang"/>
+  </datalist>
+  
+   <form method="post" action="http://example.com/form">
+    <fieldset>
+      <legend>Enter Your Details</legend>
+      <p>
+        <label for="name">Name: <input type="text" autofocus id="name" name="name" placeholder="yinweiwen" required="true" maxlength="30" size="10" pattern="^1.* .*$"/></label>
+      </p>
+      <p>
+        <label for="name">City: <input id="city" name="city" list="citylst" /></label>
+      </p>
+    </fieldset>
+    <fieldset>
+      <legend accesskey="y">
+        About <u>Y</u>ou (ALT + Y)
+      </legend>
+      <p><label for="userName">User name:</label>
+         <input type="text" name="txtUserName" size="20" id="userName" />
+      </p>
+      <p><label for="password">password:</label>
+         <input type="password" name="password" size="20" id="password" />
+      </p>
+    </fieldset>
+
+    <fieldset>
+      <legend accesskey="u">
+        About <u>U</u>s (ALT + U)
+      </legend>
+      <p>
+        <label for="referrer">How did you hear about us?</label>:<br/>
+        <select name="selReferrer" id="referrer">
+          <option value="w">Select answer</option>
+          <option selected value="website">Another website</option>
+          <option value="printAd">Magazine ad</option>
+          <option value="friend">From a friend</option>
+          <option value="other">Other</option>
+        </select>
+      </p>
+    </fieldset>
+    
+    <fieldset>
+    <p><label for="number">number</label>
+    <input id="number" name="number" type="number" step="1" min="0" max="10"/>
+    </p>
+    <p><label for="cb">check</label>
+    <input id="cb" name="cb" type="checkbox"/>
+    </p>
+    <p><label for="color">color</label>
+    <input id="color" name="color" type="color"/>
+    </p>
+    <p><label for="date">date</label>
+    <input id="date" name="date" type="date"/>
+    </p>
+    </fieldset>
+    
+    <button type="submit" formmethod="post">Submit Vote</button>
+    <button type="reset">Reset</button>
+  </form>
+  
+  <form method="post" action="http://example.com/form" enctype="multipart/form-data">
+  <p>
+    <input type="file" name="filedata"/>
+  </p>
+  <input type="submit" value="Submit"/>
+  </form>
+    <a href="http://www.w3cschool.cn" target="myframe">Tutorial</a>
+  <iframe name="myframe" width="300" height="300"> </iframe>
+</body>
+</html>

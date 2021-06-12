@@ -106,6 +106,14 @@ WriteResult({ "nRemoved" : 2 })
 >db.COLLECTION_NAME.find().limit(NUMBER).skip(NUMBER)
 # 排序 1升序 2降序
 >db.COLLECTION_NAME.find().sort({KEY:1})
+# 业务场景
+>db.anxinyun_themes.find({
+    $and:[
+    {sensor:{$in:[4054]}},
+    {collect_time:{$gte:"2021-06-01"}},
+    {collect_time:{$lt:"2021-06-08"}}
+    ]
+ }).sort({collect_time:-1}).limit(100)
 ```
 
 

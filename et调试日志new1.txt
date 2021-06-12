@@ -1141,3 +1141,12 @@ https://github.com/elastic/elasticsearch/issues/49124
 
 63. 容器中暴露udp端口
 docker run -p 19600:19600/udp repository.anxinyun.cn/anxinyun/iota-device-proxy:5.21-05-12
+
+64. ElasticsearchException[Elasticsearch exception [type=illegal_argument_exception, reason=Limit of total fields [1000] in index [anxinyun_themes] has been exceeded]]
+
+    PUT anxinyun_themes/_settings
+    {
+      "index.mapping.total_fields.limit": 2000
+    }
+
+    
