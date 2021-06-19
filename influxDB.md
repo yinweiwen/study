@@ -245,13 +245,28 @@ curl http://localhost:9999/api/v2/query?org=my-org -XPOST -sS \
         |> sum()'
 ```
 
+CRUD
+
+```sql
+show databases
+
+use "testData"
+
+SELECT * FROM "testData"."autogen"."t_themes_vibration_wave" WHERE  "sensorid"='259' and time>'2021-06-10'
+
+delete from t_themes_vibration_wave where time between '2021-06-10T00:00:00+08:00' and '2021-06-15T00:00:00+08:00'
+```
+
+
 
 ## 关于性能
+
 https://www.jianshu.com/p/979d8853210d
 
 单节点 60w pps的写入吞吐量
 
 ## Prometheus
+
 [Doc](https://prometheus.io/docs/introduction/overview/)
 Features
 + 开源监测和报警工具 CloudNativeComputingFoundation

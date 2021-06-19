@@ -143,6 +143,9 @@ PG执行Add column操作阻塞，问题未知；解决方法：重启pg服务
 	psql -h 127.0.0.1 -U FashionAdmin -d SecureCloud < /tmp/sc.bak
 
 	psql -U FashionAdmin -d SecureCloud
+    
+    <><><>
+    pg_restore -d dbname -U FashionAdmin filename
 
 # 删除数据库
 	dropdb -h 127.0.0.1 -U FashionAdmin SecureCloud
