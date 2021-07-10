@@ -513,3 +513,16 @@ SELECT conrelid FROM pg_CONSTRAINT WHERE confrelid in (
     )
 );
 ```
+
+## 进度查看
+PG9.6支持了pg_stat_progress_vacuum，PG13目前有如下5个进度视图：
+27.4.1. ANALYZE Progress Reporting
+27.4.2. CREATE INDEX Progress Reporting
+27.4.3. VACUUM Progress Reporting
+27.4.4. CLUSTER Progress Reporting
+27.4.5. Base Backup Progress Reporting
+ 
+
+官方文档有详细说明： 
+
+https://www.postgresql.org/docs/13/progress-reporting.html

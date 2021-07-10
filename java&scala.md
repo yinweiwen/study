@@ -7,6 +7,7 @@ wsdl2java.bat -p wsdl.jiangsu -d wsdljiangsu  -encoding utf-8 -client http://58.
 wsdl2java.bat -p wsdl.jiangsu -d wsdljiangsutest  -encoding utf-8 -client http://61.132.52.36:9001/MonitorService-1.0/services/MonitorService?wsdl
 
 ## JVM 内存
+
 [ref](https://www.cnblogs.com/likehua/p/3369823.html)
         常见配置汇总
         堆设置
@@ -35,11 +36,11 @@ wsdl2java.bat -p wsdl.jiangsu -d wsdljiangsutest  -encoding utf-8 -client http:/
         -XX:ParallelGCThreads=n:设置并发收集器年轻代收集方式为并行收集时，使用的CPU数。并行收集线程数。
 		
 		
+
 		  目前ET中数据上报多采用调用wenservice服务的方式，包括青岛数据上报和江苏省级平台数据上报。
   第三方服务提供WSDL uri路径，在java/scala程序中可以通过工具解析出客户端代码，方便程序调用。
 
-
-#### 使用 apache的wsdl2java工具
+## 使用 apache的wsdl2java工具
 
 [下载地址](http://cxf.apache.org/download.html)
 
@@ -154,3 +155,253 @@ val ses = ...().par
 ses.tasksupport = new ForkJoinTaskSupport(new ForkJoinPool(4))
 
 ses.map{case (h, (start, end)) => ..... 
+
+
+
+## Spring-Boot
+
+http://c.biancheng.net/view/4648.html
+
+IoC (Inversion of Control 控制反转)： “获得依赖对象的过程被反转了，变为 由ICO容器主动注入”
+
+	+ DI “依赖注入（Dependency Injection）”
+	+ DL“依赖查找（Dependency Lookup）”
+
+![image-20210628114053411](imgs/java&scala/image-20210628114053411.png)
+
+常用Annotation：
+
++ @Configuration
++ @ComponentScan Bean采集
++ @PropertySource 加载*.properties
++ @Import / @ImportResource 合并多个配置
+
+“约定优先于配置（Convention Over Configuration）”
+
+SpringBoot： 独立运行、内嵌Servlet、自动配置spring、准生产应用监控
+
+
+
+快速搭建：
+
+http://start.spring.io/ 
+
+```java
+@SpringBootApplication
+public class DemoApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(DemoApplication.class, args);
+	}
+}
+==
+@Configuration
+@EnableAutoConfiguration
+@ComponentScan
+```
+
+
+
+Spring-Boot生命周期
+
+![SpringBoot应用启动步骤简要示意图](http://c.biancheng.net/uploads/allimg/190731/5-1ZI1144050494.png)
+
+在教程《[@SpringBootApplication注解](http://c.biancheng.net/view/4625.html)》中讲到 @EnableAutoConfiguration 可以借助 [Spring](http://c.biancheng.net/spring/)FactoriesLoader 这个特性将标注了 @Configuration 的 [Java](http://c.biancheng.net/java/)Config 类“一股脑儿”的汇总并加载到最终的 ApplicationContext，不过，这其实只是“简化版”的说明。
+
+@Conditional({MyCondition1.class, MyCondition2.class, ...}) 条件加载
+
+@AutoConfigureAfter(JmxAutoConfiguration.class) 在。。。之后加载
+
+
+
+### 创建一个简单的web应用
+
+`pom.xml`
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+
+
+添加处理类：
+
+```java
+@RestController
+public class IndexController {
+    @RequestMapping("/")
+    public String index() {
+        return "hello spring web";
+    }
+}
+```
+
+
+
+启动：
+
+1. main方法执行
+2. java -jar xxx.jar
+3. mvn spring-boot:run -Drun.arguments="--server.port=8888"
+
+
+
+### JDBC MyBatis
+
+配合MyBatis实现数据库操作
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+    <version>2.1.1</version>
+</dependency>
+
+<dependency>
+    <groupId>org.mybatis.generator</groupId>
+    <artifactId>mybatis-generator-core</artifactId>
+    <version>1.3.5</version>
+</dependency>
+
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+![image-20210628165550728](imgs/java&scala/image-20210628165550728.png)
+
+application.yml
+
+```yml
+spring:
+  profiles:
+    active: dev
+```
+
+application-dev.yml
+
+```yml
+server:
+  port: 8080
+
+spring:
+  datasource:
+    username: root
+    password: 123456
+    url: jdbc:mysql://10.8.30.157:3305/taxdb_race
+    driver-class-name: com.mysql.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath:mapping/*Mapping.xml
+  type-aliases-package: com.example.entity
+
+#showSql
+logging:
+  level:
+    com:
+      example:
+        mapper : debug
+```
+
+
+
+UserMapper.java
+
+```java
+@Repository
+public interface UserMapper {
+    User Sel(int id);
+}
+```
+
+UserMapping.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.demo.entity.User">
+        <result column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="password" jdbcType="VARCHAR" property="password" />
+        <result column="enabled" jdbcType="BOOLEAN" property="enabled" />
+    </resultMap>
+
+    <select id="Sel" resultType="com.example.demo.entity.User">
+        select * from ncbs_user where id = #{id}
+    </select>
+
+</mapper>
+```
+
+Main函数处:
+
+```java
+@MapperScan("com.example.demo.mapper")
+```
+
+### Security
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+
+
+### Lombok
+
+> ```xml
+> <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+> <dependency>
+>  <groupId>org.projectlombok</groupId>
+>  <artifactId>lombok</artifactId>
+>  <version>1.18.2</version>
+>  <scope>provided</scope>
+> </dependency>
+> ```
+>
+> java代码： @Data注解（@Getter @Setter @ToString）
+>
+> ```java
+> @Data
+> public class UserRequestEntity {
+>  private String id ;
+> }
+> ```
+>
+> 
+>
+> IDEA 安装lombok插件
+
+
+
+
+
+## 插话
+
+> **云计算**：Cloud computing is a new form of Internet-based computing that provides shared computer processing resources and data to computers and other devices on demand.
+>
+> **IaaS** (Infrastructure as a service 基础设施即服务) - 卖电脑
+>
+> **PaaS**(Platform as a service 平台即服务) - 卖操作系统
+>
+> **SaaS** (Sofrware as a service 软件即服务) - 卖软件
+
+
+
+>**云原生 = 微服务 + DevOps + 持续交付 + 容器化**
+
