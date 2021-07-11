@@ -259,6 +259,8 @@ nohup node api/server.js -p 9080 -g mysql://root:Aliyun123_@localhost:3306/db > 
 
 配置Nginx反向代理：
 
+参考[Nginx](#Nginx)章节
+
 
 
 访问：http://yinweiwen.cn
