@@ -1025,146 +1025,748 @@ GET `/task`
 | assignee                                 | 被指派人                                                     |
 | assigneeExpression                       | 被指派人表达式                                               |
 | assigneeLike                             | 被指派人                                                     |
-| assigneeLikeExpression                   | Restrict to tasks that have an assignee that has the parameter value described by the given expression as a substring. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. |
-| assigneeIn                               | Only include tasks which are assigned to one of the passed and comma-separated user ids. |
-| owner                                    | Restrict to tasks that the given user owns.                  |
-| ownerExpression                          | Restrict to tasks that the user described by the given expression owns. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. |
-| candidateGroup                           | Only include tasks that are offered to the given group.      |
-| candidateGroupExpression                 | Only include tasks that are offered to the group described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. |
-| candidateUser                            | Only include tasks that are offered to the given user or to one of his groups. |
-| candidateUserExpression                  | Only include tasks that are offered to the user described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. |
-| includeAssignedTasks                     | Also include tasks that are assigned to users in candidate queries. Default is to only include tasks that are not assigned to any user if you query by candidate user or group(s). |
-| involvedUser                             | Only include tasks that the given user is involved in. A user is involved in a task if an identity link exists between task and user (e.g., the user is the assignee). |
-| involvedUserExpression                   | Only include tasks that the user described by the given expression is involved in. A user is involved in a task if an identity link exists between task and user (e.g., the user is the assignee). See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. |
-| assigned                                 | If set to `true`, restricts the query to all tasks that are assigned. |
-| unassigned                               | If set to `true`, restricts the query to all tasks that are unassigned. |
-| taskDefinitionKey                        | Restrict to tasks that have the given key.                   |
-| taskDefinitionKeyIn                      | Restrict to tasks that have one of the given keys. The keys need to be in a comma-separated list. |
-| taskDefinitionKeyLike                    | Restrict to tasks that have a key that has the parameter value as a substring. |
-| name                                     | Restrict to tasks that have the given name.                  |
-| nameNotEqual                             | Restrict to tasks that do not have the given name.           |
-| nameLike                                 | Restrict to tasks that have a name with the given parameter value as substring. |
-| nameNotLike                              | Restrict to tasks that do not have a name with the given parameter value as substring. |
-| description                              | Restrict to tasks that have the given description.           |
-| descriptionLike                          | Restrict to tasks that have a description that has the parameter value as a substring. |
-| priority                                 | Restrict to tasks that have the given priority.              |
-| maxPriority                              | Restrict to tasks that have a lower or equal priority.       |
-| minPriority                              | Restrict to tasks that have a higher or equal priority.      |
-| dueDate                                  | Restrict to tasks that are due on the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.546+0200`. |
-| dueDateExpression                        | Restrict to tasks that are due on the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| dueAfter                                 | Restrict to tasks that are due after the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.435+0200`. |
-| dueAfterExpression                       | Restrict to tasks that are due after the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| dueBefore                                | Restrict to tasks that are due before the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.243+0200`. |
-| dueBeforeExpression                      | Restrict to tasks that are due before the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| withoutDueDate                           | Only include tasks which have no due date. Value may only be `true`, as `false` is the default behavior. |
-| followUpDate                             | Restrict to tasks that have a followUp date on the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.342+0200`. |
-| followUpDateExpression                   | Restrict to tasks that have a followUp date on the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| followUpAfter                            | Restrict to tasks that have a followUp date after the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.542+0200`. |
-| followUpAfterExpression                  | Restrict to tasks that have a followUp date after the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| followUpBefore                           | Restrict to tasks that have a followUp date before the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.234+0200`. |
-| followUpBeforeExpression                 | Restrict to tasks that have a followUp date before the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| followUpBeforeOrNotExistent              | Restrict to tasks that have no followUp date or a followUp date before the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.432+0200`. The typical use case is to query all "active" tasks for a user for a given date. |
-| followUpBeforeOrNotExistentExpression    | Restrict to tasks that have no followUp date or a followUp date before the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| createdOn                                | Restrict to tasks that were created on the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.324+0200`. |
-| createdOnExpression                      | Restrict to tasks that were created on the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| createdAfter                             | Restrict to tasks that were created after the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.342+0200`. |
-| createdAfterExpression                   | Restrict to tasks that were created after the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| createdBefore                            | Restrict to tasks that were created before the given date. By default*, the date must have the format `yyyy-MM-dd'T'HH:mm:ss.SSSZ`, e.g., `2013-01-23T14:42:45.332+0200`. |
-| createdBeforeExpression                  | Restrict to tasks that were created before the date described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to a `java.util.Date` or `org.joda.time.DateTime` object. |
-| delegationState                          | Restrict to tasks that are in the given delegation state. Valid values are `PENDING` and `RESOLVED`. |
-| candidateGroups                          | Restrict to tasks that are offered to any of the given candidate groups. Takes a comma-separated list of group names, so for example `developers,support,sales`. |
-| candidateGroupsExpression                | Restrict to tasks that are offered to any of the candidate groups described by the given expression. See the [user guide](https://docs.camunda.org/manual/7.15/user-guide/process-engine/expression-language/#internal-context-functions) for more information on available functions. The expression must evaluate to `java.util.List` of Strings. |
-| withCandidateGroups                      | Only include tasks which have a candidate group. Value may only be `true`, as `false` is the default behavior. |
-| withoutCandidateGroups                   | Only include tasks which have no candidate group. Value may only be `true`, as `false` is the default behavior. |
-| withCandidateUsers                       | Only include tasks which have a candidate user. Value may only be `true`, as `false` is the default behavior. |
-| withoutCandidateUsers                    | Only include tasks which have no candidate users. Value may only be `true`, as `false` is the default behavior. |
-| active                                   | Only include active tasks. Value may only be `true`, as `false` is the default behavior. |
-| suspended                                | Only include suspended tasks. Value may only be `true`, as `false` is the default behavior. |
-| taskVariables                            | Only include tasks that have variables with certain values. Variable filtering expressions are comma-separated and are structured as follows: A valid parameter value has the form `key_operator_value`. `key` is the variable name, `operator` is the comparison operator to be used and `value` the variable value. **Note:** Values are always treated as `String` objects on server side.  Valid operator values are: `eq` - equal to; `neq` - not equal to; `gt` - greater than; `gteq` - greater than or equal to; `lt` - lower than; `lteq` - lower than or equal to; `like`. `key` and `value` may not contain underscore or comma characters. |
-| processVariables                         | Only include tasks that belong to process instances that have variables with certain values. Variable filtering expressions are comma-separated and are structured as follows: A valid parameter value has the form `key_operator_value`. `key` is the variable name, `operator` is the comparison operator to be used and `value` the variable value. **Note:** Values are always treated as `String` objects on server side.  Valid operator values are: `eq` - equal to; `neq` - not equal to; `gt` - greater than; `gteq` - greater than or equal to; `lt` - lower than; `lteq` - lower than or equal to; `like`;`notLike`. `key` and `value` may not contain underscore or comma characters. |
-| caseInstanceVariables                    | Only include tasks that belong to case instances that have variables with certain values. Variable filtering expressions are comma-separated and are structured as follows: A valid parameter value has the form `key_operator_value`. `key` is the variable name, `operator` is the comparison operator to be used and `value` the variable value. **Note:** Values are always treated as `String` objects on server side.  Valid operator values are: `eq` - equal to; `neq` - not equal to; `gt` - greater than; `gteq` - greater than or equal to; `lt` - lower than; `lteq` - lower than or equal to; `like`. `key` and `value` may not contain underscore or comma characters. |
-| variableNamesIgnoreCase                  | Match all variable names in this query case-insensitively. If set `variableName` and `variablename` are treated as equal. |
-| variableValuesIgnoreCase                 | Match all variable values in this query case-insensitively. If set `variableValue` and `variablevalue` are treated as equal. |
-| parentTaskId                             | Restrict query to all tasks that are sub tasks of the given task. Takes a task id. |
-| sortBy                                   | Sort the results lexicographically by a given criterion. Valid values are `instanceId`, `caseInstanceId`, `dueDate`, `executionId`, `caseExecutionId`,`assignee`, `created`, `description`, `id`, `name`, `nameCaseInsensitive` and `priority`. Must be used in conjunction with the `sortOrder` parameter. |
-| sortOrder                                | Sort the results in a given order. Values may be `asc` for ascending order or `desc` for descending order. Must be used in conjunction with the `sortBy` parameter. |
-| firstResult                              | Pagination of results. Specifies the index of the first result to return. |
-| maxResults                               | Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left. |
+| assigneeLikeExpression                   | 被指派人表达式子字符串.                                      |
+| assigneeIn                               | 被指派人id列表.                                              |
+| owner                                    | 拥有者                                                       |
+| ownerExpression                          | 拥有者表达式                                                 |
+| candidateGroup                           | 候选组。被提供给指定组的任务                                 |
+| candidateGroupExpression                 | 候选组表达式                                                 |
+| candidateUser                            | 任务候选人或其所在组.                                        |
+| candidateUserExpression                  | 任务候选人或其所在组表达式.                                  |
+| includeAssignedTasks                     | 在使用候选人/组查询时，包含已指派给用户的任务.               |
+| involvedUser                             | 只包括给定用户参与的任务。如果任务和用户之间存在标识链接，则用户参与任务(e.g.,被指派的人). |
+| involvedUserExpression                   | 参与用户表达式.                                              |
+| assigned                                 | true：被指派的任务                                           |
+| unassigned                               | true：未被指派的任务                                         |
+| taskDefinitionKey                        | 任务定义KEY                                                  |
+| taskDefinitionKeyIn                      | 任务定义KEY数组.                                             |
+| taskDefinitionKeyLike                    | 任务定义KEY子字符串.                                         |
+| name                                     | 任务名称                                                     |
+| nameNotEqual                             | 任务名称不等于                                               |
+| nameLike                                 | 任务名称子字符串匹配                                         |
+| nameNotLike                              | 不包含指定名称子字符串匹配的任务                             |
+| description                              | 描述                                                         |
+| descriptionLike                          | 描述子字符串匹配                                             |
+| priority                                 | 优先级                                                       |
+| maxPriority                              | 返回低于或等于该优先级的任务                                 |
+| minPriority                              | 返回高于或等于该优先级的任务                                 |
+| dueDate                                  | 给定日期到期的任务.                                          |
+| dueDateExpression                        | 给定到期时间表达式.                                          |
+| dueAfter                                 | 给定日期之后过期的任务                                       |
+| dueAfterExpression                       | 之后过期日期表达式                                           |
+| dueBefore                                | 给定日期之前过期的任务                                       |
+| dueBeforeExpression                      | 之前过期日期表达式                                           |
+| withoutDueDate                           | true：没有过期日期的任务                                     |
+| followUpDate                             | 指定日期有后续日期的任务（followUp date ）.                  |
+| followUpDateExpression                   | 指定日期有后续日期的表达式                                   |
+| followUpAfter                            | 指定日期之后有后续日期的任务.                                |
+| followUpAfterExpression                  | 指定日期之后有后续日期的表达式                               |
+| followUpBefore                           | 指定日期之前有后续日期的任务.                                |
+| followUpBeforeExpression                 | 指定日期之前有后续日期的表达式                               |
+| followUpBeforeOrNotExistent              | 仅限于没有后续日期，或在给定日期之前没有后续日期的任务. 典型的用例是查询给定日期内用户的所有“活动”任务。 |
+| followUpBeforeOrNotExistentExpression    | 上面条件的表达式写法                                         |
+| createdOn                                | 指定创建日期                                                 |
+| createdOnExpression                      | 创建日期表达式                                               |
+| createdAfter                             | 在指定日期之后创建                                           |
+| createdAfterExpression                   | 之后创建日期表达式                                           |
+| createdBefore                            | 在指定日期之前创建                                           |
+| createdBeforeExpression                  | 之前创建日期表达式                                           |
+| delegationState                          | 任务委托状态，包括 `PENDING` 和`RESOLVED`.                   |
+| candidateGroups                          | 提供给指定候选组的任务，例如 `developers,support,sales`.     |
+| candidateGroupsExpression                | 指定候选组表达式                                             |
+| withCandidateGroups                      | true：包含候选组的任务                                       |
+| withoutCandidateGroups                   | true：不具有候选组的任务                                     |
+| withCandidateUsers                       | true：包含候选人的任务                                       |
+| withoutCandidateUsers                    | true：不包含候选人的任务                                     |
+| active                                   | true：激活的任务                                             |
+| suspended                                | true：挂起的任务                                             |
+| taskVariables                            | 按任务变量选取，逗号分隔的表达式，表达式格式为 `key_operator_value`. `key` 变量名称, `operator`算符， `value`值. **注意:** 值在服务端一直被当做 `String` 对象处理.  运算符包括: `eq`  `neq`  `gt`  `gteq`  `lt` `lteq`  `like`. |
+| processVariables                         | 按流程实例的参数选取。表达式同上.                            |
+| caseInstanceVariables                    | 按案例实例的参数选取                                         |
+| variableNamesIgnoreCase                  | 参数名称忽略大小写.                                          |
+| variableValuesIgnoreCase                 | 参数值忽略大小写                                             |
+| parentTaskId                             | 父任务ID.                                                    |
+| sortBy                                   | `instanceId`, `caseInstanceId`, `dueDate`, `executionId`, `caseExecutionId`,`assignee`, `created`, `description`, `id`, `name`, `nameCaseInsensitive` `priority`. |
+| sortOrder                                | desc/asc.                                                    |
+| firstResult                              | 分页                                                         |
+| maxResults                               | 分页                                                         |
+
+Result：数组。结构[同上](#[Get](https://docs.camunda.org/manual/7.15/reference/rest/task/get/) 获取任务信息)
 
 
 
-[Get List (POST)](https://docs.camunda.org/manual/7.15/reference/rest/task/post-query/)
+### [Get List (POST)](https://docs.camunda.org/manual/7.15/reference/rest/task/post-query/) 获取任务列表
 
 POST `/task`
 
-[Get List Count](https://docs.camunda.org/manual/7.15/reference/rest/task/get-query-count/)
+[同上](#[Get](https://docs.camunda.org/manual/7.15/reference/rest/task/get/) 获取任务信息)
+
+
+
+### [Get List Count](https://docs.camunda.org/manual/7.15/reference/rest/task/get-query-count/) 获取任务列表个数
 
 GET `/task/count`
 
-[Get List Count (POST)](https://docs.camunda.org/manual/7.15/reference/rest/task/post-query-count/)
+[同上](#[Get](https://docs.camunda.org/manual/7.15/reference/rest/task/get/) 获取任务信息)
+
+
+
+### [Get List Count (POST)](https://docs.camunda.org/manual/7.15/reference/rest/task/post-query-count/) 获取任务列表个数
 
 POST `/task/count`
 
-[Get Form Key](https://docs.camunda.org/manual/7.15/reference/rest/task/get-form-key/)
+[同上](#[Get](https://docs.camunda.org/manual/7.15/reference/rest/task/get/) 获取任务信息)
+
+
+
+### [Get Form Key](https://docs.camunda.org/manual/7.15/reference/rest/task/get-form-key/) 获取表单键
+
+返回任务的表单键。表单键对应引擎里 FormData#formKey。此键可用于在客户端应用程序中执行特定于任务的表单呈现。此外，还将返回包含流程应用程序的上下文路径
 
 GET `/task/{id}/form`
 
-[Claim](https://docs.camunda.org/manual/7.15/reference/rest/task/post-claim/)
+Result：
+
+| Name        | Value  | Description                                                  |
+| :---------- | :----- | :----------------------------------------------------------- |
+| key         | String | 任务的表单键                                                 |
+| contextPath | String | 任务所属的流程应用上下文路径。(The process application's context path). |
+
+
+
+### [Claim](https://docs.camunda.org/manual/7.15/reference/rest/task/post-claim/) 声明任务
+
+为特定用户声明任务。（同指派）
+
+注意：与Set Assignee方法的区别在于，这里执行一个检查，查看任务是否已经分配了一个用户。
 
 POST `/task/{id}/claim`
 
-[Unclaim](https://docs.camunda.org/manual/7.15/reference/rest/task/post-unclaim/)
+Request Body:
+
+| Name   | Description          |
+| :----- | :------------------- |
+| userId | 声明任务的用户的id。 |
+
+
+
+### [Unclaim](https://docs.camunda.org/manual/7.15/reference/rest/task/post-unclaim/) 反声明（取消指派）
+
+重置任务的指派人。成功后，任务将不再被指派给某个用户。
 
 POST `/task/{id}/unclaim`
 
-[Complete](https://docs.camunda.org/manual/7.15/reference/rest/task/post-complete/)
+
+
+### [Complete](https://docs.camunda.org/manual/7.15/reference/rest/task/post-complete/) 完成任务	
+
+完成任务并更新流程变量
 
 POST `/task/{id}/complete`
 
-[Submit Form](https://docs.camunda.org/manual/7.15/reference/rest/task/post-submit-form/)
+Request Body:
+
+| Name                  | Description                                                  |
+| :-------------------- | :----------------------------------------------------------- |
+| variables             | 键值对. 值里面包含value/type/valueInfo                       |
+| withVariablesInReturn | 指示返回是否应包含流程变量。默认值为false，响应代码为204。如果设置为true，则响应包含流程变量，响应代码为200。如果任务与流程实例不关联（例如，如果它是案例实例的一部分），则不会返回任何变量。 |
+
+例如：
+
+POST `/task/anId/submit-form`
+
+```json
+{
+    "variables": {
+        "aVariable": {
+            "value": "aStringValue"
+        },
+        "anotherVariable": {
+            "value": 42
+        },
+        "aThirdVariable": {
+            "value": true
+        },
+        "aFileVariable": {
+            "value": "TG9yZW0gaXBzdW0=",
+            "type": "File",
+            "valueInfo": {
+                "filename": "myFile.txt"
+            }
+        }
+    }
+}
+```
+
+Return 204
+
+### [Submit Form](https://docs.camunda.org/manual/7.15/reference/rest/task/post-submit-form/) 提交表单
+
+完成任务并更新流程变量。和[complete](#[Complete](https://docs.camunda.org/manual/7.15/reference/rest/task/post-complete/) 完成任务	)的差别有二
+
++ 如果任务处于挂起状态（即之前已被委派），则它不会完成，而是已解决。否则就完成了。
++ 后端验证。如果任务定义了表单字段元数据，流程引擎将对定义了验证器的任何表单字段执行后端验证。有关详细信息，请参阅《用户指南》的“生成的任务表单”部分。
 
 POST `/task/{id}/submit-form`
 
-[Resolve](https://docs.camunda.org/manual/7.15/reference/rest/task/post-resolve/)
+Request Body：同上
+
+
+
+### [Resolve](https://docs.camunda.org/manual/7.15/reference/rest/task/post-resolve/) 解决
+
+解决任务并更新执行变量。
+
+解决一个任务标志着受让人完成了委托给他们的任务，并且可以将任务发送回所有者。只能在已委派任务时执行。受让人将被设置为执行委托的所有者。
 
 POST `/task/{id}/resolve`
 
-[Set Assignee](https://docs.camunda.org/manual/7.15/reference/rest/task/post-assignee/)
+Request Body:
+
+| Name                  | Description                                                  |
+| :-------------------- | :----------------------------------------------------------- |
+| variables             | 键值对. 值里面包含value/type/valueInfo                       |
+| withVariablesInReturn | 指示返回是否应包含流程变量。默认值为false，响应代码为204。如果设置为true，则响应包含流程变量，响应代码为200。如果任务与流程实例不关联（例如，如果它是案例实例的一部分），则不会返回任何变量。 |
+
+### [Set Assignee](https://docs.camunda.org/manual/7.15/reference/rest/task/post-assignee/) 指派用户
+
+改变任务的指派人
+
+注意：和Claim方法的区别是，这个方法不检查当前任务是否已被指派
 
 POST `/task/{id}/assignee`
 
-[Delegate](https://docs.camunda.org/manual/7.15/reference/rest/task/post-delegate/)
+| Name   | Description      |
+| :----- | :--------------- |
+| userId | 将被指派的用户ID |
+
+
+
+### [Delegate](https://docs.camunda.org/manual/7.15/reference/rest/task/post-delegate/) 委托给另外一个用户
 
 POST `/task/{id}/delegate`
 
-[Get Deployed Form](https://docs.camunda.org/manual/7.15/reference/rest/task/get-deployed-form/)
+| Name   | Description              |
+| :----- | :----------------------- |
+| userId | 任务应委派给的用户的id。 |
+
+
+
+### [Get Deployed Form](https://docs.camunda.org/manual/7.15/reference/rest/task/get-deployed-form/) 获取表单
+
+获取给定任务引用的已部署表单。
 
 GET `/task/{id}/deployed-form`
 
-[Get Rendered Form](https://docs.camunda.org/manual/7.15/reference/rest/task/get-rendered-form/)
+Result：已部署表单内容
+
+e.g.
+
+```html
+<form role="form" name="invoiceForm"
+      class="form-horizontal">
+
+  <div class="form-group">
+    <label class="control-label col-md-4"
+           for="creditor">Creditor</label>
+    <div class="col-md-8">
+      <input cam-variable-name="creditor"
+             cam-variable-type="String"
+             id="creditor"
+             class="form-control"
+             type="text"
+             required />
+      <div class="help">
+        (e.g. &quot;Great Pizza for Everyone Inc.&quot;)
+      </div>
+    </div>
+  </div>
+
+</form>
+```
+
+
+
+### [Get Rendered Form](https://docs.camunda.org/manual/7.15/reference/rest/task/get-rendered-form/) 获取通用任务渲染表单
+
+返回一个任务的已渲染表单。获取[通用任务表单Generated Task Form](https://docs.camunda.org/manual/7.15/user-guide/task-forms/#generated-task-forms)的渲染HTML。
 
 GET `/task/{id}/rendered-form`
 
-[Get Task Form Variables](https://docs.camunda.org/manual/7.15/reference/rest/task/get-form-variables/)
+Result: 渲染的HTML
+
+例如
+
+```html
+<form class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label">Customer ID</label>
+    <div class="controls">
+      <input form-field type="string" name="customerId"></input>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label">Amount</label>
+    <div class="controls">
+      <input form-field type="number" name="amount"></input>
+    </div>
+  </div>
+</form>
+```
+
+
+
+### [Get Task Form Variables](https://docs.camunda.org/manual/7.15/reference/rest/task/get-form-variables/) 获取表单变量
+
+获取任务的表单变量。如果定义了表单字段，则会考虑表单字段的变量类型和默认值。
 
 GET `/task/{id}/form-variables`
 
-[Create](https://docs.camunda.org/manual/7.15/reference/rest/task/post-create/)
+Query Parameters:
+
+| Name              | Description                           |
+| :---------------- | :------------------------------------ |
+| variableNames     | 逗号分割的变量名称.                   |
+| deserializeValues | 是否序列化变量应该在服务端被反序列化. |
+
+Result:
+
+| Name      | Value                              | Description                                                  |
+| :-------- | :--------------------------------- | :----------------------------------------------------------- |
+| value     | String / Number / Boolean / Object | 变量值.                                                      |
+| type      | String                             | 变量类型                                                     |
+| valueInfo | Object                             | 额外的、依赖值类型的属性.例如`Object`；类型的变量,将包含:`objectTypeName`: 对象类型.`serializationDataFormat`: 对象序列化格式. |
+
+例如：
+
+GET `/task/anId/form-variables`
+
+GET `/task/anId/form-variables?variableNames=a,b,c`
+
+返回：
+
+```json
+{
+  "amount": {
+      "type": "integer",
+      "value": 5,
+      "valueInfo": {}
+  },
+  "firstName": {
+      "type": "String",
+      "value": "Jonny",
+      "valueInfo": {}
+  }
+
+}
+```
+
+
+
+
+
+### [Create](https://docs.camunda.org/manual/7.15/reference/rest/task/post-create/) 创建任务
 
 POST `/task/create`
 
-[Update](https://docs.camunda.org/manual/7.15/reference/rest/task/put-update/)
+Request Body:
+
+| Name            | Type   | Description                      |
+| :-------------- | :----- | :------------------------------- |
+| id              | String | 任务ID                           |
+| name            | String | 任务名称                         |
+| description     | String | 任务描述                         |
+| assignee        | String | 指派用户                         |
+| owner           | String | 任务拥有者                       |
+|                 |        |                                  |
+| delegationState | String | 委托状态 `RESOLVED` 或`PENDING`. |
+| due             | String | 截止日期                         |
+| followUp        | String | 后续日期(follow-up date)         |
+| priority        | Number | 优先级                           |
+| parentTaskId    | String | 父任务ID                         |
+| caseInstanceId  | String | 任务所属案例实例ID               |
+| tenantId        | String | 任务所属租户ID                   |
+
+
+
+### [Update](https://docs.camunda.org/manual/7.15/reference/rest/task/put-update/) 更新任务
 
 PUT `/task/{id}/`
 
-[Handle BPMN Error](https://docs.camunda.org/manual/7.15/reference/rest/task/post-bpmn-error/)
+[同上](#[Create](https://docs.camunda.org/manual/7.15/reference/rest/task/post-create/) 创建任务)
+
+### [Handle BPMN Error](https://docs.camunda.org/manual/7.15/reference/rest/task/post-bpmn-error/) 报告BPMN错误
+
+按id报告正在运行的任务上下文中的业务错误。必须指定错误代码才能标识BPMN错误处理程序。请参阅有关在用户任务中报告Bpmn错误的文档。
 
 POST `/task/{id}/bpmnError`
 
-[Handle BPMN Escalation](https://docs.camunda.org/manual/7.15/reference/rest/task/post-bpmn-escalation/)
+Request Body:
+
+| Name         | Description |
+| :----------- | :---------- |
+| errorCode    | BPMN错误码  |
+| errorMessage | 错误描述    |
+| variables    | 变量定义    |
+
+### [Handle BPMN Escalation](https://docs.camunda.org/manual/7.15/reference/rest/task/post-bpmn-escalation/) 报告BPMN升级
+
+按id报告正在运行的任务上下文中的升级。必须指定升级代码以标识升级处理程序。请参阅有关在用户任务中报告Bpmn升级的文档。
 
 POST `/task/{id}/bpmnEscalation`
 
-[Delete](https://docs.camunda.org/manual/7.15/reference/rest/task/delete/)
+Request Body:
+
+| Name           | Description |
+| :------------- | :---------- |
+| escalationCode | BPMN升级码  |
+| variables      | 变量定义    |
+
+
+
+### [Delete](https://docs.camunda.org/manual/7.15/reference/rest/task/delete/) 删除任务
 
 DELETE `/task/{id}`
+
+
+
+### [Comment Get List](https://docs.camunda.org/manual/7.15/reference/rest/task/comment/get-task-comments/) 获取任务批注
+
+GET `/task/{id}/comment`
+
+Result：
+
+| Name                  | Value  | Description                  |
+| :-------------------- | :----- | :--------------------------- |
+| id                    | String | 批注ID                       |
+| userId                | String | 创建批注用户                 |
+| taskId                | String | 所属任务ID                   |
+| processInstanceId     | String | 批注相关的流程实例ID         |
+| time                  | Date   | 批注日期                     |
+| message               | String | 批注内容                     |
+| removalTime           | String | 历史清理的日期               |
+| rootProcessInstanceId | String | 创建该任务所属流程的根流程ID |
+
+### [Comment Get](https://docs.camunda.org/manual/7.15/reference/rest/task/comment/get-task-comment/) 获取任务批注
+
+GET `/task/{id}/comment/{commentId}`
+
+Result[同上](#[Comment Get List](https://docs.camunda.org/manual/7.15/reference/rest/task/comment/get-task-comments/) 获取任务批注)
+
+
+
+### [Comment Create](https://docs.camunda.org/manual/7.15/reference/rest/task/comment/post-task-comment/) 创建任务批注
+
+POST `/task/{id}/comment/create`
+
+Request Body：
+
+| Name              | Description          |
+| :---------------- | :------------------- |
+| message           | 批注内容             |
+| processInstanceId | 指定到一个流程实例ID |
+
+
+
+### [Attachment Get List](https://docs.camunda.org/manual/7.15/reference/rest/task/attachment/get-task-attachments/) 获取附件列表
+
+GET `/task/{id}/attachment`
+
+Result：
+
+| Name                  | Value  | Description                     |
+| :-------------------- | :----- | :------------------------------ |
+| id                    | String | 附件ID                          |
+| name                  | String | 附件名称                        |
+| taskId                | String | 任务ID                          |
+| description           | String | 描述                            |
+| type                  | String | 附件内容类型，可以是 MIME或其他 |
+| url                   | String | 远端附件URL                     |
+| createTime            | String | 创建时间                        |
+| removalTime           | String | 清理时间                        |
+| rootProcessInstanceId | String | 创建该任务所属流程的根流程ID    |
+
+### [Attachment Get](https://docs.camunda.org/manual/7.15/reference/rest/task/attachment/get-task-attachment/) 获取附件
+
+GET `/task/{id}/attachment/{attachmentId}`
+
+Result：
+
+[同上](#[Attachment Get List](https://docs.camunda.org/manual/7.15/reference/rest/task/attachment/get-task-attachments/) 获取附件列表)
+
+
+
+### [Attachment Create](https://docs.camunda.org/manual/7.15/reference/rest/task/attachment/post-task-attachment/) 创建附件
+
+POST `/task/{id}/attachment/create`
+
+Request Body：
+
+<multipart form >
+
+| Form Part Name         | Content Type | Description                                      |
+| :--------------------- | :----------- | :----------------------------------------------- |
+| attachment-name        | text/plain   | The name of the attachment.                      |
+| attachment-description | text/plain   | The description of the attachment.               |
+| attachment-type        | text/plain   | The type of the attachment.                      |
+| url                    | text/plain   | The url to the remote content of the attachment. |
+| content                | text/plain   | The content of the attachment.                   |
+
+Result：
+
+| Name                  | Value  | Description                     |
+| :-------------------- | :----- | :------------------------------ |
+| id                    | String | 附件ID                          |
+| name                  | String | 附件名称                        |
+| taskId                | String | 任务ID                          |
+| description           | String | 描述                            |
+| type                  | String | 附件内容类型，可以是 MIME或其他 |
+| url                   | String | 远端附件URL                     |
+| createTime            | String | 创建时间                        |
+| removalTime           | String | 清理时间                        |
+| rootProcessInstanceId | String | 创建该任务所属流程的根流程ID    |
+
+
+
+### [Attachment Get (Binary)](https://docs.camunda.org/manual/7.15/reference/rest/task/attachment/get-task-attachment-data/) 获取附件（二进制）
+
+GET `/task/{id}/attachment/{attachmentId}/data`
+
+获取任务附件的二进制格式内容
+
+
+
+### [Attachment Delete](https://docs.camunda.org/manual/7.15/reference/rest/task/attachment/delete-task-attachment/) 删除附件
+
+DELETE `/task/{id}/attachment/{attachmentId}`
+
+
+
+### [Identity Links Get List](https://docs.camunda.org/manual/7.15/reference/rest/task/identity-links/get-identity-links/) 获取标识链接
+
+按id获取任务的标识链接，这些标识链接是与其有某种关系的用户和组（包括指派人和所有者）。
+
+GET `/task/{id}/identity-links`
+
+Query Parameters:
+
+| Name | Description |
+| :--- | :---------- |
+| type | 链接的类型  |
+
+Result：JSON数组
+
+| Name    | Value  | Description            |
+| :------ | :----- | :--------------------- |
+| userId  | String | 参与此链接的用户的id。 |
+| groupId | String | 参与此链接的组的id     |
+| type    | String | 链接类型               |
+
+e.g.
+
+```json
+[{
+    "userId": "userId",
+    "groupId": null,
+    "type": "assignee"
+},
+{
+    "userId": null,
+    "groupId": "groupId1",
+    "type": "candidate"
+},
+{
+    "userId": null,
+    "groupId": "groupId2",
+    "type": "candidate"
+}]
+```
+
+
+
+### [Identity Links Add](https://docs.camunda.org/manual/7.15/reference/rest/task/identity-links/post-identity-link/) 添加标识链接
+
+添加一个标识链接到任务。可以用来连接任何用户或组到任务，并指定一种关系
+
+POST `/task/{id}/identity-links`
+
+Request Body:
+
+| Name    | Value  | Description                      |
+| :------ | :----- | :------------------------------- |
+| userId  | String | 参与此链接的用户的id。（二选一） |
+| groupId | String | 参与此链接的组的id（二选一）     |
+| type    | String | 链接类型                         |
+
+
+
+### [Identity Links Delete](https://docs.camunda.org/manual/7.15/reference/rest/task/identity-links/post-delete-identity-link/) 删除标识链接
+
+POST `/task/{id}/identity-links/delete`
+
+Request Body：
+
+| Name    | Value  | Description                      |
+| :------ | :----- | :------------------------------- |
+| userId  | String | 参与此链接的用户的id。（二选一） |
+| groupId | String | 参与此链接的组的id（二选一）     |
+| type    | String | 链接类型                         |
+
+
+
+### [Variables Get](https://docs.camunda.org/manual/7.15/reference/rest/task/variables/get-task-variable/) 获取任务变量
+
+从给定任务的上下文检索变量。变量必须在任务中可见。如果它是本地任务变量或在任务的父作用域中声明，则可以从任务中看到它。
+
+**Variables接口同时存在对应的 localVariables接口，localVariables返回任务上下文中的变量（局部变量）**
+
+GET `/task/{id}/variables/{varName}`
+
+Query Parameters:
+
+| Name             | Description          |
+| :--------------- | :------------------- |
+| deserializeValue | 是否在服务端反序列化 |
+
+Result:
+
+| Name      | Value                              | Description            |
+| :-------- | :--------------------------------- | :--------------------- |
+| value     | String / Number / Boolean / Object | 变量值                 |
+| type      | String                             | 变量类型               |
+| valueInfo | Object                             | 额外的、依赖类型的参数 |
+
+
+
+### [Variables Get (Binary)](https://docs.camunda.org/manual/7.15/reference/rest/task/variables/get-task-variable-binary/) 获取任务变量（二进制）
+
+GET `/task/{id}/variables/{varName}/data`
+
+Result：
+
+如果是不带任何MIME类型信息的二进制数据或文件，返回字节流。
+
+带MIME类型信息的文件返回保存的类型。
+
+
+
+### [Variables Get List](https://docs.camunda.org/manual/7.15/reference/rest/task/variables/get-task-variables/) 获取任务变量列表
+
+GET `/task/{id}/variables`
+
+Query Parameters:
+
+| Name             | Description          |
+| :--------------- | :------------------- |
+| deserializeValue | 是否在服务端反序列化 |
+
+Result:
+
+| Name      | Value                              | Description            |
+| :-------- | :--------------------------------- | :--------------------- |
+| value     | String / Number / Boolean / Object | 变量值                 |
+| type      | String                             | 变量类型               |
+| valueInfo | Object                             | 额外的、依赖类型的参数 |
+
+
+
+### [Variables Modify](https://docs.camunda.org/manual/7.15/reference/rest/task/variables/post-modify-task-variables/) 修改变量
+
+更新或删除任务中可见的变量。更新先于删除。因此，如果一个变量被更新和删除，删除会覆盖更新。
+
+POST `/task/{id}/variables`
+
+Request Body：
+
+| Name          | Description      |
+| :------------ | :--------------- |
+| modifications | 修改的变量对象.  |
+| deletions     | 待删除的变量key. |
+
+e.g.
+
+Request:
+
+```json
+{
+  "modifications": {
+    "aVariable": { "value": "aValue", "type": "String" },
+    "anotherVariable": { "value": 42, "type": "Integer" }
+  },
+  "deletions": [
+    "aThirdVariable", "FourthVariable"
+  ]
+}
+```
+
+
+
+### [Variables Update](https://docs.camunda.org/manual/7.15/reference/rest/task/variables/put-task-variable/) 更新变量
+
+更新一个任务范围内可见的流程变量。如果变量不存在，将在任务可见的最顶层范围中创建该变量
+
+PUT `/task/{id}/variables/{varName}`
+
+Request Body:
+
+| Name      | Description  |
+| :-------- | :----------- |
+| value     | 变量值       |
+| type      | 变量类型     |
+| valueInfo | 额外附加属性 |
+
+
+
+### [Variables Post (Binary)](https://docs.camunda.org/manual/7.15/reference/rest/task/variables/post-task-variable-binary/) 修改变量（二进制）
+
+设置任务可见的二进制变量的序列化值或文件变量的二进制值。
+
+POST `/task/{id}/variables/{varName}/data`
+
+Request Body: <Multipart-form>
+
+| Form Part Name | Content Type             | Description                                                  |
+| :------------- | :----------------------- | :----------------------------------------------------------- |
+| data           | application/octet-stream | 要设置的二进制数据。对于“File”变量，此多部分可以包含要设置的文件变量的文件名、二进制值和MIME类型。只有文件名是必需的。 |
+| valueType      | text/plain               | 变量类型的名称。字节数组变量的“Bytes”或文件变量的“File”。    |
+| data           | application/json         | **Deprecated**.                                              |
+| type           | text/plain               | **Deprecated**.                                              |
+
+
+
+### [Variables Delete](https://docs.camunda.org/manual/7.15/reference/rest/task/variables/delete-task-variable/) 删除变量
+
+DELETE `/task/{id}/variables/{varName}`
+
+
+
+### [Get Task Count By Candidate Group](https://docs.camunda.org/manual/7.15/reference/rest/task/report/get-candidate-group-count/) 检索每个候选组的任务数
+
+GET `/task/report/candidate-group-count`
+
+Result：
+
+| Name      | Value  | Description                                |
+| :-------- | :----- | :----------------------------------------- |
+| groupName | String | 候选组的名称。如果有任务没有组名，则为null |
+| taskCount | Number | 任务数                                     |
+
+e.g.
+
+```json
+[
+  {
+    "groupName": null,
+    "taskCount": 1
+  },
+  {
+    "groupName": "aGroupName",
+    "taskCount": 2
+  },
+  {
+    "groupName": "anotherGroupName",
+    "taskCount": 3
+  },
+]
+```
+
