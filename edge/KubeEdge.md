@@ -276,6 +276,20 @@ edgecore --config edgecore.yaml
 
 
 
+在cloud端查看
+
+```sh
+root@node38:/home/anxin# kubectl get no 
+NAME     STATUS   ROLES        AGE    VERSION
+node35   Ready    agent,edge   334d   v1.19.3-kubeedge-v1.7.1
+node37   Ready    <none>       334d   v1.18.6
+node38   Ready    master       334d   v1.18.6
+```
+
+
+
+
+
 ##### 常见报错
 
 1. Error: token credentials are in the wrong format
@@ -321,4 +335,135 @@ cd /root
 
 openssl rand -writerand .rnd
 ```
+
+
+
+## 配置
+
+### 云端
+
+设置边缘端自动注册 modules.edged.registerNode=true。 或者使用[手动注册](https://kubeedge.io/en/docs/setup/config/)。
+
+
+
+### 边端
+
+#### 设置基础镜像：
+
+```sh
+modules.edged.podSandboxImage
+```
+
+检查机器架构：
+
+```shell
+getconf LONG_BIT
+```
+
++ `kubeedge/pause-arm:3.1` **for** arm arch
++ `kubeedge/pause-arm64:3.1` **for** arm64 arch 
++ `kubeedge/pause:3.1` **for** x86 arch
+
+#### 容器运行时
+
+```yaml
+runtimeType: docker
+```
+
+or
+
+```yaml
+runtimeType: remote
+```
+
+#### MQTT模式
+
+MQTT用于DeviceTwin和Devices之间的通信，支持3中MQTT模式：
+
+0 internalMqttMode 内部MQTT代理使能
+
+1 bothMqttMonde 内部和外部MQTT代理均使能
+
+2 externalMqttMode 外部代理使能
+
+
+
+
+
+## EdgeMesh
+
+云端和边缘之间发生网络问题，集成EdgeMesh 支持DNS访问
+
+```shell
+grep hosts /etc/nsswitch.conf
+hosts:          dns file mdns4_minimal # 确保dns在第一位
+```
+
+**IP Forward**设置
+
+```shell
+$ sudo echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+$ sudo sysctl -p
+#check
+$ sudo sysctl -p | grep ip_forward
+net.ipv4.ip_forward = 1
+```
+
+部署一个nginx例子
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+          hostPort: 8050
+```
+
+`kubeclt apply -f pod-nginx.yaml`
+
+![image-20210713171944426](imgs/KubeEdge/image-20210713171944426.png)
+
+按照官网例子访问容器ip curl 10.0.35.3:8050，无法访问，直接访问http://10.8.30.35:8050 可以。
+
+创建一个服务：
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    app: nginx
+  ports:
+    - name: http-0
+      port: 18050
+      protocol: TCP
+      targetPort: 80
+```
+
+![image-20210713174342754](imgs/KubeEdge/image-20210713174342754.png)
+
+在边缘端访问： `<service_name>.<service_namespace>.svc.<cluster>.<local>:<port>`
+
+curl http://nginx-svc.default.svc.cluster.local:18050
 
