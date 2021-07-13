@@ -871,3 +871,26 @@ mysql > set sql_safe_updates=off;
 重启服务即可
 ```
 
+
+
+## FQ
+
+https://portal.shadowsocks.nz/knowledgebase/182/
+
+Pass: yww0828@126.com
+
+复制链接
+
+![image-20210713105905727](imgs/antpro/image-20210713105905727.png)
+
+安装小猫
+
+- Windows 访问 https://dl.trojan-cdn.com/trojan/windows/ 下载 **Clash.for.Windows.Setup.[版本号].exe**
+- macOS 访问 https://dl.trojan-cdn.com/trojan/macos/ 下载 **Clash.for.Windows-[版本号].dmg**
+- 访问 [Github Releases](https://github.com/Fndroid/clash_for_windows_pkg/releases) 下载
+
+![image-20210713113348641](imgs/antpro/image-20210713113348641.png)
+
+复制链接到profile中进行download。
+
+到proxies中选择代理节点。点击猫头重启

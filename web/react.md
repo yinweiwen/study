@@ -190,7 +190,7 @@ this.setState((prevState,props)=> ({
 
 在组件从 DOM 中移除之前立刻被调用。
 
-![](react_files/1.jpg)
+![](imgs/1.jpg)
 
 ### render
 
@@ -407,8 +407,8 @@ class RefComponent extends React.Component{
 	}
 }
 ```
- 
- 
+
+
 -----------------
 
 # [React中文文档](https://react.docschina.org/docs/getting-started.html)

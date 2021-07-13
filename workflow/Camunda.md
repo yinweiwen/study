@@ -206,6 +206,10 @@ https://docs.camunda.org/manual/7.15/reference/rest/
 
 ## WEB集成
 
+https://bpmn.io/
+
+
+
 [徐蒙的分享](http://218.3.150.105:8000/xu-meng/share/2021/06/22/2703/)
 
 使用bpmnjs
@@ -260,3 +264,79 @@ camunda接口：https://docs.camunda.org/manual/7.15/reference/rest/
 
 6. 启动spring-boot，访问localhost:8080
 
+
+
+## 部署FS-Camunda
+
+SVN路径：
+
+```
+FS-Anxinyun\trunk\codes\service\camundaDemo
+```
+
+该项目是java SpringBatch Maven项目。配置文件在application.yml
+
+```yml
+server:
+  port: 8080 #流程引擎端口
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    context-path: /fs-workflow #url地址
+    register-default-servlet: true
+
+spring:
+  application:
+    name: camunda-demo-service
+  jersey:
+    application-path: /engine-rest #REST接口地址
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://10.8.30.39:5432/camunda0525 #流程引擎数据库
+    username: FashionAdmin
+    password: 123456
+    tomcat:
+      max-idle: 10
+      max-wait: 10000
+      min-idle: 5
+      initial-size: 5
+      validation-query: SELECT 1
+      test-on-borrow: false
+      test-while-idle: true
+      time-between-eviction-runs-millis: 18800
+
+camunda.bpm:
+  filter:
+    create: All tasks#
+  admin-user:
+    id: admin #流程引擎的用户名
+    password: fs-workflow #流程引擎的用户密码
+    firstName: admin
+  auto-deployment-enabled: false
+  webapp:
+    index-redirect-enabled: true
+    application-path: /camunda-workflow
+
+mybatis:
+  type-aliases-package: com.fs.camunda.bpm.example.entity
+  mapper-locations: classpath:mybatis/mapper/*.xml
+
+logging:
+  level:
+    com:
+      fs:
+        camunda:
+          bpm:
+            example:
+              mapper: debug
+```
+
+
+
+启动 ExampleApplication主类。
+
+
+
+访问：http://localhost:8080/fs-workflow/camunda-workflow/app/tasklist/default/#/login
+
+登录密码： admin /fs-workflow 
