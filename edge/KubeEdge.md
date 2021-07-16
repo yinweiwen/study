@@ -338,6 +338,93 @@ openssl rand -writerand .rnd
 
 
 
+### 在Raspberry Pi 上安装
+
+#### 安装Lite系统
+
+https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip
+
+设置网络
+
+```shell
+interface eth0 
+static ip_address=10.8.30.197/24 
+static routers=10.8.30.1 
+static domain_name_servers=114.114.114.114 223.5.5.5 223.6.6.6 
+
+PasswordAuthentication yes
+```
+
+安装mosquitto
+
+```shell
+wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
+
+sudo apt-key add mosquitto-repo.gpg.key
+
+# sudo wget -P /etc/apt/sources.list.d/ http://repo.mosquitto.org/debian/mosquitto-jessie.list
+# sudo wget -P /etc/apt/sources.list.d/ http://repo.mosquitto.org/debian/mosquitto-stretch.list
+sudo wget -P /etc/apt/sources.list.d/ http://repo.mosquitto.org/debian/mosquitto-buster.list 
+
+apt-get update
+
+apt-get install mosquitto
+```
+
+
+
+#### [安装containerd](https://docs.docker.com/engine/install/debian/)
+
+[Setting different container runtime with CRI](https://docs.kubeedge.io/en/docs/advanced/cri/)
+
+
+
+```shell
+ sudo apt-get update
+ sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+    
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+ echo \
+  "deb [arch=armhf signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  
+ sudo apt-get update
+ sudo apt-get install containerd.io
+```
+
+
+
+```shell
+# Configure containerd
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+
+# Restart containerd
+systemctl restart containerd
+```
+
+
+
+#### 配置运行EdgeCore
+
+配置EdgeCore.yaml支持containerd.。 默认cgroup 配置是 cgroupfs。
+
+```yaml
+remoteRuntimeEndpoint: unix:///var/run/containerd/containerd.sock
+remoteImageEndpoint: unix:///var/run/containerd/containerd.sock
+runtimeRequestTimeout: 2
+podSandboxImage: k8s.gcr.io/pause:3.2
+runtimeType: remote
+```
+
+
+
 ## 配置
 
 ### 云端
@@ -467,3 +554,310 @@ spec:
 
 curl http://nginx-svc.default.svc.cluster.local:18050
 
+
+
+## 开发指南
+
+### Device Model 设备原型
+
+KubeEdge支持通过Kubernetes CRDS，以及Device Mapper进行设备管理
+
+```yaml
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: DeviceModel
+metadata:
+ name: sensor-tag-model
+ namespace: default
+spec:
+ properties:
+  - name: temperature
+    description: temperature in degree celsius
+    type:
+     int:
+      accessMode: ReadWrite
+      maximum: 100
+      unit: degree celsius
+  - name: temperature-enable
+    description: enable data collection of temperature sensor
+    type:
+      string:
+        accessMode: ReadWrite
+        defaultValue: 'OFF'
+```
+
+### Device Instance
+
+```yaml
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: sensor-tag-instance-01
+  labels:
+    description: TISimplelinkSensorTag
+    manufacturer: TexasInstruments
+    model: CC2650
+spec:
+  deviceModelRef:
+    name: sensor-tag-model
+  protocol:
+    modbus:
+      slaveID: 1
+    common:
+      com:
+        serialPort: '1'
+        baudRate: 115200
+        dataBits: 8
+        parity: even
+        stopBits: 1
+      customizedValues: # 自定义属性值
+        def1: def1-val
+        def2: def2-val
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: ''
+        operator: In
+        values:
+        - node1
+  propertyVisitors:
+    - propertyName: temperature
+      modbus:
+        register: CoilRegister
+        offset: 2
+        limit: 1
+        scale: 1
+        isSwap: true
+        isRegisterSwap: true
+    - propertyName: temperature-enable
+      modbus:
+        register: DiscreteInputRegister
+        offset: 3
+        limit: 1
+        scale: 1.0
+        isSwap: true
+        isRegisterSwap: true
+    - propertyName: temperature # 自定义协议写法
+      collectCycle: 500000000
+      reportCycle: 1000000000
+      customizedProtocol:
+        protocolName: MY-TEST-PROTOCOL
+        configData:
+          def1: def1-val
+          def2: def2-val
+          def3:
+            innerDef1: idef-val
+status:
+  twins:
+    - propertyName: temperature
+      reported:
+        metadata:
+          timestamp: '1550049403598'
+          type: int
+        value: '10'
+      desired:
+        metadata:
+          timestamp: '1550049403598'
+          type: int
+        value: '15'
+data: # 定义通过mappers上报到边缘端MQTT代理的一系列时序属性
+  dataTopic: "$ke/events/device/+/data/update"
+  dataProperties: 
+    - propertyName: pressure
+      metadata:
+        type: int
+    - propertyName: temperature
+      metadata:
+        type: int
+```
+
+### Device Mapper
+
+是连接和控制设备的应用程序，包含功能：
+
+1) 扫描和连接设备
+
+2) 报告设备孪生属性（ twin-attributes）的真实状态
+
+3) 转换预期状态到真实状态
+
+4) 采集遥感数据
+
+5) 将设备的读取转换成KubeEdge可以接受的格式
+
+6) 安排设备上的动作(schedule)
+
+7) 检查设备的健康状态
+
+![img](imgs/KubeEdge/mapper-design.png)
+
+### 创建步骤
+
+1. kubectl apply -f <path to device model yaml>
+2. kubectl apply -f <path to device instance yaml>
+3. 执行基于指定协议的mapper程序
+4. 改变设备实例yaml中的状态段,应用改变将影响边缘端，通过设备控制和设备孪生组件（DeviceController和DeviceTwin）
+5. 边缘端的mapper进程上报设备孪生的数据，并通过DeviceController同步回云端。
+
+
+
+### Router Manager 路由管理
+
+通过CRDs和Router模块，基于mqtt，实现云边消息通信。 控制用户数据的传输，一次传输的大小不超过12M。
+
+使用场景：
+
++ 通过云端api发布自定义消息，最终到达终端mqtt代理
++ 边缘发布消息到mqtt代理，最终通过RESTApi返回云端
++ 通过云端api发布自定义消息，最终调用边缘rest api传送消息
+
+#### 规则的定义
+
+RuleEndpoint 和 Rule Definition:
+
++ RuleEndpoint 定义消息从哪里来的、或到哪里去，包括3中类型
+  + rest
+  + eventbus (MQTT)
+  + servicebus (边缘端的Rest Api应用)
++ Rule 定义从源Endpoint到目标Endpoint消息传输的方式，包含3中类型：
+  + rest->eventbus :  cloud api --> edge mqtt
+  + eventbus->rest: edge mqtt --> cloud api
+  + rest->servicebus: cloud api --> user's app
+
+RuleEndpoint定义
+
+```yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: ruleendpoints.rules.kubeedge.io
+spec:
+  group: rules.kubeedge.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                ruleEndpointType:
+                  type: rest/eventbus/servicebus
+              required:
+                - ruleEndpointType
+  scope: Namespaced
+  names:
+    plural: ruleendpoints
+    singular: ruleendpoint
+    kind: RuleEndpoint
+    shortNames:
+      - re
+```
+
+Rule定义：
+
+```yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: rules.rules.kubeedge.io
+spec:
+  group: rules.kubeedge.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                source:
+                  type: string
+                  value: my-rest
+                sourceResource:
+                  description: {"path":"/a/b"} 或 {"topic":"<user define string>","node_name":"edge-node"}
+                  type: object
+                  additionalProperties:
+                    type: string
+                target:
+                  type: string
+                  value: my-eventbus
+                targetResource:
+                  description: {"topic":"/test"}
+                  type: object
+                  additionalProperties:
+                    type: string
+              required:
+                - source
+                - sourceResource
+                - target
+                - targetResource
+            status:
+              type: object
+              properties:
+                successMessages:
+                  type: integer
+                failMessages:
+                  type: integer
+                errors:
+                  items:
+                    type: string
+                  type: array
+  scope: Namespaced
+  names:
+    plural: rules
+    singular: rule
+    kind: Rule
+```
+
+
+
+### [发消息的步骤](https://docs.kubeedge.io/en/docs/developer/custom_message_deliver/)
+
+以rest->eventbus 模式举例
+
+1. 云端配置 router模块使能
+
+2. 创建ruleEndpoint
+
+3. 创建rule
+
+   ```yaml
+   apiVersion: rules.kubeedge.io/v1
+   kind: Rule
+   metadata:
+     name: my-rule
+     labels:
+       description: test
+   spec:
+     source: "my-rest"
+     sourceResource: {"path":"/test"}
+     target: "my-eventbus"
+     targetResource: {"topic":"test"}
+   ```
+
+4. 云端调用api接口发送消息
+
+   ```shell
+   POST
+   http://{cloudcore_ip}:9443/{node_name}/{namespace}/{path}
+   ```
+
+   
+
+5. 边缘订阅
+
+   ```shell
+   mosquitto_sub -t 'test' -d
+   ```
+
+
+
+MORE：
+
+人工智能、数字孪生、边缘计算、量子计算、沉浸式技术、区块链、智能空间、5G
