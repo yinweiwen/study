@@ -28,6 +28,12 @@ MSC（Mobile Switching Center，移动交换中心）
 
 
 
+![image-20210715085056663](imgs/5G与MEC多接入边缘计算/image-20210715085056663.png)
+
+
+
+
+
 ![image-20210706092710328](imgs/电信/image-20210706092710328.png)
 
 ### 2G
