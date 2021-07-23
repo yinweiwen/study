@@ -205,6 +205,7 @@ kubectl get secret -nkubeedge tokensecret -o json # 找到token 加入到edgecor
 
 ```
 ./edgecore --minconfig > edgecore.yaml
+./edgecore --defaultconfig > edgecore.yaml
 ```
 
 
@@ -352,7 +353,12 @@ static ip_address=10.8.30.197/24
 static routers=10.8.30.1 
 static domain_name_servers=114.114.114.114 223.5.5.5 223.6.6.6 
 
+#设置密码
+passwd pi
+
 PasswordAuthentication yes
+
+systemctl enable ssh
 ```
 
 安装mosquitto
@@ -369,7 +375,32 @@ sudo wget -P /etc/apt/sources.list.d/ http://repo.mosquitto.org/debian/mosquitto
 apt-get update
 
 apt-get install mosquitto
+
+systemctl status mosquitto
 ```
+
+
+
+#### [安装docker](https://peppe8o.com/setup-a-docker-environment-with-raspberry-pi-os-lite-and-portainer/)
+
+<img src="imgs/KubeEdge/raspberry-pi-docker-portainer-featured-image.jpg" width="100" align="left"/>
+
+```shell
+sudo apt-get update && sudo apt-get upgrade
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+
+sudo sh get-docker.sh
+
+sudo docker version
+
+sudo docker run hello-world
+
+sudo usermod -aG docker pi
+
+```
+
+
 
 
 
@@ -378,6 +409,16 @@ apt-get install mosquitto
 [Setting different container runtime with CRI](https://docs.kubeedge.io/en/docs/advanced/cri/)
 
 
+
+修改`/etc/apt/sources.list`
+
+```shell
+deb http://mirrors.163.com/raspbian/raspbian/ buster main contrib non-free rpi
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+#deb-src http://raspbian.raspberrypi.org/raspbian/ buster main contrib non-free rpi
+```
+
+安装
 
 ```shell
  sudo apt-get update
@@ -411,6 +452,20 @@ systemctl restart containerd
 
 
 
+安装golang
+
+```shell
+sudo apt update
+sudo apt full-upgrade
+
+wget https://dl.google.com/go/go1.16.6.linux-armv6l.tar.gz -O go.tar.gz
+
+```
+
+
+
+
+
 #### 配置运行EdgeCore
 
 配置EdgeCore.yaml支持containerd.。 默认cgroup 配置是 cgroupfs。
@@ -422,6 +477,39 @@ runtimeRequestTimeout: 2
 podSandboxImage: k8s.gcr.io/pause:3.2
 runtimeType: remote
 ```
+
+配置
+
+```yaml
+
+```
+
+启动：
+
+![image-20210721161810471](imgs/KubeEdge/image-20210721161810471.png)
+
+问题
+
+1. Cgroup subsystem not mounted:[memory]
+
+   ```shell
+   Following Cgroup subsystem not mounted: [memory]
+   ```
+
+   https://zhuanlan.zhihu.com/p/384443481
+
+   ```shell
+   #解决问题
+   #修改/boot/cmdline.txt
+   sudo vim /boot/cmdline.txt
+   cgroup_enable=memory cgroup_memory=1
+   添加在同一行的最后面,接着内容后空格后添加, 注意:不要换行添加
+   
+   #重启机器配置生效
+   reboot
+   ```
+
+2. 
 
 
 
