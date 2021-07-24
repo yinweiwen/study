@@ -61,6 +61,20 @@ npm i --legacy-peer-deps
 npm install
 ```
 
+2. cb() never called
+
+   ```shell
+   npm cache clean -force
+   rm -rf node_modules
+   npm config rm proxy
+   npm config rm https-proxy
+   # 升级node
+   ```
+
+   
+
+3. 
+
 
 
 ## 开发
@@ -93,8 +107,6 @@ $ UMI_UI=1 umi dev
 #### 登录界面 
 
 `src\pages\User\login\index.jsx`
-
-
 
 要点：
 
@@ -226,7 +238,7 @@ $ UMI_UI=1 umi dev
       name="password"
       fieldProps={{
           size: 'large',
-              prefix: <LockOutlined className={styles.prefixIcon} />,
+          prefix: <LockOutlined className={styles.prefixIcon} />,
       }}
       placeholder="输入密码"
       rules={[
@@ -426,6 +438,12 @@ nohup node api/server.js -p 9080 -g mysql://root:Aliyun123_@localhost:3306/db > 
 
 
 > 以下内容为其他技术的学习笔记，比较零散，后续总结归档
+
+## Module
+
+### ahooks
+
+
 
 ## DvaJS
 
