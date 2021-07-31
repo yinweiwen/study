@@ -161,7 +161,154 @@ ctx.assert(bool,status,msg,properties)
 
 
 
+## Redux
+
+[阮一峰](https://www.ruanyifeng.com/blog/2016/09/redux_tutorial_part_one_basic_usages.html)
+
+> "如果你不知道是否需要 Redux，那就是不需要它。"
+
+设计思想
+
+>（1）Web 应用是一个状态机，视图与状态是一一对应的。
+>
+>（2）所有的状态，保存在一个对象里面。
+
+
+
+Store容器，整个应用只有一个store。
+
+```js
+import {createStore} from 'redux';
+const store=createStore(fn);
+
+const state=store.getState(); // state是store的一个快照。一个state对应一个view
+```
+
+Action是改变State的唯一方式（View -> Action -> State）
+
+```js
+const action={
+    type:'ADD',
+    payload:'good'
+}
+```
+
+Action Creator函数生成Action
+
+```js
+export const RESIZE='RESIZE';
+export function resize(hight,width){
+    return {
+        type:RESIZE,
+        payload:{
+            hight,
+            width
+        }
+    }
+}
+```
+
+
+
+store.dispatch() 是View发出Action的唯一方法
+
+```js
+store.dispath(resize(100,200));
+```
+
+
+
+Reducer:
+
+Store收到Action后，调用reducer生产一个**新**的State。(新的state对象 Object.assign 或 {...state,...newState} 或 [...state,newItem] )
+
+```js
+const reducer=function(state=defaultState,action){
+    switch(action.type){
+        case 'ADD':
+            return Object.assign(state,{a:"1"});
+        default:
+            return state;
+    }
+};
+```
+
+reducer是通过store.dispatch发布Action后自动调用的，所以Store需要知道Reducer的位置，这是在创建store的时候传递：
+
+```js
+import {createState} from 'redux';
+const store=createStore(reducer);
+```
+
+各个React组件中写各自的reducer，通过`combineReducers`方法合并
+
+```js
+```
+
+![img](imgs/antpro (work)/bg2016091802.jpg)
+
+
+
+中间件：Middleware
+
+是在`dispatch`过程中，添加其他处理步骤
+
+例如添加logger中间件（redux-logger）
+
+```js
+import {applyMiddleware,createStore} from 'redux';
+import createLogger from 'redux-logger';
+const logger=createLogger();
+
+const store = createStore(
+	reducer,
+    {}, // initial state
+    applyMiddleware(thunk,promise,logger)
+)
+```
+
+
+
+
+
 ## fs-scaffold
+
+feishang 脚手架介绍和使用记录
+
+```js
+.vscode：vscode配置文件(可选)
+client：客户端代码根目录
+    assets
+    src
+        components(通用化或定制化组件)
+        layout(布局容器，组装sections)
+        sections(app的各个模块)
+            actions:redux中的action及actionCreator
+            containers:redux中的容器组件
+            component:redux中的呈现组件
+            reducers:redux中的reducer
+            index.js:入口，约定了section的接口
+            routes:路由配置，兼容react-router
+        utils(工具类)
+        app.js(设置并组装layout和sections)
+        index.js(入口)
+    build
+    index.html(单页应用html页面)
+    index.js(用于node容器启动的静态页面入口)
+middlewares：服务端koa中间件
+routes：服务端路由
+typings：typing智能感知(可选)
+.babelrc：babel配置文件
+config.js：服务端配置文件
+config.js.tmpl：服务端配置文件小护士模板
+jsconfig.json：vscode js配置文件(可选)
+package.json：npm包配置文件
+server.js：服务端启动脚本
+webpack.config.js：webpack测试配置文件
+webpack.config.prod.js：webpack发布配置文件
+```
+
+
 
 ```js
 /**
@@ -322,5 +469,133 @@ co(function *(){
    yield sayworld();
    yield saybye();
 });
+```
+
+
+
+### Layout
+
+app.js
+
+```js
+return (
+            <Layout title={this.props.projectName} sections={sections}/>
+        );
+```
+
+
+
+layout.jsx
+
+```jsx
+'use strict';
+import React from 'react';
+import Immutable from 'immutable';
+import moment from 'moment';
+import 'moment/locale/zh-cn';
+moment.locale('zh-cn');
+import { render } from 'react-dom';
+import { Provider } from 'react-redux';
+import { Router, browserHistory } from 'react-router';
+import { syncHistoryWithStore } from 'react-router-redux';
+import { Layout, NoMatch } from './containers';
+import configStore from './store';
+import { initLayout } from './actions/global';
+
+class Root extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        /**
+            export default {
+            key: 'auth',  //    主键    
+            reducers: reducers,  // function auth(state=initState,action) -- state通过action转换的纯函数
+            routes: routes, // 路由 -- {type: 'outer', route: {path:"signin", component: Login }} -- Login是一个React组件
+            actions: actions, // 一组动作，例如API请求，最终触发dispatch（{type: LOGIN_SUCCESS, payload: {user: user}});）
+            getNavItem: getNavItem // ??
+        };
+        */
+        let routes = this.props.sections // routes集合
+            .reduce((p, c) => {
+                return p.concat(c.routes);
+            }, []);
+
+        let innerRoutes = routes // inner routes集合
+            .filter(route => {
+                return route.type === 'inner';
+            })
+            .map(r => {
+                return r.route;
+            });
+
+        let homeRoutes = routes // home routes集合
+            .filter(r=> {
+                return r.type === 'home';
+            }).map(r => {
+                return r.route;
+            });
+
+         // inner+home routes集合
+        let combinedInnerRoutes = innerRoutes.concat(homeRoutes);
+
+        let outerRoutes = routes  // outer routes集合
+            .filter(s=> {
+                return s.type === 'outer';
+            }).map(r => {
+                return r.route;
+            });
+
+        let homePage = homeRoutes[0].component; // 首页组件
+
+        // 根路由
+        let rootRoute = {
+            component: 'div',
+            childRoutes: [
+                {
+                    path: '/',
+                    component: Layout, // container中的layout组件
+                    indexRoute: {component: homePage}, // 首页
+                    childRoutes: combinedInnerRoutes // 内部组件？
+                },
+                ...outerRoutes,
+                {
+                    path: '*',
+                    component: NoMatch
+                }
+            ]
+        };
+
+        // 所有reducers
+        let reducers = this.props.sections.reduce((p, c) => {
+            return Object.assign(p, c.reducers);
+        }, {});
+		// 所有actions
+        let actions = this.props.sections.reduce((p, c) => {
+            let action = {};
+            if(!c.key) console.warn('请给你的section添加一个key值，section name:' + c.name);
+            action[c.key] = c.actions;
+            return Object.assign(p, action);
+        }, {});
+
+        // react-router中的browserHistory
+        let store = configStore(reducers, browserHistory);
+
+        const {sections, title, copyright} = this.props;
+        store.dispatch(initLayout(title, copyright, sections, actions));
+        store.dispatch(actions.auth.auth.initAuth());
+
+        const history = syncHistoryWithStore(browserHistory, store);
+
+        return (
+            <Provider store={store}>
+                <Router history={history} routes={rootRoute}/>
+            </Provider>
+        );
+    }
+}
+
+export default Root;
 ```
 
