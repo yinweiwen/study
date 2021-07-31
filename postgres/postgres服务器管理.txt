@@ -526,3 +526,46 @@ PG9.6支持了pg_stat_progress_vacuum，PG13目前有如下5个进度视图：
 官方文档有详细说明： 
 
 https://www.postgresql.org/docs/13/progress-reporting.html
+
+## 创建分区/表分区
+https://blog.csdn.net/u010251897/article/details/80136995
+```sql
+CREATE OR REPLACE FUNCTION almart_partition_trigger()  
+RETURNS TRIGGER AS $$  
+DECLARE date_text TEXT;  
+DECLARE insert_statement TEXT;  
+BEGIN  
+    SELECT to_char(NEW.date_key, 'YYYY_MM_DD') INTO date_text;  
+    insert_statement := 'INSERT INTO almart_'  
+        || date_text  
+        ||' VALUES ($1.*)';  
+    EXECUTE insert_statement USING NEW;  
+    RETURN NULL;  
+    EXCEPTION  
+    WHEN UNDEFINED_TABLE  
+    THEN  
+        EXECUTE  
+            'CREATE TABLE IF NOT EXISTS almart_'  
+            || date_text  
+            || '(CHECK (date_key = '''  
+            || date_text  
+            || ''')) INHERITS (almart)';  
+        RAISE NOTICE 'CREATE NON-EXISTANT TABLE almart_%', date_text;  
+        EXECUTE  
+            'CREATE INDEX almart_date_key_'  
+            || date_text  
+            || ' ON almart_'  
+            || date_text  
+            || '(date_key)';  
+        EXECUTE insert_statement USING NEW;  
+    RETURN NULL;  
+END;  
+$$  
+LANGUAGE plpgsql;  
+```
+
+删除过期
+```sql
+CREATE TABLESPACE cheap_table_space LOCATION '/data/cheap_disk';  
+ALTER TABLE almart_2014_12_15 SET TABLESPACE cheap_table_space;  
+```
