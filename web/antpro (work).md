@@ -269,6 +269,114 @@ const store = createStore(
 
 
 
+Redux-Thunk
+
+```JS
+const fetchPosts = postTitle=> (dispatch,getState) => {
+    dispatch(requestPosts(postTitle));
+    return fetch(`/home/API/${postTitle}.json`)
+    	.then(response => response.json())
+    	.then(json => dispatch(receivePosts(postTitle,json)));
+};
+
+// use
+store.dispatch(fetchPosts('test'));
+```
+
+这里的Action Creator `fetchPosts`返回的是一个**函数**，参数是Redux的方法（dispatch和getstate）。store.dispatch只能发送对象，想用其发送这个函数，需要使用 Redux-thunk中间件
+
+
+
+Redux-promise
+
+同上，构造返回Promise对象的Action Creator。用此中间件可以适配。
+
+```js
+const fetchPosts=
+      (dispatch,postTitle) => new Promise(function(resolve,reject){
+          dispatch(requestPosts(postTitle));
+          return fetch(`/home/API/${postTitle}.json`)
+          	.then(response=>{
+              type: 'FETCH_POSTS',
+              payload: response.json()
+          });
+      });
+```
+
+或者通过createAction方法写
+
+```js
+const {dispatch,selectedPost} =this.props;
+dispatch(requestPosts(selectedPost));
+dispatch(createAction( // import {createAction} from 'redux-actions'
+    'FETCH_POSTS', // TYPE
+    fetch(`/home/API/${selectedPost}.json`)
+    	.then(response=>response.json()) // Promise
+));
+```
+
+
+
+React x Redux
+
+UI组件和容器组件：
+
+UI组件——只负责UI呈现，不带任何业务逻辑；没有状态，所有数据通过this.props提供。
+
+容器组件——负责管理数据和业务逻辑，不负责UI呈现。带有内部状态state，使用Redux API
+
+Redux的connect方法，负责将UI组件（用户的）自动生成容器组件： 使用两个函数
+
+mapStateToProps —— 将状态（数据）变成用户组件的属性
+
+mapDispatchToProps——用来建立UI组件的参数到dispatch方法的映射
+
+```js
+import {connect} from 'react-redux';
+
+function mapStateToProps(state) {
+    const {auth} = state;
+    return {
+        user: auth.user,
+        error: auth.error,
+        isRequesting: auth.isRequesting
+    }
+}
+
+function mapDispatchToProps =(dispatch,ownProps)=>{
+    return {
+        onClick: ()=>{
+            dispatch({
+                type:'SET_VISIBLE',
+                filter: ownProps.filter
+            });
+        }
+    };
+}
+
+const VisibleTodoList = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(TodoList);
+```
+
+
+
+Provider
+
+通过provider组件向容器组件中传递 state。
+
+```jsx
+render(
+    <Provider store={store}>
+        <App/>
+    </Provider>,
+    document.getElementById('app')
+)
+```
+
+
+
 
 
 ## fs-scaffold
@@ -598,4 +706,97 @@ class Root extends React.Component {
 
 export default Root;
 ```
+
+
+
+
+
+## 例子
+
+### Redux
+
+index.html
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="shortcut icon" href="assets/images/favicon.ico">
+</head>
+<body>
+<div id='App'></div>
+<script type="text/javascript" src="index.js"></script>
+</body>
+</html>
+
+```
+
+index.js
+
+```jsx
+import React,{Component} from 'react';
+import PropTypes from 'prop-types';
+import ReactDOM from 'react-dom';
+import {createStore} from 'redux';
+import {Provider,connect} from 'react-redux';
+
+class Counter extends Component {
+    render(){
+        const {value,onIncreaseClick}=this.props;
+        return (
+            <div>
+            	<span>{value}</span>
+                <button onClick={onIncreaseClick}>+1</button>
+            </div>
+        )
+    }
+}
+
+Counter.propTypes={
+    value: PropTypes.number.isRequired,
+    onIncreaseClick: PropTypes.func.isRequired
+}
+
+const increaseAction ={type:'increase'}
+
+function counter(state={count:0},action){
+    const count=state.count;
+    switch(action.type){
+        case 'increase':
+            return {count:count+1};
+        default:
+            return state;
+    }
+}
+
+const store=createStore(counter);
+
+function mapStateToProps(state){
+    return {
+        value:state.count
+    }
+}
+
+function mapDispatchToProps(dispatch){
+    return {
+        onIncreaseClick: ()=>dispatch(increaseAction)
+    }
+}
+
+const App=connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Counter)
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App/>
+    </Provider>,
+    document.getElementById('app')
+)
+```
+
+
 
