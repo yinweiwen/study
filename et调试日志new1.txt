@@ -1150,3 +1150,16 @@ docker run -p 19600:19600/udp repository.anxinyun.cn/anxinyun/iota-device-proxy:
     }
 
     
+65. 以太DTU状态显示问题
+以太设备状态是DAC存储在Promethus中，以太的Promethus可以通过以下地址访问
+http://*****:19090/
+
+接口 link_status
+```js
+let res = await (0, _util.queryMetric)(opts, `iota_dac_device_status{thingId="${thingId}"}`);
+```
+
+
+66. C# .NET Unable to find or load Npgsql with Entity Framework
+The ADO.NET provider with invariant name 'Npgsql' is either not registered in the machine or application config file, or could not be loaded. See the inner exception for details.
+

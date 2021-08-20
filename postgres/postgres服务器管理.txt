@@ -569,3 +569,60 @@ LANGUAGE plpgsql;
 CREATE TABLESPACE cheap_table_space LOCATION '/data/cheap_disk';  
 ALTER TABLE almart_2014_12_15 SET TABLESPACE cheap_table_space;  
 ```
+
+
+分区实战
+```sql
+-- 创建存储过程函数
+CREATE OR REPLACE FUNCTION t_themes_force_steelbar_partition_trigger()
+RETURNS TRIGGER AS $$
+DECLARE date_text TEXT;
+DECLARE insert_statement TEXT;
+BEGIN
+    SELECT to_char(NEW.acquisition_datetime, 'YYYY_MM') INTO date_text;
+    insert_statement := 'INSERT INTO t_themes_force_steelbar_'
+        || date_text
+        ||' VALUES ($1.*)';
+    EXECUTE insert_statement USING NEW;
+    RETURN NULL;
+    EXCEPTION
+    WHEN UNDEFINED_TABLE
+    THEN
+        EXECUTE
+            'CREATE TABLE IF NOT EXISTS t_themes_force_steelbar_'
+            || date_text
+            || '(CHECK (to_char(acquisition_datetime, ''YYYY_MM'') = '''
+            || date_text
+            || ''')) INHERITS (t_themes_force_steelbar)';
+        RAISE NOTICE 'CREATE NON-EXISTANT TABLE t_themes_force_steelbar_%', date_text;
+        EXECUTE
+            'CREATE INDEX idx_t_themes_force_steelbar_'
+            || date_text
+            || ' ON t_themes_force_steelbar_'
+            || date_text
+            || '(acquisition_datetime, sensor_id)';
+        EXECUTE insert_statement USING NEW;
+    RETURN NULL;
+END;
+$$
+LANGUAGE plpgsql;
+
+-- 绑定触发器
+create trigger insert_t_themes_force_steelbar_partition_trigger
+    BEFORE INSERT ON t_themes_force_steelbar
+    FOR EACH ROW EXECUTE PROCEDURE t_themes_force_steelbar_partition_trigger();
+
+--循环插入
+do $$
+    declare
+        batch int:=1000000; -- 100w
+        idx int8:=92822223;
+        begin
+        while idx-batch >0 loop
+            insert into t_themes_force_steelbar select * from t_themes_force_steelbar_new where id between (idx-batch) and idx;
+            RAISE NOTICE 'from % to %',(idx-batch),idx;
+            idx = idx-batch;
+            end loop;
+    end;
+$$;
+```
