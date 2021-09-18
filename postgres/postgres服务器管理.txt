@@ -147,6 +147,9 @@ PG执行Add column操作阻塞，问题未知；解决方法：重启pg服务
     <><><>
     pg_restore -d dbname -U FashionAdmin filename
 
+
+  自动备份，不用输入密码
+  pg_dump "host=iota-m1 port=5433 user=FashionAdmin password=123456 dbname=SavoirCloud" | gzip > /home/databasebak/savoirbk20210907.bak
 # 删除数据库
 	dropdb -h 127.0.0.1 -U FashionAdmin SecureCloud
 	或
@@ -626,3 +629,20 @@ do $$
     end;
 $$;
 ```
+
+
+## 查找data目录
+https://www.cnblogs.com/kerrycode/p/14250746.html
+show data_directory;
+
+select setting from pg_settings where name='data_directory';
+
+## 最大连接数
+ show max_connections;
+
+修改 
+vim /var/lib/pgsql/9.4/data/postgresql.conf
+vi /var/lib/postgresql/10/main/postgresql.auto.conf
+max_connections = 100
+
+service postgresql restart

@@ -1,7 +1,10 @@
+## docker 安装Jenkins
+
 1  docker pull jenkinsci/jenkins:lts
 docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins
 镜像存储在 /var/lib/docker
 安装docker：
+
 1. apt-get remove docker docker-engine docker.io
 2. http://www.cnblogs.com/ksir16/p/6530433.html 
 3. https://testerhome.com/topics/5798
@@ -16,20 +19,20 @@ build a app:
  Dockerfile
  requirement.txt -- 
  app.py
- 
+
  docker build -t friendlyhello .
- 
+
  docker images
- 
+
  docker run -d -p 4000:80 friendlyhello
  -d 后台  -p 端口映射
  docker container ls
  docker stop 1fa4ab2cf395
- 
+
  搭建私有仓库 Docker Trusted Registry (DTR)
  sudo docker pull registry
  sudo docker run -d -p 5000:5000 -v /opt/data/registry:/tmp/registry registry
- 
+
  配置CDN(mirror)
  https://1f3mevbc.mirror.aliyuncs.com
  阿里云 - 开发者平台
@@ -45,7 +48,6 @@ docker exec -it 29d42d8696aa /bin/bash
 
 Cannot connect to the Docker daemon. Is the docker daemon running on this host?.
 >> run as sudo
-
 
 docker 199 jenkins容器实练
 sudo docker run -p 8082:8080 -p 50002:50000 -v /home/anxin/jenkins:/var/jenkins_home -v /home/anxin/version:/var/jenkins/version \
@@ -127,7 +129,6 @@ https://segmentfault.com/a/1190000003732967
 https://segmentfault.com/a/1190000007837054
 http://www.csdn.net/article/2015-08-21/2825511
 
-
 ♥♥ docker go最小容器 alpine + glibc
 sudo docker run -it alpine
 #安装glibc apk [https://github.com/sgerrand/alpine-pkg-glibc]
@@ -156,14 +157,13 @@ sudo docker run -d -p 5000:5000 -v /home/anxin/docker-registry:/opt/docker-image
 registry.domain.com/namespace/repository:tags
 ------------------- --------- ---------- ----
 	服务器地址       命名空间   镜像名  版本号
-	
+
 sudo docker tag 10.8.30.199:5000/test/busybox:12.01
 sudo docker push 10.8.30.199:5000/test/busybox:12.01
 
 带UI的仓库：
 https://hub.docker.com/r/hyper/docker-registry-web/
 http://port.us.org/
-
 
 ♥ jenkins中docker构建
 (1) docker build step jenkins插件
@@ -201,9 +201,23 @@ docker run \
  chown -R 1000 /var/run/docker.sock
  chown -R 1000 /usr/bin/docker
  ok
- 
- 
+
 163 docker试炼
 sudo docker run -d -p 8088:8080 -p 50005:50000 -v /docker/jenkins/:/var/jenkins_home -v /versions:/versions -v ~/.ssh:/var/jenkins_home/.ssh -v /etc/localtime:/etc/localtime:ro -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker -e JAVA_OPTS=-Duser.timezone=Asia/Shanghai --restart=always --name=myjenkins 10.8.30.163:5005/jenkins:10.28
 
 
+
+## Containerd
+
+Containerd是一个轻量级的容器系统
+
+| id   | containerd 命令                       | docker 命令                           | 备注                      |
+| ---- | ------------------------------------- | ------------------------------------- | ------------------------- |
+| 1    | ctr image ls                          | docker images                         | 获取image信息             |
+| 2    | ctr image pull nginx                  | docker pull nginx                     | pull 一个nginx的image     |
+| 3    | ctr image tag nginx nginx-test        | docker tag nginx nginx-test           | tag 一个nginx的image      |
+| 4    | ctr image push nginx-test             | docker push nginx-test                | push nginx-test的image    |
+| 5    | ctr image pull nginx                  | docker pull nginx                     | pull 一个nginx的image     |
+| 6    | ctr image import nginx.tar            | docker load<nginx.tar.gz              | 导入本地镜像ctr不支持压缩 |
+| 7    | ctr run -d --env 111 nginx-test nginx | docker run -d --name=nginx nginx-test | 运行的一个容器            |
+| 8    | ctr task ls                           | docker ps                             | 查看运行的容器            |

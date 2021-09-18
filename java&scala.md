@@ -6,6 +6,31 @@ wsdl2java.bat -p wsdl.jiangsu -d wsdljiangsu  -encoding utf-8 -client http://58.
 
 wsdl2java.bat -p wsdl.jiangsu -d wsdljiangsutest  -encoding utf-8 -client http://61.132.52.36:9001/MonitorService-1.0/services/MonitorService?wsdl
 
+wsdl2java.bat -p wsdl.aqi -d aqi  -encoding utf-8 -client http://106.37.208.234:18007/Services/Env-CnemcPublish-RiaServices-EnvCnemcPublishDomainService.svc?wsdl
+
+wsdl2java.bat -p wsdl.aqi -d aqi  -encoding utf-8 -client  https://air.cnemc.cn:18007/Services/Env-CnemcPublish-RiaServices-EnvCnemcPublishDomainService.svc?wsdl
+SSL 
+```shell
+"%JAVA_HOME%\bin\java" -Djavax.net.ssl.trustStore="wsdl2java.p12" -Djavax.net.ssl.trustStorePassword="123456" -Djavax.net.ssl.keyStoreType="PKCS12" -Dorg.jboss.security.ignoreHttpsHost="true" -Xmx%JAVA_MAX_MEM%  -Djava.endorsed.dirs="%CXF_HOME%\lib\endorsed" -cp "%CXF_JAR%;%TOOLS_JAR%;%CLASSPATH%" -Djava.util.logging.config.file="%CXF_HOME%\etc\logging.properties" org.apache.cxf.tools.wsdlto.WSDLToJava %*
+```
+
+```shell
+keytool -genkey -alias wsdl2java -keyalg RSA -validity 20000 -keystore wsdl2java.keystore
+
+
+keytool -genkeypair \
+-alias wsdl2java \
+-keyalg RSA \
+-keysize 2048 \
+-keypass 123456 \
+-sigalg SHA256withRSA \
+-dname "cn=www.freesun.com,ou=yin,o=weiwen,l=Beijing,st=Beijing,c=CN" \
+-validity 20000 \
+-keystore wsdl2java.p12 \
+-storetype PKCS12 \
+-storepass 123456 \
+-ext san=ip:106.37.208.234
+```
 ## JVM 内存
 
 [ref](https://www.cnblogs.com/likehua/p/3369823.html)

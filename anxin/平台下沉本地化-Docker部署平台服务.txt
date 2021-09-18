@@ -1,0 +1,227 @@
+服务部署 
+    iota-dac 
+            docker run -d --name iota-dac -p 5001:5000 -p 40001:40001 -p 40002:40002 -p 40003:40003 -p 40004:40004 -p 40005:40005 \
+            -e IOTA_DAC_RUN_MODE=single \
+            -e IOTA_KAFKA_BROKERS=10.8.30.38:9092 \
+            -e IOTA_MQTT=10.8.30.38:1884 \
+            -e IOTA_REDIS=10.8.30.38:6379 \
+            -e IOTA_POSTGRES=postgres://FashionAdmin:123456@10.8.30.39:5432/iota_2021?sslmode=disable \
+            -e IOTA_ALERT_MODE=simple \
+            --network fs-network \
+            repository.anxinyun.cn/iota/dac:28.21-04-14
+
+    iota-webapi (开发用：http://10.8.30.38:9082 -> 商用：https://console.theiota.cn) 
+        后台启动
+            docker run --rm -ti  -p 9082:9080 --network fs-network \
+            -e IOTA_SERVER_PORT=9080 \
+            -e IOTA_POSTGRES=postgres://FashionAdmin:123456@10.8.30.39:5432/iota_2021 \
+            -e IOTA_REDIS_SERVER_HOST=10.8.30.38 \
+            -e IOTA_MQTT_BROKERS=mqtt://10.8.30.38:1884 \
+            -e IOTA_KAFKA_BROKERS=10.8.30.38:9092 \
+            -e IOTA_ZOOKEEPER_NODES=10.8.30.38:2182 \
+            -e IOTA_ATTACHMENT_IN_CLOUD=true \
+            repository.anxinyun.cn/iota/web-console-api:49.21-05-17
+        
+        前台启动
+            docker run --rm -it --name iota-webapi-tmp --network fs-network \
+            -e IOTA_SERVER_PORT=9080 \
+            -e IOTA_POSTGRES=postgres://FashionAdmin:123456@10.8.30.39:5432/iota_2021 \
+            -e IOTA_REDIS_SERVER_HOST=10.8.30.38 \
+            -e IOTA_MQTT_BROKERS=mqtt://10.8.30.38:1883 \
+            -e IOTA_KAFKA_BROKERS=10.8.30.38:9092 \
+            -e IOTA_ZOOKEEPER_NODES=10.8.30.38:2182 \
+            repository.anxinyun.cn/iota/web-console-api:latest \
+            ash 
+
+    fs-iotaproxy (-e ANXINCLOUD_IOTA_API=http://10.8.30.38:9082) 
+        fscloud 应用
+            网站: http://10.8.30.38/      iota/123456
+            App ID: 0e42afe6e71055cea25fc0083d816426c5867b89 
+            App Secret: 35e0adf0a30345a3104a06bb8a648400d94a9c20 
+            Base64: MGU0MmFmZTZlNzEwNTVjZWEyNWZjMDA4M2Q4MTY0MjZjNTg2N2I4OTozNWUwYWRmMGEzMDM0NWEzMTA0YTA2YmI4YTY0ODQwMGQ5NGE5YzIw 
+        安心云测试用应用
+            网站: https://console.theiota.cn/     cloudTester 
+            Base64: MDM2ZThkYTA2YjYyMDE0ZGZhMWNjNDY3MmZkYTdiMzdkMmY0MDg0MTo5MWJlOTM1YzllYmMyYzlhZDE4YjRlYWRmNmZhY2MwN2M4NDVjMjdh 
+        运行容器
+            docker run -d --name fs-iotaproxy -p 8080:8080 \
+            -e ANXINCLOUD_IOTA_API=http://10.8.30.38:9082 \
+            -e ANXINCLOUD_IOTA_AUTH=MGU0MmFmZTZlNzEwNTVjZWEyNWZjMDA4M2Q4MTY0MjZjNTg2N2I4OTozNWUwYWRmMGEzMDM0NWEzMTA0YTA2YmI4YTY0ODQwMGQ5NGE5YzIw \
+            repository.anxinyun.cn/anxin/iota-proxy:latest \
+            --redis 10.8.30.38:6379 
+
+    PyRpcService 
+        docker run -d --name fs-rpc -p 25000:5000 repository.anxinyun.cn/anxinyun/py.rpc:dragon.32 
+        docker run -it --rm --name fs-rpc-tmp repository.anxinyun.cn/anxinyun/py.rpc:dragon.32 bash ./start.sh 
+
+    fs-webapi 
+        docker run -d --name fs-webapi -p 8081:8080 --network fs-network \
+        -e ANXINCLOUD_PROXY_IOTA=http://10.8.30.38:8080 \
+        -e ANXINCLOUD_HDFS_HTTP=http://10.8.30.155:50070 \
+        -e ANXINCLOUD_KAFKA_BROKERS=10.8.30.38:9092 \
+        -e ANXINCLOUD_ES_NODES_REST=10.8.30.38:9200 \
+        -e ANXINCLOUD_DB=postgres://FashionAdmin:123456@10.8.30.39:5432/axy \
+        -e ANXINCLOUD_QINIU_AK=5XrM4wEB9YU6RQwT64sPzzE6cYFKZgssdP5Kj3uu \
+        -e ANXINCLOUD_QINIU_SK=w6j2ixR_i-aelc6I7S3HotKIX-ukMzcKmDfH6-M5 \
+        -e ANXINCLOUD_QINIU_BUCKET_RESOURCE=anxinyun-test \
+        -e ANXINCLOUD_QINIU_DOMAIN_QNDMN_RESOURCE=http://p7q1f8t1p.bkt.clouddn.com \
+        -e ANXINCLOUD_PYRPC_URL=10.8.30.38:25000 \
+        -e PLATFORM_NAME=native \
+        repository.anxinyun.cn/anxinyun/api:104.21-04-14 \
+        --redis 10.8.30.38:6379
+
+    fs-confcenter 
+        CLUSTER=ANXINCLOUD && \
+        docker run -d --name fs-cc --network fs-network \
+        -e CLUSTER=ANXINCLOUD \
+        -e ${CLUSTER}_API=10.8.30.38:8081 \
+        repository.anxinyun.cn/local/config_center:latest \
+        db.url=jdbc:postgresql://10.8.30.39:5432/axy \
+        db.user=FashionAdmin \
+        db.pwd=123456 \
+        iota.api.proxy="http://10.8.30.38:8080/_iota_api" \
+        redis.host=10.8.30.38 \
+        redis.port=6379 \
+        kafka.brokers=10.8.30.38:9092
+
+    fs-webconsole
+        docker run -d --name fs-webconsole -p 8082:8080 --network fs-network \
+        -e ANXINCLOUD_API=http://10.8.30.38:8081 \
+        -e ANXINCLOUD_IOTA_API=http://10.8.30.38:9082 \
+        -e ANXINCLOUD_HDFS_HTTP=http://10.8.30.155:50070 \
+        -e ANXINCLOUD_QINIU_AK=5XrM4wEB9YU6RQwT64sPzzE6cYFKZgssdP5Kj3uu \
+        -e ANXINCLOUD_QINIU_SK=w6j2ixR_i-aelc6I7S3HotKIX-ukMzcKmDfH6-M5 \
+        -e ANXINCLOUD_QINIU_BUCKET_RESOURCE=anxinyun-test \
+        -e ANXINCLOUD_QINIU_DOMAIN_QNDMN_RESOURCE=http://p7q1f8t1p.bkt.clouddn.com \
+        -e ANXINCLOUD_IOTA_AUTH=MGU0MmFmZTZlNzEwNTVjZWEyNWZjMDA4M2Q4MTY0MjZjNTg2N2I4OTozNWUwYWRmMGEzMDM0NWEzMTA0YTA2YmI4YTY0ODQwMGQ5NGE5YzIw \
+        repository.anxinyun.cn/anxinyun/console ""
+
+    fs-webproject (没有使用iota-proxy，可以去掉参数：ANXINCLOUD_PROXY_IOTA)
+        docker run -d --name fs-webproject -p 8083:8080 \
+        -e ANXINCLOUD_API=http://10.8.30.38:8081 \
+        -e ANXINCLOUD_PROXY_IOTA=10.8.30.38:8080 \
+        -e ANXINCLOUD_HDFS_HTTP=http://10.8.30.155:50070 \
+        -e ANXINCLOUD_QINIU_AK=5XrM4wEB9YU6RQwT64sPzzE6cYFKZgssdP5Kj3uu \
+        -e ANXINCLOUD_QINIU_SK=w6j2ixR_i-aelc6I7S3HotKIX-ukMzcKmDfH6-M5 \
+        -e ANXINCLOUD_QINIU_BUCKET_RESOURCE=anxinyun-test \
+        -e ANXINCLOUD_QINIU_DOMAIN_QNDMN_RESOURCE=http://p7q1f8t1p.bkt.clouddn.com \
+        repository.anxinyun.cn/anxinyun/project "" 
+
+    ET
+        docker run -d --name fs-et --network fs-network \
+        repository.anxinyun.cn/local/et:latest \
+        db.url=jdbc:postgresql://10.8.30.39:5432/axy \
+        db.user=FashionAdmin \
+        db.pwd=123456 \
+        iota.api.proxy="10.8.30.38:8080/_iota_api" \
+        redis.host=10.8.30.38 \
+        redis.port=6379 \
+        kafka.brokers=10.8.30.38:9092 \
+        es.cluster.nodes=10.8.30.38:9200 
+
+    Report-Client 
+        docker run -d --name fs-report --network fs-network \
+        repository.anxinyun.cn/local/report-client:8.21-04-30 \
+        db.url=jdbc:postgresql://10.8.30.39:5432/axy \
+        db.user=FashionAdmin \
+        db.pwd=123456 \
+        redis.host=10.8.30.38 \
+        redis.port=6379 \
+        kafka.brokers=10.8.30.38:9092 \
+        thingId_url=http://10.8.30.38:8080/_iota_api/things/ \
+        es.cluster.nodes=10.8.30.38:9200 \
+        local.attachment.baseurl=http://localhost:8081/attachments
+
+    Alarm (Flink) 
+        Flink 镜像 
+            repository.anxinyun.cn/base-images/flink-1.9-scala_2.11:1.21-03-15 
+        flink-jm 容器 
+            docker run -d --name fs-flink-jm -e FLINK_PROPERTIES="jobmanager.rpc.address: fs-flink-jm" --network fs-network -p 28081:8081 \
+            repository.anxinyun.cn/base-images/flink-1.9-scala_2.11:1.21-03-15 jobmanager  
+        fink-tm 容器 
+            anxin@node38:~$ docker run -d --name fs-flink-tm -e FLINK_PROPERTIES="jobmanager.rpc.address: fs-flink-jm" --network fs-network \
+            repository.anxinyun.cn/base-images/flink-1.9-scala_2.11:1.21-03-15 taskmanager
+        fink Web UI 
+            http://10.8.30.38:28081 
+
+    Alarm 
+        alarm 镜像 
+            docker pull repository.anxinyun.cn/anxinyun/smislocal-alarm:6.21-03-18 
+        alarm 容器 
+            docker run -d --name fs-alarm --network fs-network \
+            repository.anxinyun.cn/local/alarm:7.21-04-14 \
+            db.url=jdbc:postgresql://10.8.30.39:5432/axy \
+            db.user=FashionAdmin \
+            db.pwd=123456 \
+            redis.host=10.8.30.38 \
+            redis.port=6379 \
+            kafka.brokers=10.8.30.38:9092 \
+            es.cluster.nodes=10.8.30.38:9200 
+
+    iota-web:
+    
+        docker run -d --name iota-web -p 9080:9080 --network fs-network theiota.store/iota/web:1.0.0
+        
+        无法获取以太镜像的解决办法：
+        docker image save -o iota-wb.tar theiota.store/iota/web:1.0.0
+        
+        scp iota-wb.tar anxin@node38:/home/anxin/
+        
+        docker image load -i iota-wb.tar 
+        
+        配置nginx：
+        ```
+            server {
+                    listen 80;
+                    server_name 10.8.30.38;
+                    ssl off;
+                    client_max_body_size 10M;
+
+                location /v1/api {
+                    proxy_pass  http://10.8.30.38:9082/v1/api;
+                    proxy_cookie_domain localhost localhost;
+                    proxy_cookie_path / /;
+                    proxy_connect_timeout 300;
+                    proxy_send_timeout 1200;
+                    proxy_read_timeout 3000;
+                    proxy_set_header X-Real-Ip $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                }
+
+                location / {
+                    proxy_pass    http://10.8.30.38:9080;
+                    proxy_cookie_domain localhost localhost;
+                    proxy_cookie_path / /;
+                    proxy_connect_timeout 100;
+                    proxy_send_timeout 6000;
+                    proxy_read_timeout 600;
+                }
+            }
+
+        ```
+       
+    tool-kafka 《调试使用》
+        docker run -d --name tool-kafka -p 9000:9000 --network fs-network -e ZK_HOSTS="10.8.30.38:2181" -e APPLICATION_SECRET=letmein sheepkiller/kafka-manager
+        
+        docker run --rm -it --network fs-network edenhill/kafkacat:1.7.0-PRE1 -b 10.8.30.211:9092 -t RawData
+        
+        kafkacat的其他指令
+        查看kafka信息（broker信息以及topic信息）
+        kafkacat -L -b kafka_broker
+
+        订阅所有消息
+        kafkacat -C -b kafkabroker -t topicname
+        
+        生产一条消息
+        kafkacat -b kafkabroker -t topic  -P
+        cat msg.txt |  kafkacat -b kafkabroker -t topic  -P
+
+使用iota-simulator模拟时出现
+InnerException = {"Could not resolve the following hostname: 4e94babbd325"}
+
+
+
+
+服务通信验证 
+    查看基础设施和平台服务 
+        docker ps -a |egrep 'iota|fs'- |grep -v fs-adminer
+

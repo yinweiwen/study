@@ -1072,3 +1072,5 @@ Pass: yww0828@126.com
 ## 资源
 
 svg资源下载 https://commons.wikimedia.org/wiki
+
+修改Windows MAC地址的小工具：https://sm.myapp.com/original/System/k-mac.zip
