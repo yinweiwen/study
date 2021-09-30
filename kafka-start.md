@@ -28,6 +28,10 @@
   ./kafka-consumer-groups.sh --describe --group savoir.master.server --zookeeper iota-m2:2181
   ./kafka-consumer-groups.sh  --bootstrap-server anxinyun-m1:6667 --group et.mainx --describe
 	
+  // 修改消费者当前偏移量
+  ./kafka-consumer-groups.sh --bootstrap-server test-n2:6667 --group iota-inline-invoker-ack-consumer-0 --reset-offsets --to-latest --execute --topic InvokeCapAck
+  
+  --to-earliest --to-datetime --to-datetime
   # 查看topic  (describe)
   ./kafka-topics.sh --list --zookeeper node35:2181,node36:2181,node37:2181
 

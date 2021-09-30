@@ -1190,3 +1190,86 @@ curl -x "" -X PUT 10.8.30.155:9200/_cluster/settings -H 'Content-Type: applicati
         "search.max_open_scroll_context": 1024
     }
 }'
+
+69. Flink启动报错
+2021-09-17 15:58:24,782 WARN org.apache.flink.shaded.zookeeper.org.apache.zookeeper.ClientCnxn - SASL configuration failed: javax.security.auth.login.LoginException: No JAAS configuration section named 'Client' was found in specified JAAS configuration file: '/tmp/jaas-6452224384874177409.conf'. Will continue connection to Zookeeper server without SASL authentication, if Zookeeper server allows it.
+
+2021-09-17 15:58:24,784 INFO org.apache.flink.shaded.zookeeper.org.apache.zookeeper.ClientCnxn - Opening socket connection to server anxinyun-n3/10.8.40.113:2181
+
+2021-09-17 15:58:24,787 INFO org.apache.flink.shaded.zookeeper.org.apache.zookeeper.ClientCnxn - Socket connection established to anxinyun-n3/10.8.40.113:2181, initiating session
+
+2021-09-17 15:58:24,795 ERROR org.apache.flink.shaded.curator.org.apache.curator.ConnectionState - Authentication failed
+flink启动[ERROR - main-EventThread] (ConnectionState.java:307) Authentication failed
+解决方案
+删除zookeeper中的flink目录下所有东西
+或者：修改zk目录
+high-availability.zookeeper.path.root
+
+
+70. k8s API 认证问题
+error: monitor failed  Error: pods is forbidden: User "system:serviceaccount:anxinyun:default" cannot list resource "pods" in API group "" in the namespace "anxinyun"
+
+需要创建ServiceAccount的访问权限
+
+```sh
+kubectl get sa -n anxinyun
+
+# clusterrole.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: anxinyun
+  name: operator
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["services","pods"]
+  verbs: ["get", "watch", "list","create","update","patch"]
+  
+  
+kubectl create clusterrolebinding operator-pod \
+  --clusterrole=operator  \
+  --serviceaccount=anxinyun:default
+  
+  
+  
+fastest@test-master:~$ kubectl get sa -n anxinyun -o yaml
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    creationTimestamp: "2020-08-17T10:35:35Z"
+    name: default
+    namespace: anxinyun
+    resourceVersion: "5982"
+    selfLink: /api/v1/namespaces/anxinyun/serviceaccounts/default
+    uid: a1100eea-19c2-4477-afca-61344353f2e5
+  secrets:
+  - name: default-token-zp6cz
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+fastest@test-master:~$ kubectl describe secret default-token-zp6cz -n anxinyun
+Name:         default-token-zp6cz
+Namespace:    anxinyun
+Labels:       <none>
+Annotations:  kubernetes.io/service-account.name: default
+              kubernetes.io/service-account.uid: a1100eea-19c2-4477-afca-61344353f2e5
+
+Type:  kubernetes.io/service-account-token
+
+Data
+====
+ca.crt:     1025 bytes
+namespace:  8 bytes
+token:      eyJhbGciOiJSUzI1NiIsImtpZCI6ImFiVlF0Y1NyZjNNTkRVMFVieTNNTzhyVlc5T094Y3J2RmFfYTF6R0pveDQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJhbnhpbnl1biIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJkZWZhdWx0LXRva2VuLXpwNmN6Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImRlZmF1bHQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJhMTEwMGVlYS0xOWMyLTQ0NzctYWZjYS02MTM0NDM1M2YyZTUiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6YW54aW55dW46ZGVmYXVsdCJ9.elI35PPYtQp-fletleFR7so88Vozk7g8B7oRa1zy2LxSL1m26s8X6SJAipR5uqweNyi8JML3Yo3lPhs6mmzNLxkTRVk1atyXcCSr6J_iPD2dUUaGTL-ZPRYZ1x8Eb2PfugEQM5tf5YXERXqPpEsxTLM83KkI8ogFJQhLG7s-lWZFbvcgmKpCo3lmzuYf-hO0-JngjLhRxptCUqaFx6s8QwQz0dxNn_EvtMXbZm2cTkewJdsFAzczuKtt2sLiJCl5CSRghWAqkP9pBiC2diwDKzz9A0DevG0b3n7J-9_4fPtbXa5zQI60Rg3XVZRof0XNjw5Nze0ee8bn-6XI8yxIug
+fastest@test-master:~$ 
+```
+
+71. ambari 心跳失联
+ambari-agent.service: Supervising process 9678 which is not our child. We'll most likely not notice when it exits
+
+?? 
+systemctl start ambari-agent.service
+ambari-agent restart
