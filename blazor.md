@@ -238,3 +238,35 @@ DTU厂家有人的物联网平台介绍（182****2313）。
 针对场景模型，可以设置对应的组态设计：
 
 <img src="imgs/blazor/image-20211107110619414.png" width="600" align="left"/>
+
+
+
+## Github
+
+FQ Pull & Push
+
+Github> Developer setting > Personal access tokens:
+
+![image-20211107213322185](imgs/blazor/image-20211107213322185.png)
+
+
+
+![image-20211107213120912](imgs/blazor/image-20211107213120912.png)
+
+
+
+<img src="imgs/blazor/image-20211107213429686.png" width="500" align="left"/>
+
+```shell
+git config --global http.postBuffer 524288000
+git config --global http.version HTTP/1.1
+# git config --global http.version HTTP/2
+
+git config --global http.sslVerify "false"
+
+git config --global http.proxy
+
+git config --global http.proxy "http://127.0.0.1:7890"
+git config --global https.proxy "socks5://127.0.0.1:7890"
+```
+
