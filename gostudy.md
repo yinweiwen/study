@@ -82,14 +82,14 @@ func main() {
 Requirements
 + Go 1.12+
 + [Graphviz](http://www.graphviz.org/download/)
-    
+  
     apt install graphviz
 
 Installation
 + go get -u github.com/ofabry/go-callvis
 + `or`
 + git clone https://github.com/ofabry/go-callvis.git
-    
+  
     cd go-callvis && make install
 
 + 手动下载安装在linux下报错：
@@ -106,7 +106,7 @@ Installation
 
 Usage
 + 检出代码 
-    
+  
     svn checkout http://10.8.30.22/Iota --username yinweiwen
 + 执行命令
 
@@ -123,16 +123,17 @@ Usage
     生成图片
     ```shell
     go-callvis -group pkg,type -focus main E:\Iota\trunk\code\gowork\src\iota | dot -Tpng -o xxx.png
-
+    
     上面只生成main包的调用情况，下面这条指令生成所有
-
+    
     go-callvis -group pkg,type -file all.png -focus "" -limit iota/ -include iota/ -nostd E:\Iota\trunk\code\gowork\src\iota
     ```
-
+    
     以太dac代码结构如图：
     ![dac.sketlon](./pics/main1.png)
 
-    
+
+​    
 --------
 
 以下是[网易云学堂 GO](https://study.163.com/course/courseLearn.htm?courseId=306002#/learn/video?lessonId=421015&courseId=306002)学习笔记：
@@ -881,3 +882,128 @@ select {
 - [goroutine背后的系统知识](https://blog.csdn.net/bytxl/article/details/47339043)
 - [Advanced Go Concurrency Patterns]()
 - [What exactly does runtime.Gosched do?]()
+
+
+
+# Go Mod
+
+Golang新的包管理方式mod介绍，参考文章 [简书](https://www.jianshu.com/p/760c97ff644c)
+
+在Go>1.12版本以后可以使用。
+
+需设置环境变量：
+
+```sh
+GO111MODULE=auto // on - 始终使用go.mod里require的包
+GOPROXY=https://goproxy.cn,direct // 使用七牛云的
+```
+
+go mod 命令使用说明
+
+```sh
+Usage:
+    go mod <command> [arguments]
+
+The commands are:
+
+    download    download modules to local cache
+    edit        edit go.mod from tools or scripts
+    graph       print module requirement graph
+    init        initialize new module in current directory
+    tidy        add missing and remove unused modules
+    vendor      make vendored copy of dependencies
+    verify      verify dependencies have expected content
+    why         explain why packages or modules are needed
+
+
+go.mod文件中语法支持：
+module 语句指定包的名字（路径）
+require 语句指定的依赖项模块
+replace 语句可以替换依赖项模块
+exclude 语句可以忽略依赖项模块
+```
+
+
+
+## 使用步骤
+
+### 1. go mod init
+
+在项目目录下执行，生成go.mod文件
+
+### 2.代码中引用
+
+```go
+import "github.com/astaxie/beego"
+```
+
+### 3. 执行 go run，自动完成包下载
+
+也可以使用`go tidy`执行包的同步更新。
+
+在查看go.mod文件
+
+```go
+module hello
+
+go 1.12
+
+require github.com/astaxie/beego v1.11.1
+```
+
+默认下载到 $GOPATH/pkg/mod
+
+
+
+### 从vendor转到 mod
+
+以iota项目为例，iota项目原先使用vendor作为包管理工具
+
+```sh
+E:\Iota\trunk\code\gowork\src\iota>go mod init iota
+go: creating new go.mod: module iota
+go: copying requirements from vendor\vendor.json
+
+转换中遇到问题：
+go: finding module for package git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git
+iota/test tested by
+        iota/test.test imports
+        git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git: module git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git: git ls-remote -q origin in E:\Iota\trunk\code\gowork\pkg\mod\cache\vcs\ba71d568b86c02e8a61f
+9315f442345cc818f8c2174cd87c0391f04161f8c52c: exit status 128:
+        fatal: unable to connect to git.eclipse.org:
+        git.eclipse.org[0: 198.41.30.196]: errno=Unknown error
+
+解决：删掉test类
+```
+
+
+
+### 平行模块间的互相引用
+
+```
+module edge
+
+go 1.14
+
+require (
+   github.com/influxdata/influxdb-client-go v1.4.0
+   github.com/influxdata/influxdb-client-go/v2 v2.5.1
+   iota v0.0.0-00010101000000-000000000000
+)
+
+replace iota => ../iota
+```
+
+
+
+IDE 在goland中使用Go Mod
+
+<img src="imgs/gostudy/image-20211028100304713.png" width=600/>
+
+
+
+gcc报错：
+
+安装mingw
+
+https://sourceforge.net/projects/mingw-w64/

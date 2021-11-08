@@ -113,6 +113,19 @@ CREATE CONTINUOUS QUERY wj_30m ON shhnwangjian BEGIN SELECT mean(connected_clien
 
 ```
 
+在FSLocal系统中应用
+```sql
+create database ten_min_agg;
+
+-- 数据库 ${db}
+
+-- 10分钟持续聚集 (EVERY 10m)每10分钟执行 (FOR 1h)允许数据晚到1h内
+CREATE CONTINUOUS QUERY "cq_ten_min_comm" ON "${db}"
+RESAMPLE EVERY 10m FOR 1h
+BEGIN
+  SELECT mean(*),max(*),min(*),spread(*),stddev(*) INTO "ten_min_agg"."autogen".:MEASUREMENT FROM /.*/ GROUP BY time(10m),*
+END;
+```
 V2.0
 
 WEB UI   http://localhost:9999/

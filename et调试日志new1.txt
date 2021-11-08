@@ -1273,3 +1273,6 @@ ambari-agent.service: Supervising process 9678 which is not our child. We'll mos
 ?? 
 systemctl start ambari-agent.service
 ambari-agent restart
+
+?? anxinyun- flink程序报错，看不到细节，可以从UI查看stdout
+
