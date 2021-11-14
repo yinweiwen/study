@@ -1007,3 +1007,5 @@ gcc报错：
 安装mingw
 
 https://sourceforge.net/projects/mingw-w64/
+
+选择下载可执行文件安装 选择x86_64   安装完成后添加到环境变量 
