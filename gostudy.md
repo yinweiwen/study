@@ -1007,3 +1007,32 @@ gcc报错：
 安装mingw
 
 https://sourceforge.net/projects/mingw-w64/
+
+
+
+## Go WSL
+
+在windows环境构建arm板上go应用程序
+
+```sh
+# 启用WSL环境 安装Ubuntu
+wget https://studygolang.com/dl/golang/go1.16.4.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.16.4.linux-amd64.tar.gz
+sudo sh -c "echo 'export PATH=\$PATH:/usr/local/go/bin'>> /etc/profile"
+source /etc/profile
+go version
+
+yww@DESKTOP-5R6F0H1:~$ go env -w GO111MODULE=on
+yww@DESKTOP-5R6F0H1:~$ go env -w GOPROXY=https://goproxy.io,direct
+
+sudo apt-get update
+sudo apt-get install -y gcc-aarch64-linux-gnu
+aarch64-linux-gnu-gcc -v
+
+# 到windows机器上的go代码目录
+cd /mnt/E
+CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -ldflags '-s -w --extldflags "-static -fpic"' -o ./edge
+
+```
+

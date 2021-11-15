@@ -1,4 +1,4 @@
-#### 扩展Linux磁盘
+## 扩展Linux磁盘
 
     fdisk -l
     查看挂载磁盘信息
@@ -37,7 +37,7 @@
 
    
 
-106服务器空间不够解决： 
+## 服务器空间不足
 
 查看磁盘使用
 
@@ -58,3 +58,10 @@ ssh localhost无法通过，Permission denied
 修改过/etc/ssh/sshd_config的PermitRootLogin：yes
 ```
 
+
+
+
+
+## 查看服务器型号
+
+https://blog.csdn.net/zhangliao613/article/details/79021606

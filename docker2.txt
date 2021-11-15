@@ -92,3 +92,9 @@ https://www.virtualbox.org/wiki/Downloads (提示确实某库时执行sudo apt-g
 安装docker-machine
 https://github.com/docker/machine/releases/
 
+
+## docker参看容器pid
+```sh
+for l in `docker ps -q`;do docker top $l|awk -v dn="$l" 'NR>1 {print dn " PID is " $2}';done
+
+```

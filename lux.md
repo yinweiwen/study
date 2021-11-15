@@ -1,3 +1,38 @@
+## 安装nodejs
+
+```sh
+# 无法获得锁 /var/lib/dpkg/lock-frontend - open
+
+rm /var/lib/dpkg/lock-frontend
+rm /var/lib/dpkg/lock
+dpkg --configure -a
+# sudo systemctl restart accounts-daemon
+
+
+apt-get install nodejs
+apt-get install nodejs-legacy
+apt-get install npm
+
+npm config set registry https://registry.npm.taobao.org
+npm config list
+
+npm install -g pm2
+
+ls
+
+pm2 start index.js --name "etwatcher"
+#pm2 restart api
+#pm2 delete api
+#pm2 kill
+
+// 查看dac进程实例中占用内存最该的实例内存
+ps aux | grep dac | sort -nr -k4 | head -n1 | awk '{print $6}'
+```
+
+
+
+
+
 ## netstat
 
 -a all
@@ -16,6 +51,14 @@ x ：通常与 a 这个参数一起使用，可列出较完整信息。
 l ：较长、较详细的将该 PID 的的信息列出；
 j ：工作的格式 (jobs format)
 -f ：做一个更为完整的输出。
+
+
+
+进程内存监控：
+
+
+
+
 
 ## nc 网络调试
 

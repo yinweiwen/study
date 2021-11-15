@@ -1276,3 +1276,8 @@ ambari-agent restart
 
 ?? anxinyun- flink程序报错，看不到细节，可以从UI查看stdout
 
+72. Nodejs官方库 ElasticSearch查询超时
+```js
+// opts.server.sniffOnStart = true;
+    // opts.server.sniffInterval = 60000;
+```
