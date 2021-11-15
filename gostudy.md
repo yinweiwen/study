@@ -1008,8 +1008,7 @@ gcc报错：
 
 https://sourceforge.net/projects/mingw-w64/
 
-
-
+选择下载可执行文件安装 选择x86_64   安装完成后添加到环境变量 
 ## Go WSL
 
 在windows环境构建arm板上go应用程序
