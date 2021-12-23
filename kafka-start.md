@@ -23,10 +23,10 @@
 
   // 查看消费情况
   ./kafka-consumer-groups.sh --new-consumer --bootstrap-server test-n1:9092 --list.
-  ./kafka-consumer-groups.sh --new-consumer --bootstrap-server 10.8.30.36:6667 --group et.mainxx --describe
+  ./kafka-consumer-groups.sh --new-consumer --bootstrap-server iota-m2:6667 --group iota-inline-invoker-ack-consumer-new --describe
 
   ./kafka-consumer-groups.sh --describe --group savoir.master.server --zookeeper iota-m2:2181
-  ./kafka-consumer-groups.sh  --bootstrap-server anxinyun-m1:6667 --group et.mainx --describe
+  ./kafka-consumer-groups.sh  --bootstrap-server iota-m2:6667 --group iota-inline-invoker-ack-consumer-new --describe
 	
   // 修改消费者当前偏移量
   ./kafka-consumer-groups.sh --bootstrap-server test-n2:6667 --group iota-inline-invoker-ack-consumer-0 --reset-offsets --to-latest --execute --topic InvokeCapAck

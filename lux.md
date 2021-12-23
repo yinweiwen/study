@@ -31,6 +31,31 @@ ps aux | grep dac | sort -nr -k4 | head -n1 | awk '{print $6}'
 
 
 
+## °²×°python
+
+https://www.cnblogs.com/mo-nian/p/12506853.html
+
+ÔÚJenkinsÈİÆ÷ÄÚ²¿°²×°python3.8£º
+
+```sh
+wget https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz
+
+sudo apt-get install python-dev
+sudo apt-get install libffi-dev
+sudo apt-get install libssl-dev
+sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev
+
+./configure prefix=/usr/local/python3
+make && make install
+
+mv /usr/bin/python /usr/bin/python.bak
+ln -s /usr/local/python3/bin/python3 /usr/bin/python
+python -V
+
+```
+
+
+
 
 
 ## netstat
@@ -649,3 +674,32 @@ GLOB ÊÇÒ»¸ö ¿ÉÒÔ°üº¬"?"Óë"*"µÄÎÄ¼şÂ·¾¶Æ¥ÅäÄ£Ê½¡£ ±íÊ¾½öÏÔÊ¾À´×ÔÓëÖ¸¶¨µÄ GLOB Ä£Ê
 ²»½«³ÌĞòµÄÊä³öÄÚÈİ¹ÜµÀ(pipe)¸ø·ÖÒ³³ÌĞò¡£
 ```
 
+
+
+### VmmemÄÚ´æÕ¼ÓÃ´ó
+
+½øÈëHyper-V¹ÜÀíÆ÷¹Ø±ÕÖ¸¶¨³ÌĞò£¨Ò»°ãÊÇdockerÏà¹Ø£©
+
+![image-20211214103048859](imgs/lux/image-20211214103048859.png)
+
+
+
+
+
+### Ambari agentĞÄÌø¶ªÊ§
+
+²é¿´ĞÄÌø¶ªÊ§µÄagentµÄ±¨´íÈÕÖ¾£º/var/log/ambari-agent/
+
+```
+Cannot register host with not supported os type, hostname=test-n2, serverOsType=ubuntu18, agentOsType=ubuntu20
+```
+
+/usr/lib/ambari-server/lib/ambari_commons/resources/os_family.json
+
+/var/lib/ambari-agent/tmp/ambari_commons/resources/os_family.json
+
+/usr/lib/ambari-agent/lib/ambari_commons/resources/os_family.json
+
+³¢ÊÔÔÚos_family.jsonÎÄ¼şÖĞÔö¼Óubuntu20Ïî£¬´ÓÆğserverºÍagent£º
+
+·¢ÏÖ½ÚµãÊÇĞÄÌø¶ªÊ§Çé¿ö¡£

@@ -1007,6 +1007,16 @@ docker pull registry.cn-hangzhou.aliyuncs.com/google-containers/pause-amd64:3.0
 vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 docker tag hub.c.163.com/conformance/pause-amd64:3.0 gcr.io/google_containers/pause-amd64:3.0
 
+docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/pause-amd64:3.0 gcr.io/google_containers/pause-amd64:3.0
+// 安装DNS
+docker pull hub.c.163.com/zhijiansd/k8s-dns-kube-dns-amd64:1.14.5
+docker pull hub.c.163.com/zhijiansd/k8s-dns-sidecar-amd64:1.14.5
+docker pull hub.c.163.com/zhijiansd/k8s-dns-dnsmasq-nanny-amd64:1.14.5
+
+docker tag hub.c.163.com/zhijiansd/k8s-dns-kube-dns-amd64:1.14.5 gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.5
+docker tag hub.c.163.com/zhijiansd/k8s-dns-sidecar-amd64:1.14.5 gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.5
+docker tag hub.c.163.com/zhijiansd/k8s-dns-dnsmasq-nanny-amd64:1.14.5 gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.5
+
 50. POI执行OOM
 在生成nbjj季报表时报错 GC overhead limit exceeded
 使用了库poi-tl生成word模板报表
@@ -1281,3 +1291,23 @@ ambari-agent restart
 // opts.server.sniffOnStart = true;
     // opts.server.sniffInterval = 60000;
 ```
+
+
+73. 服务器上docker tag的国内源镜像丢失
+> 大亮：服务器上磁盘空间超过80% 会自动清理
+有时间看下在哪里设置 或 清理点空间
+
+74. Invoke频繁超时
+> 三个api容器分别进行下发，发现其中一个容器容易出现超时。
+
+三个容器中使用了不同的consumer-group,更换groupid后问题解决。
+
+
+75. 定时执行es备份任务（机房迁移21-11）
+root@anxin-m1:/home/anxin/tools/es2u# crontab -l
+0 * * * * /usr/hdp/share/hst/bin/hst-scheduled-capture.sh sync
+0 2 * * 0 /usr/hdp/share/hst/bin/hst-scheduled-capture.sh
+40 21 * * * /home/anxin/tools/es2u/2709.sh
+5 0 * * * /home/anxin/tools/es2u/2800.sh
+5 6 * * * /home/anxin/tools/es2u/2806.sh
+1 7 * * * /home/anxin/tools/es2u/2807.sh

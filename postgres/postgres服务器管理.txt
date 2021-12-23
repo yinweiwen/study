@@ -7,6 +7,8 @@ vi /etc/postgresql/9.5/main/pg_hba.conf
 host    all             all             10.8.30.0/24            md5
 
 
+su postgres
+
 在磁盘上初始化一个数据库存储区域。 我们称之为一个数据库集簇（SQL 标准使用的术语是目录集簇）
 $ initdb -D /usr/local/pgsql/data
 -- 
@@ -646,3 +648,43 @@ vi /var/lib/postgresql/10/main/postgresql.auto.conf
 max_connections = 100
 
 service postgresql restart
+
+## 查找所有mqtt的url
+```sql
+select distinct (properties::json->'URL')::varchar from "DeviceInterface" where "deviceMetaInterfaceId" in (
+    select id from "DeviceMetaInterface" where "interfaceMetaId" in (
+select id from "InterfaceMeta" where "interfaceTypeId"=6 order by "createdAt")
+    );
+```
+
+
+## THINGs下统一增加周期维度
+```sql
+do
+$$
+    declare
+        thingid varchar;
+        dimid uuid;
+        schid uuid;
+        curthings CURSOR for select t.id from "Thing" t,"User" u where t."belongTo"=u.id and u.username='free-sun-home-test';
+    begin
+            open curthings;
+
+            LOOP
+                fetch curthings into thingid;
+                EXIT WHEN NOT FOUND;
+
+                if not exists(select * from "Dimension" d,"Scheme" s where s."dimensionId"=d.id and s.mode='R' and d."thingId"=thingid) then
+                    dimid:= MD5(random()::text || clock_timestamp()::text)::uuid;
+                    schid:= MD5(random()::text || clock_timestamp()::text)::uuid;
+                    INSERT INTO "public"."Dimension"("id", "name", "desc", "createdAt", "updatedAt", "thingId")
+                    VALUES(dimid,'周期','','2021-04-02 15:55:18.047+08','2021-04-02 15:55:18.047+08',thingid);
+                    INSERT INTO "public"."Scheme"("id", "name", "mode", "interval", "unit", "repeats", "beginTime", "endTime", "notifyMode", "capabilityNotifyMode", "createdAt", "updatedAt", "dimensionId")
+                     VALUES (schid, '周期', 'R', 5, 'second', NULL, '2021-04-14 10:37:32+08', NULL, 1, 1, '2021-04-14 10:38:11.879+08', '2021-04-14 10:38:11.879+08',dimid);
+
+                    raise notice 'insert thing %',thingid;
+                end if;
+            end loop;
+    end;
+$$;
+```

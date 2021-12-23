@@ -1,3 +1,21 @@
+## 安装
+
+我的ucloudmima是 FS12345678
+
+安装命令如下：
+
+```
+curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
+```
+
+也可以使用国内 daocloud 一键安装命令：
+
+```
+curl -sSL https://get.daocloud.io/docker | sh
+```
+
+https://www.runoob.com/docker/ubuntu-docker-install.html
+
 ## docker 安装Jenkins
 
 1  docker pull jenkinsci/jenkins:lts
