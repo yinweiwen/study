@@ -1311,3 +1311,15 @@ root@anxin-m1:/home/anxin/tools/es2u# crontab -l
 5 0 * * * /home/anxin/tools/es2u/2800.sh
 5 6 * * * /home/anxin/tools/es2u/2806.sh
 1 7 * * * /home/anxin/tools/es2u/2807.sh
+
+
+76. CNB
+    1. 统一数据处理引擎架构，将flink框架应用于ET和alarm进程。
+    2. 通用工具库统一编写管理，例如数据库操作、Redis读写、Kafka读写、ES操作库等，并上传maven、npm包私服管理器。
+    3. 全面应用云原生部署方案，基于Kubernetes的容器化部署管理。
+    4. 满足公有云和私有云融和部署，实现云平台服务下沉本地化。统一公有云和私有云技术方案。
+    5. 视频golang优化改造，统一后台支撑技术栈开发语言.
+    
+77. Kibana容器部署
+docker run --name kibana7 -p 5601:5601 -e "ELASTICSEARCH_HOSTS=http://test-n3:9200" docker.elastic.co/kibana/kibana:7.16.2
+

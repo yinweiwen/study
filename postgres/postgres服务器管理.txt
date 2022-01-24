@@ -688,3 +688,18 @@ $$
     end;
 $$;
 ```
+
+## 设备统计
+distinct on 
+```sql
+Copy (select distinct on(d.name,d.model,d."createdAt",d."updatedAt") d.name,d.model,d."createdAt",d."updatedAt",dev.id as thingId,dev.name as "thingName",dev.username,m."interfaceTypeId",m.name as "interfaceName"
+from "DeviceMeta" d
+    join "DeviceMetaInterface" dmi  on dmi."deviceMetaId"=d.id
+    join "InterfaceMeta" m on dmi."interfaceMetaId"=m.id
+left join (
+    select t.id,dd."deviceMetaId",t.name,u.username from "Device" dd,"Thing" t,"User" u where dd."thingId"=t.id and t."belongTo"=u.id
+    ) as dev on dev."deviceMetaId"=d.id
+where dmi."deviceMetaId"=d.id and dmi."interfaceMetaId"=m.id
+      and d."createdAt" between '2020-01-01' and '2021-01-01'
+order by d."createdAt") To '/tmp/test.csv' With CSV DELIMITER ',' HEADER;
+```

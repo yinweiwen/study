@@ -190,4 +190,6 @@ https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-ku
 
 
 
-5. s 
+5. VMMEM 占用过高
+
+   Hyper-V Manager中关闭
