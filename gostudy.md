@@ -1,3 +1,7 @@
+下载：https://go.dev/dl/ 或者 在 goland中GO> GOROOT > + > Download中下载（默认下载到c:\users\xx\go\go1.16目录下）
+
+
+
 # Day 1
 
 

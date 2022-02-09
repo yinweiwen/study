@@ -195,3 +195,9 @@ $server_name： 服务器名称。
 $server_port： 请求到达服务器的端口号。
 $request_uri： 包含请求参数的原始URI，不包含主机名，如：/foo/bar.php?arg=baz，它无法修改。
 $uri： 不带请求参数的当前URI，$uri不包含主机名，如/foo/bar.html可能和最初的值有不同，比如经过重定向之类的。它可以通过内部重定向，或者使用index指令进行修改。不包括协议和主机名，例如/foo/bar.html。
+
+
+
+限制动作：
+
+![image-20220126155339211](imgs/nginx/image-20220126155339211.png)
