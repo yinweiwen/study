@@ -327,6 +327,12 @@ DataX是阿里云DataWorks数据集成的开源版本。离线数据同步工具
 
 下载：http://datax-opensource.oss-cn-hangzhou.aliyuncs.com/datax.tar.gz
 
+> 运行前：
+>
+> + 删除plugin目录下（包含reader，writer目录下）所有 ._开头的文件
+>
+> + 要在python3环境运行，需要用datax-web项目doc下的py文件拷贝到当前bin下
+
 配置：
 
 ```sh
@@ -342,9 +348,243 @@ $ python datax.py ./stream2stream.json
 
 任务管理和调度、WEB构建DataX Json、WEB实时日志、运行参数配置等
 
-![img](imgs/Datahub/68747470733a2f2f64617461782d7765622e6f73732d636e2d68616e677a686f752e616c6979756e63732e636f6d2f646f632f44617461582d5765622e706e67)
+![img](imgs/Datahub/68747470733a2f2f64617461782d7765622e6f73732d636e2d68616e677a686f752e616c6979756e63732e636f6d2f646f632f44617461582d5765622e706e67.png)
+
+[DataX Web部署](https://github.com/WeiYe-Jing/datax-web/blob/master/userGuid.md)
+
+datax_admin 控制台： 需指定数据库地址（bin/sql） /邮件发送账户、日志、job线程池等
+
+datax_executor 执行器（通过python_path指定datax engine的运行目录）
+
++ datax.job.admin admin地址
++ executor.port 执行器端口
++ jsonpath  datax json临时文件保存路径
++ pypath datax启动脚本 `xxx/datax/bin/datax.py`
+
+![image-20220223155031469](imgs/Datahub/image-20220223155031469.png)
+
+可以在日志管理中查看任务执行情况和日志输出。
 
 
+
+## CDC
+
+Postgresql通过逻辑复制(>10.0 logical replication)实际就是一个CDC应用，等价于消费预写式日志 WAL。
+
+
+
+[Debezium 简介](https://debezium.io/documentation/reference/1.8/tutorial.html)
+
+Debezium（[DOC](https://materialize.com/docs/guides/cdc-postgres/)） 是一个分布式平台，可将您现有的数据库转换为事件流（CDC）服务。
+
+
+
+## Flink CDC Connectors
+
+[官方文档](https://ververica.github.io/flink-cdc-connectors/master/content/about.html)
+
+https://github.com/ververica/flink-cdc-connectors
+
+是一个集成Debezium CDC的Flink Connector组件。
+
+第一个例子：
+
+```sh
+#准备flink环境，这里下载1.13.5版本到node38节点，执行 bin/start-cluster.sh启动standalone集群，通过38:8081访问flink控制台UI
+
+#下载cdc项目git代码
+mvn spotless:apply
+mvn clean install -DskipTests
+#完后，对应的cdc jar包在.m2目录 F:\Program Files\apache-maven-3.2.3\mavenRepository\.m2\repository\com\ververica
+#这里用到 
+flink-connector-mysql-cdc-2.2-SNAPSHOT.jar
+
+
+#拷贝相关cdc的jar包到 FLINK_HOME/lib/.
+
+```
+
+最终client lib下的jar包形态：
+
+ ![image-20220224172332791](imgs/Datahub/image-20220224172332791.png)
+
++ 修改： flink-sql-connector-elasticsearch7_2.11-1.13.6.jar  --> 
+
+在sql-client CLI中执行：
+
+[例子来源](https://ververica.github.io/flink-cdc-connectors/master/content/%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/mysql-postgres-tutorial-zh.html)
+
+```sql
+-- 创建MySql Product对应表，同步数据库表的数据
+CREATE TABLE products (
+    id INT,
+    name STRING,
+    description STRING,
+    PRIMARY KEY (id) NOT ENFORCED
+  ) WITH (
+    'connector' = 'mysql-cdc',
+    'hostname' = '10.8.30.37',
+    'port' = '3306',
+    'username' = 'root',
+    'password' = '123456',
+    'database-name' = 'mydb',
+    'table-name' = 'products'
+  );
+-- 创建订单表映射
+CREATE TABLE orders (
+   order_id INT,
+   order_date TIMESTAMP(0),
+   customer_name STRING,
+   price DECIMAL(10, 5),
+   product_id INT,
+   order_status BOOLEAN,
+   PRIMARY KEY (order_id) NOT ENFORCED
+ ) WITH (
+   'connector' = 'mysql-cdc',
+   'hostname' = '10.8.30.37',
+   'port' = '3306',
+   'username' = 'root',
+   'password' = '123456',
+   'database-name' = 'mydb',
+   'table-name' = 'orders'
+ );
+ -- 创建快递表（PostgreSQL）
+ CREATE TABLE shipments (
+   shipment_id INT,
+   order_id INT,
+   origin STRING,
+   destination STRING,
+   is_arrived BOOLEAN,
+   PRIMARY KEY (shipment_id) NOT ENFORCED
+ ) WITH (
+   'connector' = 'postgres-cdc',
+   'hostname' = '10.8.30.39',
+   'port' = '5432',
+   'username' = 'postgres',
+   'password' = 'postgres',
+   'database-name' = 'trest',
+   'schema-name' = 'public',
+   'table-name' = 'shipments',
+   'debezium.plugin.name' = 'wal2json'
+ );
+ 
+ -- 目标ES数据表
+ CREATE TABLE enriched_orders (
+   order_id INT,
+   order_date TIMESTAMP(0),
+   customer_name STRING,
+   price DECIMAL(10, 5),
+   product_id INT,
+   order_status BOOLEAN,
+   product_name STRING,
+   product_description STRING,
+   shipment_id INT,
+   origin STRING,
+   destination STRING,
+   is_arrived BOOLEAN,
+   PRIMARY KEY (order_id) NOT ENFORCED
+ ) WITH (
+     'connector' = 'elasticsearch-6',
+     'hosts' = 'http://10.8.30.155:9200',
+     'index' = 'enriched_orders',
+     'document-type'='_doc'
+ );
+ 
+ -- 关联查询形成宽表，插入到ES中
+ INSERT INTO enriched_orders
+ SELECT o.*,p.name, p.description, s.shipment_id, s.origin, s.destination, s.is_arrived
+ FROM orders AS o
+ LEFT JOIN products AS p ON o.product_id=p.id
+ LEFT JOIN shipments AS s ON o.order_id=s.order_id;
+ 
+```
+
+
+
+### MySql启动CDC
+
+```sh
+#/etc/mysql/mysql.conf.d
+
+[mysqld]
+log-bin=mysql-bin
+server-id=1
+binlog_format=ROW
+
+
+show variables like 'log_%'; # 显示ON表示打开
+```
+
+
+
+### Postgres启动CDC [参考](https://debezium.io/documentation/reference/postgres-plugins.html)
+
+9.6需要使用插件 [wal2json](https://github.com/eulerto/wal2json/blob/master/README.md)。10+版本不需要使用插件。
+
+>decoderbufs
+>需要安装一堆插件,在centos上非常难于安装,官方给出的例子也是基于debein操作系统
+>
+>wal2json
+>debezium对wal2json的支持不好,他自己官网说的
+>
+>pgoutput
+>postgres-10 纳入了内核 以下为pgoutput解析出来的逻辑数据
+
+```sh
+#安装wal2json
+git clone https://github.com/eulerto/wal2json -b master --single-branch \
+&& cd wal2json \
+&& git checkout d2b7fef021c46e0d429f2c1768de361069e58696 \
+&& make && make install \
+&& cd .. \
+&& rm -rf wal2json
+
+#postgres.conf
+# MODULES
+shared_preload_libraries = 'wal2json'
+
+# REPLICATION
+wal_level = logical
+max_wal_senders = 4
+max_replication_slots = 4
+
+# 数据库用户权限,至少具有REPLICATION和LOGIN权限 (postgres用户默认有权限) ()
+CREATE USER user WITH PASSWORD 'pwd';
+ALTER ROLE user replication;
+grant CONNECT ON DATABASE test to user;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO user;
+
+# 数据库访问权限 (pg_hba.conf)
+local   replication     postgres                        trust
+host    replication     postgres        0.0.0.0/0       md5
+host    replication     FashionAdmin    0.0.0.0/0       md5
+host    replication     FashionAdmin    ::1/128         md5
+
+# 重启pg服务
+service postgresql restart
+
+# 测试wal2json是否启用
+pg_recvlogical -d trest --slot test_slot --create-slot -P wal2json
+
+pg_recvlogical -d trest --slot test_slot --start -o pretty-print=1 -f -
+
+# 删除槽
+pg_recvlogical -d trest --slot test_slot --drop-slot
+```
+
+
+
+
+
+### 报错记录
+
+1. java.io.StreamCorruptedException: unexpected block data
+
+   类加载顺序问题，flink默认是child-first，在flink的flink-conf.yaml文件中添加`classloader.resolve-order: parent-first` 改成parent-first，重启集群即可。
+
+   
+
+2. s
 
 
 
@@ -368,20 +608,11 @@ $ python datax.py ./stream2stream.json
 
 
 
-## Oracle大数据湖服务集成工具
-
-1. ML
-2. 数据目录
-3. Analytics 集成的数据分析工具
-4. Graph Analytics 集成的图形分析工具
-
-
-
 ## Qubole
 
 用于分析，人工智能，机器学习的云原生平台。
 
-![img](imgs/Datahub/aHR0cHM6Ly9pbWFnZXMuaWRnZXNnLm5ldC9pbWFnZXMvYXJ0aWNsZS8yMDE5LzEwL3F1Ym9sZS1hcmNoaXRlY3R1cmUtMDEtMTAwODE2MTcyLWxhcmdlLmpwZw)
+![img](imgs/Datahub/aHR0cHM6Ly9pbWFnZXMuaWRnZXNnLm5ldC9pbWFnZXMvYXJ0aWNsZS8yMDE5LzEwL3F1Ym9sZS1hcmNoaXRlY3R1cmUtMDEtMTAwODE2MTcyLWxhcmdlLmpwZw.png)
 
 集成的组件：Spark/Presto/Hive/Quantum/Airflow(工作流ETL)
 
@@ -524,6 +755,8 @@ Kappa架构：
 
 ## Hudi Pk Iceberg
 
+[终于有人将数据湖讲明白了](https://view.inews.qq.com/a/20210909A0ARO400)
+
 [Hudi设计和架构解读](https://www.cnblogs.com/leesf456/p/12710118.html)
 
 [新一代流式数据湖平台](https://www.infoq.cn/article/08t12zv6ev9spxalpklq)
@@ -559,3 +792,13 @@ DM（Data Market）数据集市
 Schema Registry和Rule Engine在EMQX中的应用：
 
 ![img](imgs/Datahub/1775668-20190919111038833-2080742125.png)
+
+
+
+## Oracle大数据湖服务集成工具
+
+1. ML
+2. 数据目录
+3. Analytics 集成的数据分析工具
+4. Graph Analytics 集成的图形分析工具
+
