@@ -590,6 +590,169 @@ pg_recvlogical -d trest --slot test_slot --drop-slot
 
 
 
+## Zeppelin Flink解释器
+
+数据科学笔记本。
+
+开发人员将**Jupyter**描述为“*多语言交互式计算环境*”。Jupyter Notebook 是一个基于 Web 的交互式计算平台，结合了实时代码、方程式、叙述性文本、可视化、交互式仪表板和其他媒体。 `流行`  `Python`
+
+另一方面，**Apache Zeppelin**被详细描述为“*支持交互式数据分析的基于 Web 的笔记本*”。支持交互式数据分析的基于 Web 的笔记本。您可以使用 SQL、Scala 等工具制作精美的数据驱动、交互式和协作文档。 `大数据` `Python Scala` `SQL`
+
+Jupyter 和 Apache Zeppelin 主要可以归类为**“数据科学笔记本”**工具。
+
+与jupyter[详细比较](https://stackshare.io/stackups/jupyter-vs-zeppelin)。
+
+
+
+[官方](https://zeppelin.apache.org/docs/latest/interpreter/flink.html)文档翻译：
+
+在 Zeppelin 0.9 中，我们重构了 Zeppelin 中的 Flink 解释器以支持最新版本的 Flink。**仅支持 Flink 1.10+，旧版本的 flink 将无法使用。** Zeppelin 支持 Apache Flink，Flink 解释器组由下面列出的五个**解释器**(interpreter)组成。
+
+|      姓名       |           班级            |                             描述                             |
+| :-------------: | :-----------------------: | :----------------------------------------------------------: |
+|     %flink      |       Flink 解释器        | 创建 ExecutionEnvironment/StreamExecutionEnvironment/BatchTableEnvironment/StreamTableEnvironment 并提供 **Scala** 环境 |
+| %flink.pyflink  |      PyFlink 解释器       |                        提供python环境                        |
+| %flink.ipyflink |      IPyFlink解释器       |                      提供 ipython 环境                       |
+|   %flink.ssql   | FlinkStreamSqlInterpreter |                       提供流式sql环境                        |
+|   %flink.bsql   | FlinkBatchSqlInterpreter  |                      提供批处理sql环境                       |
+
+### 特点
+
+|         特征         |                             描述                             |
+| :------------------: | :----------------------------------------------------------: |
+| 支持多个版本的 Flink |       您可以在一个 Zeppelin 实例中运行不同版本的 Flink       |
+| 支持多个版本的Scala  |    您可以在 Zeppelin 实例上运行不同的 Scala 版本的 Flink     |
+|     支持多种语言     | 支持Scala、Python、SQL，此外你还可以跨语言协作，例如你可以编写Scala UDF并在PyFlink中使用它 |
+|   支持多种执行模式   |         Local \| Remote \| Yarn \|  Yarn Application         |
+|       支持Hive       |                        支持 Hive 目录                        |
+|      交互式开发      |               交互式开发用户体验提高您的生产力               |
+|   Flink SQL 的增强   | * 一个笔记本同时支持流式和批处理sql<br /> * 支持sql注释（单行注释/多行注释）<br /> * 支持高级配置（jobName，并行度）<br /> * 支持多条insert语句 |
+|        多租户        |    多个用户可以在一个 Zeppelin 实例中工作而不会相互影响。    |
+|    休息 API 支持     | 你不仅可以通过 Zeppelin notebook UI 提交 Flink 作业，还可以通过它的 rest api 来提交（你可以使用 Zeppelin 作为 Flink 作业服务器）。 |
+
+### 快速启动
+
+（dockers， 映射本地flink二进制程序到容器中, 验证本地模式）（8081端口：flink UI）
+
+```bash
+docker run -u $(id -u) -p 8080:8080 -p 8081:8081 --rm -v /mnt/disk1/flink-1.12.2:/opt/flink -e FLINK_HOME=/opt/flink  --name zeppelin apache/zeppelin:0.10.0
+```
+
+### 架构
+
+![img](imgs/Datahub/flink_architecture.png)
+
+上图是 Flink on Zeppelin 的架构。左侧的 Flink 解释器实际上是一个 Flink 客户端，负责编译和管理 Flink 作业生命周期，例如提交、取消作业、监控作业进度等。右侧的 Flink 集群是执行 Flink 作业的地方。它可以是 MiniCluster（本地模式）、Standalone 集群（远程模式）、Yarn 会话集群（yarn 模式）或 Yarn 应用会话集群（yarn-application 模式）
+
+Flink 解释器中有两个重要的组件：Scala shell & Python shell
+
+- Scala shell 是 Flink 解释器的入口点，它会创建 Flink 程序的所有入口点，例如 ExecutionEnvironment，StreamExecutionEnvironment 和 TableEnvironment。Scala shell 负责编译和运行 Scala 代码和 sql。
+- Python shell 是 PyFlink 的入口，它负责编译和运行 Python 代码。
+
+
+
+### 配置
+
+连接到Flink集群：
+
+|            财产             | 默认  |                             描述                             |
+| :-------------------------: | :---: | :----------------------------------------------------------: |
+|        `FLINK_HOME`         |       |  Flink 安装位置。必须指定，否则不能在 Zeppelin 中使用 Flink  |
+|      `HADOOP_CONF_DIR`      |       |       hadoop conf的位置，如果在yarn模式下运行必须设置        |
+|       `HIVE_CONF_DIR`       |       |   hive conf 的位置，如果要连接到 hive 元存储，必须设置此项   |
+|    flink.execution.mode     | local | Execution mode of Flink, e.g. local \| remote \|yarn \|yarn-application |
+| flink.execution.remote.host |       |           运行 JobManager 的主机名。仅用于远程模式           |
+| flink.execution.remote.port |       |            运行 JobManager 的端口。仅用于远程模式            |
+
+### 第三方依赖
+
+通过[内联配置](https://zeppelin.apache.org/docs/latest/usage/interpreter/overview.html#inline-generic-configuration)实现具体note下的依赖包：
+
+1. flink.execution.packages。类似pom中添加依赖
+
+   ```sh
+   %flink.conf
+   
+   flink.execution.packages  org.apache.flink:flink-connector-kafka_2.11:1.10.0,org.apache.flink:flink-connector-kafka-base_2.11:1.10.0,org.apache.flink:flink-json:1.10.0
+   ```
+
+   
+
+2. flink.execution.jars. 配置外部依赖的jar包文件路径
+
+   ```sh
+   %flink.conf
+   
+   flink.execution.jars /usr/lib/flink-kafka/target/flink-kafka-1.0-SNAPSHOT.jar
+   ```
+
+### Flink UDF
+
+在 Zeppelin 中有 4 种方法可以定义 UDF。
+
+- 编写 Scala UDF
+
+  ```scala
+  %flink
+  
+  class ScalaUpper extends ScalarFunction {
+    def eval(str: String) = str.toUpperCase
+  }
+  
+  btenv.registerFunction("scala_upper", new ScalaUpper())
+  ```
+
+  
+
+- 编写 PyFlink UDF
+
+- 通过 SQL 创建 UDF
+
+  通过IDE编写复杂的UDF库，然后通过SQL语句注册到环境。一般需配合通过flink.udf.jars方式引入库。
+
+  ```sql
+  %flink.ssql
+  
+  CREATE FUNCTION myupper AS 'org.apache.zeppelin.flink.udf.JavaUpper';
+  ```
+
+- 通过 flink.udf.jars 配置 udf jar
+
+### Hive
+
+配置：
+
+zeppelin.flink.enableHive=true
+
+HIVE_CONF_DIR
+
+复制：
+
+- flink-connector-hive_2.11–*.jar
+- flink-hadoop-compatibility_2.11–*.jar
+- hive-exec-2.x.jar
+
+
+
+本地属性：（解释器上面的参数）
+
+|          Property          | Default |                         Description                          |
+| :------------------------: | :-----: | :----------------------------------------------------------: |
+|            type            |         | Used in %flink.ssql to 指定流式数据的显示类型 (single, update, append) |
+|      refreshInterval       |  3000   |         Used in `%flink.ssql` 指定流式数据刷新周期.          |
+|          template          |   {0}   | Used in `%flink.ssql` to specify html template for `single` type of streaming data visualization, And you can use `{i}` as placeholder for the {i}th column of the result. |
+|        parallelism         |         | Used in %flink.ssql & %flink.bsql to specify the flink sql job parallelism |
+|       maxParallelism       |         | Used in %flink.ssql & %flink.bsql to specify the flink sql job max parallelism in case you want to change parallelism later. For more details, refer this [link](https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/parallel.html#setting-the-maximum-parallelism) |
+|        savepointDir        |         | If you specify it, then when you cancel your flink job in Zeppelin, it would also do savepoint and store state in this directory. And when you resume your job, it would resume from this savepoint. |
+|  execution.savepoint.path  |         | When you resume your job, it would resume from this savepoint path. |
+|    resumeFromSavepoint     |         | Resume flink job from savepoint if you specify savepointDir. |
+| resumeFromLatestCheckpoint |         | Resume flink job from latest checkpoint if you enable checkpoint. |
+|          runAsOne          |  false  | All the insert into sql will run in a single flink job if this is true.（让多条SQL insert语句在同一个job中运行） |
+
+
+
+
+
 以下信息摘抄自 Oracle Big Data Blog
 
 ## [数据湖安全](https://blogs.oracle.com/bigdata/post/6-ways-to-improve-data-lake-security)
