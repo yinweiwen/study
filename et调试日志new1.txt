@@ -1323,3 +1323,8 @@ root@anxin-m1:/home/anxin/tools/es2u# crontab -l
 77. Kibana容器部署
 docker run --name kibana7 -p 5601:5601 -e "ELASTICSEARCH_HOSTS=http://test-n3:9200" docker.elastic.co/kibana/kibana:7.16.2
 
+
+
+78. ES Docker AccessDeny
+目录权限
+sudo chown -R 1000:root docker_data

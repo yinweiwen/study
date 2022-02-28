@@ -367,19 +367,23 @@ datax_executor 执行器（通过python_path指定datax engine的运行目录）
 
 
 
-## CDC
+## FlinkX
 
-Postgresql通过逻辑复制(>10.0 logical replication)实际就是一个CDC应用，等价于消费预写式日志 WAL。
+[DTStack](https://github.com/DTStack)/[chunjun](https://github.com/DTStack/chunjun)
 
+DATAX的升级版，基于flink的分布式数据同步工具。
 
+通过json配置实现批量数据迁移，与Flink-CDC相比，非官方，但有更多的连接方式，但是不支持流式数据处理。
 
-[Debezium 简介](https://debezium.io/documentation/reference/1.8/tutorial.html)
-
-Debezium（[DOC](https://materialize.com/docs/guides/cdc-postgres/)） 是一个分布式平台，可将您现有的数据库转换为事件流（CDC）服务。
+未进一步研究。
 
 
 
 ## Flink CDC Connectors
+
+[Debezium 简介](https://debezium.io/documentation/reference/1.8/tutorial.html)
+
+Debezium（[DOC](https://materialize.com/docs/guides/cdc-postgres/)） 是一个分布式平台，可将您现有的数据库转换为事件流（CDC）服务。
 
 [官方文档](https://ververica.github.io/flink-cdc-connectors/master/content/about.html)
 
@@ -408,7 +412,16 @@ flink-connector-mysql-cdc-2.2-SNAPSHOT.jar
 
  ![image-20220224172332791](imgs/Datahub/image-20220224172332791.png)
 
-+ 修改： flink-sql-connector-elasticsearch7_2.11-1.13.6.jar  --> 
+> 修改： flink-sql-connector-elasticsearch7_2.11-1.13.6.jar  -->  flink-sql-connector-elasticsearch6_2.11-1.13.5.jar
+>
+> 注意： elasticsearch6连接器参数中需要指定document-type。
+>
+> 
+>
+> Postgresql通过逻辑复制(>10.0 logical replication)实际就是一个CDC应用，等价于消费预写式日志 WAL。
+>
+
+
 
 在sql-client CLI中执行：
 
@@ -574,19 +587,11 @@ pg_recvlogical -d trest --slot test_slot --drop-slot
 
 
 
-
-
 ### 报错记录
 
 1. java.io.StreamCorruptedException: unexpected block data
 
    类加载顺序问题，flink默认是child-first，在flink的flink-conf.yaml文件中添加`classloader.resolve-order: parent-first` 改成parent-first，重启集群即可。
-
-   
-
-2. s
-
-
 
 
 
@@ -753,9 +758,11 @@ HIVE_CONF_DIR
 
 
 
+## 附录：相关阅读
+
 以下信息摘抄自 Oracle Big Data Blog
 
-## [数据湖安全](https://blogs.oracle.com/bigdata/post/6-ways-to-improve-data-lake-security)
+### [数据湖安全](https://blogs.oracle.com/bigdata/post/6-ways-to-improve-data-lake-security)
 
 1. 建立治理：为所有的数据构建数据湖。作为原始和非结构化数据的存储库，它可以从任何来源提取几乎任何东西。要了解如何管理、处理和使用这些数据，避免形成数据沼泽。通过治理，可以识别所有权、敏感数据的安全规则、数据历史、数据血缘
 
@@ -771,7 +778,7 @@ HIVE_CONF_DIR
 
 
 
-## Qubole
+### Qubole
 
 用于分析，人工智能，机器学习的云原生平台。
 
@@ -820,7 +827,7 @@ HIVE_CONF_DIR
 
 
 
-## AirFlow
+### AirFlow
 
 工作流管理平台（Python）
 
@@ -882,7 +889,7 @@ DAG查看界面：
 
  ![](imgs/Datahub/image-20220210160849709.png)
 
-## [大数据处理中的Lambda架构和Kappa架构](https://www.cnblogs.com/xiaodf/p/11642555.html)
+### [大数据处理中的Lambda架构和Kappa架构](https://www.cnblogs.com/xiaodf/p/11642555.html)
 
 + 数据采集
 
@@ -916,7 +923,7 @@ Kappa架构：
 
 以下为其他内容补充
 
-## Hudi Pk Iceberg
+### Hudi Pk Iceberg
 
 [终于有人将数据湖讲明白了](https://view.inews.qq.com/a/20210909A0ARO400)
 
@@ -942,7 +949,7 @@ DM（Data Market）数据集市
 
 
 
-## Schema Registry
+### Schema Registry
 
 >【[Github](https://github.com/confluentinc/schema-registry)】Confluent Schema Registry provides a serving layer for your metadata. It provides a RESTful interface for storing and retrieving your Avro®, JSON Schema, and Protobuf schemas. It stores a versioned history of all schemas based on a specified subject name strategy, provides multiple compatibility settings and allows evolution of schemas according to the configured compatibility settings and expanded support for these schema types. It provides serializers that plug into Apache Kafka® clients that handle schema storage and retrieval for Kafka messages that are sent in any of the supported formats.
 
@@ -958,7 +965,7 @@ Schema Registry和Rule Engine在EMQX中的应用：
 
 
 
-## Oracle大数据湖服务集成工具
+### Oracle大数据湖服务集成工具
 
 1. ML
 2. 数据目录
