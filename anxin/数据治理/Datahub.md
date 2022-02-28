@@ -640,8 +640,32 @@ Jupyter 和 Apache Zeppelin 主要可以归类为**“数据科学笔记本”**
 （dockers， 映射本地flink二进制程序到容器中, 验证本地模式）（8081端口：flink UI）
 
 ```bash
-docker run -u $(id -u) -p 8080:8080 -p 8081:8081 --rm -v /mnt/disk1/flink-1.12.2:/opt/flink -e FLINK_HOME=/opt/flink  --name zeppelin apache/zeppelin:0.10.0
+docker run -u $(id -u) -p 8080:8080 --rm \
+-v /home/anxin/flink-1.13.6:/opt/flink \
+-v /home/anxin/zeppelin-0.10.0/notebook:/notebook \
+-v /home/anxin/zeppelin-0.10.0/conf:/opt/zeppelin/conf \
+-v /home/anxin/zeppelin-0.10.0/interpreter:/opt/zeppelin/interpreter \
+-e FLINK_HOME=/opt/flink  \
+-e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
+-e ZEPPELIN_INTERPRETER_DEP_MVNREPO=http://10.8.30.22:8081/repository/FS-Maven/ \
+--name zeppelin apache/zeppelin:0.10.0
 ```
+
+修改解释器配置：
+
+http://10.8.30.37:8080/
+
+用户 > Interpreter > 搜索Flink > Edit > ... > Save
+
+![image-20220228105306052](imgs/Datahub/image-20220228105306052.png)
+
+执行示例程序：
+
+Notebook > Flink Basics
+
+![image-20220228105403855](imgs/Datahub/image-20220228105403855.png)
+
+
 
 ### 架构
 
@@ -739,7 +763,7 @@ HIVE_CONF_DIR
 
 
 
-本地属性：（解释器上面的参数）
+### 本地属性：（解释器上面的参数）
 
 |          Property          | Default |                         Description                          |
 | :------------------------: | :-----: | :----------------------------------------------------------: |
@@ -753,6 +777,167 @@ HIVE_CONF_DIR
 |    resumeFromSavepoint     |         | Resume flink job from savepoint if you specify savepointDir. |
 | resumeFromLatestCheckpoint |         | Resume flink job from latest checkpoint if you enable checkpoint. |
 |          runAsOne          |  false  | All the insert into sql will run in a single flink job if this is true.（让多条SQL insert语句在同一个job中运行） |
+
+
+
+### Zeppelin-CDC示例
+
+运行Flink-CDC示例
+
+```conf
+%flink.conf
+
+flink.execution.packages  org.apache.flink:flink-connector-kafka_2.11:1.10.0,org.apache.flink:flink-connector-kafka-base_2.11:1.10.0,org.apache.flink:flink-json:1.10.0,org.apache.flink:flink-sql-connector-elasticsearch6_2.11:1.13.5,com.ververica:flink-sql-connector-postgres-cdc:2.1.1,com.ververica:flink-sql-connector-mysql-cdc:2.1.1
+```
+
+> SQL指令基本同 [Flink CDC](#Flink CDC Connectors)章节描述
+
+```sql
+%flink.ssql
+
+DROP TABLE IF EXISTS products;
+-- 创建MySql Product对应表，同步数据库表的数据
+CREATE TABLE products (
+    id INT,
+    name STRING,
+    description STRING,
+    PRIMARY KEY (id) NOT ENFORCED
+  ) WITH (
+    'connector' = 'mysql-cdc',
+    'hostname' = '10.8.30.37',
+    'port' = '3306',
+    'username' = 'root',
+    'password' = '123456',
+    'database-name' = 'mydb',
+    'table-name' = 'products'
+  );
+  
+  DROP TABLE IF EXISTS orders;
+-- 创建订单表映射
+CREATE TABLE orders (
+   order_id INT,
+   order_date TIMESTAMP(0),
+   customer_name STRING,
+   price DECIMAL(10, 5),
+   product_id INT,
+   order_status BOOLEAN,
+   PRIMARY KEY (order_id) NOT ENFORCED
+ ) WITH (
+   'connector' = 'mysql-cdc',
+   'hostname' = '10.8.30.37',
+   'port' = '3306',
+   'username' = 'root',
+   'password' = '123456',
+   'database-name' = 'mydb',
+   'table-name' = 'orders'
+ );
+ 
+ 
+  DROP TABLE IF EXISTS shipments;
+ -- 创建快递表（PostgreSQL）
+ CREATE TABLE shipments (
+   shipment_id INT,
+   order_id INT,
+   origin STRING,
+   destination STRING,
+   is_arrived BOOLEAN,
+   PRIMARY KEY (shipment_id) NOT ENFORCED
+ ) WITH (
+   'connector' = 'postgres-cdc',
+   'hostname' = '10.8.30.39',
+   'port' = '5432',
+   'username' = 'postgres',
+   'password' = 'postgres',
+   'database-name' = 'trest',
+   'schema-name' = 'public',
+   'table-name' = 'shipments',
+   'debezium.plugin.name' = 'wal2json'
+ );
+ 
+ 
+ 
+  DROP TABLE IF EXISTS enriched_orders;
+ -- 目标ES数据表
+ CREATE TABLE enriched_orders (
+   order_id INT,
+   order_date TIMESTAMP(0),
+   customer_name STRING,
+   price DECIMAL(10, 5),
+   product_id INT,
+   order_status BOOLEAN,
+   product_name STRING,
+   product_description STRING,
+   shipment_id INT,
+   origin STRING,
+   destination STRING,
+   is_arrived BOOLEAN,
+   PRIMARY KEY (order_id) NOT ENFORCED
+ ) WITH (
+     'connector' = 'elasticsearch-6',
+     'hosts' = 'http://10.8.30.155:9200',
+     'index' = 'enriched_orders',
+     'document-type'='_doc'
+ );
+ 
+ -- 关联查询形成宽表，插入到ES中
+ INSERT INTO enriched_orders
+ SELECT o.*,p.name, p.description, s.shipment_id, s.origin, s.destination, s.is_arrived
+ FROM orders AS o
+ LEFT JOIN products AS p ON o.product_id=p.id
+ LEFT JOIN shipments AS s ON o.order_id=s.order_id;
+```
+
+
+
+读取任务：
+
+> PG-CDC中需要指定 debezium.slot.name ，否则会报重名错误
+
+```sql
+%flink.ssql
+
+DROP TABLE IF EXISTS shipments_r;
+ CREATE TABLE shipments_r (
+   shipment_id INT,
+   order_id INT,
+   origin STRING,
+   destination STRING,
+   is_arrived BOOLEAN,
+   PRIMARY KEY (shipment_id) NOT ENFORCED
+ ) WITH (
+   'connector' = 'postgres-cdc',
+   'hostname' = '10.8.30.39',
+   'port' = '5432',
+   'username' = 'postgres',
+   'password' = 'postgres',
+   'database-name' = 'trest',
+   'schema-name' = 'public',
+   'table-name' = 'shipments',
+   'debezium.slot.name' = 'flink_read1',
+   'debezium.plugin.name' = 'wal2json'
+ );
+ 
+SELECT o.*,p.name, p.description, s.shipment_id, s.origin, s.destination, s.is_arrived
+ FROM orders AS o
+ LEFT JOIN products AS p ON o.product_id=p.id
+ LEFT JOIN shipments_r AS s ON o.order_id=s.order_id;
+```
+
+
+
+![image-20220228172133385](imgs/Datahub/image-20220228172133385.png)
+
+
+
+> 执行%flink.conf添加引用库时报错，
+>
+> java.io.IOException: Can not change interpreter properties when interpreter process has already been launched
+>
+> zeppelin.interpreter.close.cancel_job=false //重启interpreter时不关闭已提交的任务
+
+
+
+### Zeppelin-IceBerg示例
 
 
 
