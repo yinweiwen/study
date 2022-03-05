@@ -645,7 +645,11 @@ docker run -u $(id -u) -p 8080:8080 --rm \
 -v /home/anxin/zeppelin-0.10.0/notebook:/notebook \
 -v /home/anxin/zeppelin-0.10.0/conf:/opt/zeppelin/conf \
 -v /home/anxin/zeppelin-0.10.0/interpreter:/opt/zeppelin/interpreter \
+-v /home/anxin/jdk8_322/jdk8u322-b06:/usr/jdk8 \
+-v /usr/hdp/3.1.4.0-315/hadoop:/usr/hdp \
 -e FLINK_HOME=/opt/flink  \
+-e HADOOP_HOME=/usr/hdp \
+-e JAVA_HOME=/usr/jdk8 \
 -e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
 -e ZEPPELIN_INTERPRETER_DEP_MVNREPO=http://10.8.30.22:8081/repository/FS-Maven/ \
 --name zeppelin apache/zeppelin:0.10.0
@@ -939,9 +943,187 @@ SELECT o.*,p.name, p.description, s.shipment_id, s.origin, s.destination, s.is_a
 
 ### Zeppelin-IceBerg示例
 
+<[Flink-Zeppelin On FlinkSql](https://blog.csdn.net/baichoufei90/article/details/105294787)>
+
+** 大部分时间在解决包冲突. 本次启动是通过二进制程序，未使用docker
+
+| 程序或包                                   | 版本                                     |
+| ------------------------------------------ | ---------------------------------------- |
+| Flink                                      | 1.13.6                                   |
+| iceberg-flink-runtime-1.13:0.13.1          | 0.13.1 (对应主干0.12.1在Flink13上的构建) |
+| flink-sql-connector-hive-2.3.6_2.11:1.13.5 | 1.13.5                                   |
+| flink-sql-connector-kafka-0.11_2.11:1.11.6 | 1.11.6                                   |
+| Hadoop                                     | Hadoop 3.1.1.3.1.4.0-315                 |
+| JDK                                        | 1.8.0_322 (>151)                         |
+|                                            |                                          |
+
+/etc/profile
+
+```sh
+export JAVA_HOME=/home/anxin/jdk8_322/jdk8u322-b06
+export JRE_HOME=$JAVA_HOME/jre
+export CLASSPATH=.:$CLASSPATH:$JAVA_HOME/lib:$JRE_HOME/lib
+export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH
+export HIVE_HOME=/home/anxin/apache-hive-3.1.2-bin
+export PATH=$HIVE_HOME/bin:$PATH
+export HADOOP_HOME=/usr/hdp/3.1.4.0-315/hadoop
+export HADOOP_CONF_DIR=/usr/hdp/3.1.4.0-315/hadoop/conf
+export HADOOP_CLASSPATH=`$HADOOP_HOME/bin/hadoop classpath`
+export FLINK_HOME=/home/anxin/flink-1.13.6
+```
 
 
 
+启动程序：
+
+```sh
+#启动flink standalone集群
+$FLINK_HOME/bin/start-cluster.sh
+#启动zeppelin程序 (zeppelin中需要修改：maven镜像地址) （界面设置工作模式和Flink地址端口）
+/home/anxin/zeppelin-0.10.0/bin/zeppelin-daemon.sh start
+
+```
+
+NotebooK:
+
+```sql
+%flink.conf
+
+flink.execution.packages  org.apache.iceberg:iceberg-flink-runtime-1.13:0.13.1,org.apache.flink:flink-sql-connector-hive-2.3.6_2.11:1.13.5,org.apache.flink:flink-sql-connector-kafka-0.11_2.11:1.11.6
+```
+
+```sql
+
+```
+
+
+
+
+
+如果启用Hive，配置HIVE
+
+![image-20220303092019133](imgs/Datahub/image-20220303092019133.png)
+
+```sh
+
+cp xx.jar $FLINK_HOME/lib/hive-exec-3.1.2.jar
+
+export HIVE_CONF_DIR=$HIVE_HOME/conf
+```
+
+
+
+**CheckPoint设置**
+
+```ini
+%flink.conf
+// 设置任务使用的时间属性是eventtime
+pipeline.time-characteristic EventTime
+// 设置checkpoint的时间间隔
+execution.checkpointing.interval 10000
+// 确保检查点之间的间隔
+execution.checkpointing.min-pause 60000
+// 设置checkpoint的超时时间
+execution.checkpointing.timeout 60000
+// 设置任务取消后保留hdfs上的checkpoint文件
+execution.checkpointing.externalized-checkpoint-retention RETAIN_ON_CANCELLATION
+```
+
+
+
+
+
+其他是否需要，看具体情况：
+
+```
+>>>>
+需要将以下包放入$FLINK_HOME/lib:
+
+flink-connector-hive_2.11-1.10.0.jar
+hive-exec-2.3.3.jar
+然后设置flink interpreter:
+
+HIVE_CONF_DIR
+设为hive-site.xml所在目录
+zeppelin.flink.enableHive
+设为true，启用hive
+zeppelin.flink.hive.version
+使用的hive 版本号
+
+>>>>
+需要添加一些必要的jar包放在FLINK_HOME//lib下：
+
+flink-hadoop-compatibility_{scala_version}-{flink.version}.jar
+flink-shaded-hadoop-2-uber-{hadoop.version}-{flink-shaded.version}.jar
+如果要采用Hive来存元数据或访问hive还需要:
+
+flink-connector-hive_2.11-1.10.0.jar
+hive-exec-2.3.3.jar
+————————————————
+版权声明：本文为CSDN博主「迷路剑客」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/baichoufei90/article/details/105294787
+```
+
+
+
+
+
+问题记录：
+
+​	出现包冲突，目前没有好的办法，google
+
+1. java.lang.ClassNotFoundException: org.apache.hadoop.conf.Configuration
+
+   [DEPLECATE] cost N HOURS;  原因：机器上安装的hadoop版本3.1.1，使用hadoop-common包2.8.2
+
+2. Cannot initialize Catalog, org.apache.iceberg.hadoop.HadoopCatalog does not implement Catalog
+
+   [DEPLECATE]
+
+3. NoSuchMethodError: com.google.common.base.Preconditions.checkArgument
+
+   guava版本冲突
+
+   ```sh
+   # ls $HIVE_HOME/lib | grep guava
+   guava-19.0.jar.bk
+   guava-28.0-jre.jar
+   jersey-guava-2.25.1.jar
+   # ls $HADOOP_HOME/lib/ | grep gua
+   guava-28.0-jre.jar
+   # ls $FLINK_HOME/lib/ | grep gua
+   guava-28.0-jre.jar
+   ```
+
+   
+
+   最终包冲突方法：
+
+   $FLINK_HOME/lib下 (2022-3-3)：
+
+   ![image-20220302164715586](imgs/Datahub/image-20220302164715586.png)
+
+
+
+### Zeppelin-HIVE示例
+
+详见上节中Hive部分，当前未打通
+
+
+
+### 权限控制
+
+zeppelin可采用LDAP做身份认证+shiro做权限控制,相关内容可参考:
+
+Apache Shiro Configuration
+Apache Shiro authentication for Apache Zeppelin
+Apache Zeppelin 基于 kerberos 多租户集成
+Zeppelin集成Ldap(FreeIPA)
+需要改主机名，会导致hadoop等很多服务不正常
+zeppelin集成openldap，以及admin用户设置
+————————————————
+版权声明：本文为CSDN博主「迷路剑客」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/baichoufei90/article/details/105294787
 
 ## 附录：相关阅读
 
