@@ -8,17 +8,17 @@
 
 [Datahub VS Atlas VS Amundsen](https://cloud.tencent.com/developer/article/1746714)
 
-| 搜索                        | 推荐 | 表描述 | 数据预览 | 列统计 | 占用指标 | 权限 | 排名 | 数据血统 | 改变通知 | 开源 | 文档 | 支持数据源 |                                                       |
-| :-------------------------- | :--- | :----- | :------- | :----- | :------- | :--- | :--- | :------- | :------- | :--- | :--- | :--------- | ----------------------------------------------------- |
-| Amundsen (Lyft)             | ✔    | ✔      | ✔        | ✔      | ✔        |      | ✔    | ✔        | Todo     | ✔    | ✔    | ✔          | Hive, Redshift, Druid, RDBMS, Presto, Snowflake, etc. |
-| Datahub (LinkedIn)          | ✔    |        | ✔        |        |          |      | ✔    | ✔        | ✔        | ✔    | ✔    | ✔          | Hive, Kafka, RDBMS                                    |
-| Metacat (Netflix)           | ✔    |        | ✔        |        | ✔        | ✔    |      | Todo     |          | Todo | ✔    |            | Hive, RDS, Teradata, Redshift, S3, Cassandra          |
-| Atlas (Apache)              | ✔    |        | ✔        |        |          |      |      |          | ✔        | ✔    | ✔    | ✔          | HBase, Hive, Sqoop, Kafka, Storm                      |
-| Marquez (Wework）           | ✔    |        | ✔        |        |          |      |      |          | ✔        |      | ✔    |            | S3, Kafka                                             |
-| Databook (Uber)             | ✔    |        | ✔        | ✔      | ✔        |      |      |          | ✔        |      |      |            | Hive, Vertica, MySQL, Postgress, Cassandra            |
-| Dataportal (Airbnb)         | ✔    |        | ✔        |        | ✔        |      | ✔    | ✔        |          |      |      |            | Unknown                                               |
-| Data Access Layer (Twitter) | ✔    |        | ✔        |        |          |      |      |          | ✔        |      |      |            | HDFS, Vertica, MySQL                                  |
-| Lexikon (Spotify)           | ✔    | ✔      | ✔        |        |          |      | ✔    | ✔        |          |      |      |            | Unknown                                               |
+|                             | 搜索 | 推荐 | 表描述 | 数据预览 | 列统计 | 占用指标 | 权限 | 排名 | 数据血统 | 改变通知 | 开源 | 文档 | 支持数据源                                            |
+| :-------------------------- | :--- | :--- | :----- | :------- | :----- | :------- | :--- | :--- | :------- | :------- | :--- | :--- | ----------------------------------------------------- |
+| Amundsen (Lyft)             | ✔    | ✔    | ✔      | ✔        | ✔      |          | ✔    | ✔    | Todo     | ✔        | ✔    | ✔    | Hive, Redshift, Druid, RDBMS, Presto, Snowflake, etc. |
+| Datahub (LinkedIn)          | ✔    |      | ✔      |          |        |          | ✔    | ✔    | ✔        | ✔        | ✔    | ✔    | Hive, Kafka, RDBMS                                    |
+| Metacat (Netflix)           | ✔    |      | ✔      |          | ✔      | ✔        |      | Todo |          | Todo     | ✔    |      | Hive, RDS, Teradata, Redshift, S3, Cassandra          |
+| Atlas (Apache)              | ✔    |      | ✔      |          |        |          |      |      | ✔        | ✔        | ✔    | ✔    | HBase, Hive, Sqoop, Kafka, Storm                      |
+| Marquez (Wework）           | ✔    |      | ✔      |          |        |          |      |      | ✔        |          | ✔    |      | S3, Kafka                                             |
+| Databook (Uber)             | ✔    |      | ✔      | ✔        | ✔      |          |      |      | ✔        |          |      |      | Hive, Vertica, MySQL, Postgress, Cassandra            |
+| Dataportal (Airbnb)         | ✔    |      | ✔      |          | ✔      |          | ✔    | ✔    |          |          |      |      | Unknown                                               |
+| Data Access Layer (Twitter) | ✔    |      | ✔      |          |        |          |      |      | ✔        |          |      |      | HDFS, Vertica, MySQL                                  |
+| Lexikon (Spotify)           | ✔    | ✔    | ✔      |          |        |          | ✔    | ✔    |          |          |      |      | Unknown                                               |
 
 ## DataHub
 
@@ -76,6 +76,8 @@ datahub docker quickstart
 
 
 @TODO 启动失败
+
+@安装成功 by DragonLooong
 
 
 
@@ -583,6 +585,13 @@ pg_recvlogical -d trest --slot test_slot --start -o pretty-print=1 -f -
 
 # 删除槽
 pg_recvlogical -d trest --slot test_slot --drop-slot
+
+# 查看当前
+select * from pg_replication_slots;
+# 删除槽
+select * from  pg_drop_replication_slot('flink_read_xq_persons');
+# 最大槽数
+show max_replication_slots;
 ```
 
 
@@ -941,23 +950,59 @@ SELECT o.*,p.name, p.description, s.shipment_id, s.origin, s.destination, s.is_a
 
 
 
+### Flink-CDC 分库分表的处理办法
+
+https://ververica.github.io/flink-cdc-connectors/master/content/%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/build-real-time-data-lake-tutorial-zh.html
+
+```sql
+-- Flink SQL
+Flink SQL> CREATE TABLE user_source (
+    database_name STRING METADATA VIRTUAL,
+    table_name STRING METADATA VIRTUAL,
+    `id` DECIMAL(20, 0) NOT NULL,
+    name STRING,
+    address STRING,
+    phone_number STRING,
+    email STRING,
+    PRIMARY KEY (`id`) NOT ENFORCED
+  ) WITH (
+    'connector' = 'mysql-cdc',
+    'hostname' = 'mysql',
+    'port' = '3306',
+    'username' = 'root',
+    'password' = '123456',
+    'database-name' = 'db_[0-9]+',
+    'table-name' = 'user_[0-9]+'
+  );
+```
+
+
+
+
+
 ### Zeppelin-IceBerg示例
 
 <[Flink-Zeppelin On FlinkSql](https://blog.csdn.net/baichoufei90/article/details/105294787)>
 
+<[IceBerg简介](https://miaowenting.site/2021/01/20/Apache-Iceberg/)>
+
+< [FlinkSQL On Zeppelin 系列](https://blog.csdn.net/weixin_47482194?type=blog) >
+
 ** 大部分时间在解决包冲突. 本次启动是通过二进制程序，未使用docker
+
+#### 库包版本
 
 | 程序或包                                   | 版本                                     |
 | ------------------------------------------ | ---------------------------------------- |
 | Flink                                      | 1.13.6                                   |
 | iceberg-flink-runtime-1.13:0.13.1          | 0.13.1 (对应主干0.12.1在Flink13上的构建) |
 | flink-sql-connector-hive-2.3.6_2.11:1.13.5 | 1.13.5                                   |
-| flink-sql-connector-kafka-0.11_2.11:1.11.6 | 1.11.6                                   |
+| flink-sql-connector-kafka_2.11:1.13.6      | 1.13.6                                   |
 | Hadoop                                     | Hadoop 3.1.1.3.1.4.0-315                 |
 | JDK                                        | 1.8.0_322 (>151)                         |
-|                                            |                                          |
+| Zeppelin                                   | 0.10.0                                   |
 
-/etc/profile
+#### /etc/profile
 
 ```sh
 export JAVA_HOME=/home/anxin/jdk8_322/jdk8u322-b06
@@ -972,33 +1017,229 @@ export HADOOP_CLASSPATH=`$HADOOP_HOME/bin/hadoop classpath`
 export FLINK_HOME=/home/anxin/flink-1.13.6
 ```
 
-
-
-启动程序：
+#### 启动程序：
 
 ```sh
 #启动flink standalone集群
 $FLINK_HOME/bin/start-cluster.sh
 #启动zeppelin程序 (zeppelin中需要修改：maven镜像地址) （界面设置工作模式和Flink地址端口）
 /home/anxin/zeppelin-0.10.0/bin/zeppelin-daemon.sh start
-
 ```
 
-NotebooK:
+#### Notebook:
 
 ```sql
 %flink.conf
+// 设置任务使用的时间属性是eventtime
+pipeline.time-characteristic EventTime
+// 设置checkpoint的时间间隔
+execution.checkpointing.interval 10000
+// 确保检查点之间的间隔
+execution.checkpointing.min-pause 60000
+// 设置checkpoint的超时时间
+execution.checkpointing.timeout 60000
+// 设置任务取消后保留hdfs上的checkpoint文件
+execution.checkpointing.externalized-checkpoint-retention RETAIN_ON_CANCELLATION
+flink.execution.packages  joda-time:joda-time:2.10
+```
 
-flink.execution.packages  org.apache.iceberg:iceberg-flink-runtime-1.13:0.13.1,org.apache.flink:flink-sql-connector-hive-2.3.6_2.11:1.13.5,org.apache.flink:flink-sql-connector-kafka-0.11_2.11:1.11.6
+```scala
+%flink
+import org.apache.flink.table.annotation.{DataTypeHint, InputGroup}
+import org.apache.flink.table.functions.ScalarFunction
+import org.joda.time.DateTime
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter, DateTimeFormatterBuilder, DateTimeParser}
+
+
+object DateParser {
+
+    val patterns = List(
+        "yyyy-MM-dd'T'HH:mm:ssZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SZ",
+        "yyyy/MM/dd HH:mm:ss",
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy/MM/dd HH:mm",
+        "yyyy-MM-dd HH:mm",
+        "yyyy/MM/dd HH:mm:ss.SSS",
+        "yyyy-MM-dd HH:mm:ss.SSS",
+        "yyyy/MM/dd HH:mm:ss.S",
+        "yyyy-MM-dd HH:mm:ss.S",
+        "yyyy-MM-dd",
+        "yyyy/MM/dd"
+    )
+
+    val parsers: Array[DateTimeParser] = patterns.map(pat => DateTimeFormat.forPattern(pat).getParser).toArray
+    val formatter: DateTimeFormatter = new DateTimeFormatterBuilder().append(null, parsers).toFormatter
+
+    def parse(str: String): Option[DateTime] = {
+        try {
+            Some(formatter.parseDateTime(str))
+        } catch {
+            case e: Exception =>
+                None
+        }
+    }
+}
+
+/**
+  * Created by cheeyy on 2021/10/27.
+  */
+class DateCgFunction extends ScalarFunction {
+
+    def eval(@DataTypeHint(inputGroup = InputGroup.UNKNOWN) o: String): String = {
+        val datetime: String = o.asInstanceOf[String]
+        if (datetime == null) {
+            ""
+        } else {
+            val v = DateParser.parse(datetime)
+            if (v.isEmpty) {
+                ""
+            } else {
+                v.get.toString("yyyy-MM-dd HH:mm:ss")
+            }
+        }
+    }
+}
+
+
+stenv.registerFunction("dcFunction",new DateCgFunction());
+```
+
+```scala
+%flink
+import java.sql.Timestamp
+
+import org.apache.flink.table.annotation.{DataTypeHint, InputGroup}
+import org.apache.flink.table.functions.ScalarFunction
+
+/**
+  * Created by yww08 on 2022/1/18.
+  */
+class TimeStampFunction extends ScalarFunction {
+    def eval(@DataTypeHint(inputGroup = InputGroup.UNKNOWN) o: String): Timestamp = {
+        val v = DateParser.parse(o)
+        if (v.isEmpty) {
+            null
+        } else {
+            new Timestamp(v.get.getMillis)
+        }
+    }
+}
+
+
+stenv.registerFunction("tcFunction",new TimeStampFunction());
 ```
 
 ```sql
+%flink.ssql
 
+
+drop table if exists iotaKafkaTable;
+
+create table iotaKafkaTable(
+`userId` STRING,
+`dimensionId` STRING,
+`dimCapId` STRING,
+`scheduleId` STRING,
+`jobId` STRING,
+`jobRepeatId` STRING,
+`thingId` STRING ,
+`deviceId` STRING,
+`taskId` STRING,
+`triggerTime` STRING,
+`finishTime` STRING,
+`seq` STRING,
+`result` STRING,
+ `data` STRING
+)with
+('connector' = 'kafka',
+'topic'='anxinyun_data',
+'properties.bootstrap.servers' = '10.8.30.156:6667,10.8.30.37:6667,10.8.30.38:6667',
+'properties.group.id' = 'iot_iceberg' ,
+'scan.startup.mode' = 'latest-offset',
+'format' = 'json',
+'json.ignore-parse-errors'='true'
+);
+
+
+CREATE CATALOG iceberg WITH(
+ 'type'='iceberg',
+ 'catalog-type'='hadoop',
+ 'warehouse'='hdfs://10.8.30.37:8020/user/hadoop3',
+ 'property-version'='1'
+);
+
+CREATE DATABASE if not exists iceberg_db;
+
+
+CREATE TABLE if not exists iceberg.iceberg_db.iota_raw (
+`userId` STRING,
+`dimensionId` STRING,
+`dimCapId` STRING,
+`scheduleId` STRING,
+`jobId` STRING,
+`jobRepeatId` STRING,
+`thingId` STRING ,
+`deviceId` STRING,
+`taskId` STRING,
+`triggerTime` TIMESTAMP,
+`day` STRING,
+`seq` STRING,
+`result` STRING,
+ `data` STRING
+) PARTITIONED BY (`userId`,`day`)
+WITH (
+ 'table.exec.sink.not-null-enforcer'='DROP'
+);
+
+-- insert into iceberg.iceberg_db.iota_raw (userId, dimensionId,dimCapId,scheduleId,jobId,jobRepeatId,thingId,deviceId,taskId,triggerTime,`day`,seq,`result`,data) values('a','a','a','a','a','a','thing123','device123','taskid',TIMESTAMP '2022-03-05 00:00:04.001','2022-03-04','seq1','result1','{"a":"1"}')
+
+
+insert into iceberg.iceberg_db.iota_raw
+ select userId, dimensionId,dimCapId,scheduleId,jobId,jobRepeatId,thingId,deviceId,taskId,
+tcFunction(triggerTime),
+DATE_FORMAT(dcFunction(triggerTime),'yyyy-MM-dd'),
+seq,`result`,data
+from iotaKafkaTable;
+```
+
+查询：
+
+```sql
+%flink.ssql(type=update)
+SET table.dynamic-table-options.enabled=true;
+
+select * from iceberg.iceberg_db.iota_raw /*+ OPTIONS('streaming'='true', 'monitor-interval'='1s')*/ where userId='1b2d8739-627e-4b7d-9480-3eee6e9396fe' and thingId='fd7742e7-71cf-4424-8f3c-1cbe591d83c8';
+```
+
+批量查询（需要重启flink解释器；新建解释器上运行依然提示batch job无法启动 checkpoint）
+
+```sql
+%flink.bsql
+
+-- CREATE CATALOG iceberg WITH(
+--  'type'='iceberg',
+--  'catalog-type'='hadoop',
+--  'warehouse'='hdfs://10.8.30.37:8020/user/hadoop3',
+--  'property-version'='1'
+-- );
+
+select * from iceberg.iceberg_db.iota_raw where userId='1b2d8739-627e-4b7d-9480-3eee6e9396fe' and thingId='fd7742e7-71cf-4424-8f3c-1cbe591d83c8';
+
+select count(*) from iceberg.iceberg_db.iota_raw where userId='1b2d8739-627e-4b7d-9480-3eee6e9396fe' and thingId='fd7742e7-71cf-4424-8f3c-1cbe591d83c8';
 ```
 
 
 
-
+#### Hive
 
 如果启用Hive，配置HIVE
 
@@ -1013,7 +1254,7 @@ export HIVE_CONF_DIR=$HIVE_HOME/conf
 
 
 
-**CheckPoint设置**
+#### CheckPoint设置
 
 ```ini
 %flink.conf
@@ -1033,7 +1274,7 @@ execution.checkpointing.externalized-checkpoint-retention RETAIN_ON_CANCELLATION
 
 
 
-其他是否需要，看具体情况：
+#### 博客整理：
 
 ```
 >>>>
@@ -1068,7 +1309,7 @@ hive-exec-2.3.3.jar
 
 
 
-问题记录：
+#### 问题记录：
 
 ​	出现包冲突，目前没有好的办法，google
 
@@ -1095,13 +1336,37 @@ hive-exec-2.3.3.jar
    guava-28.0-jre.jar
    ```
 
+4. class org.apache.flink.kafka.shaded.org.apache.kafka.common.serialization.ByteArrayDeserializer is not an instance of org.apache.kafka.common.serialization.Deserializer
+
+   使用flink-sql-connector-kafka的时候，去掉flink-connector-kafka的引用  https://cloud.tencent.com/developer/article/1842905
+
+5. ClassNotFoundException
+
+   通过在IDEA中查找相关的类（三击SHIFT）所在的JAR包
+
+6. 任务提交，但IceBerg未有文件写入
+
+   ssql未设置CheckPoint
+
+7. java.lang.IllegalArgumentException: Checkpoint is not supported for batch jobs
+
+   batch任务不支持checkpoint设置。定义新的flink解析器（interpreter）。
+
    
 
    最终包冲突方法：
 
    $FLINK_HOME/lib下 (2022-3-3)：
 
-   ![image-20220302164715586](imgs/Datahub/image-20220302164715586.png)
+    ![image-20220302164715586](imgs/Datahub/image-20220302164715586.png)
+
+   
+
+   $FLINK_HOME/lib下 (2022-3-7)：
+
+   ​	![image-20220307144237691](imgs/Datahub/image-20220307144237691.png)
+
+
 
 
 
