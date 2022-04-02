@@ -1328,3 +1328,30 @@ docker run --name kibana7 -p 5601:5601 -e "ELASTICSEARCH_HOSTS=http://test-n3:92
 78. ES Docker AccessDeny
 目录权限
 sudo chown -R 1000:root docker_data
+
+
+79. DAC中pq: sorry, too many clients already
+【未解决】
+2022/03/28 15:04:06.550982 [E] ds.GetProtocol error: pq: sorry, too many clients already
+
+
+80. 问题【79】导致dac卡死
+【未解决】
+```sh
+# k8s查看pod状态：正常
+root@anxin-m1:/home/anxin/iota/k8s/iota-web# ki | grep dac
+iota-dac-0                                              2/2       Running            2          47d       10.244.1.81    iota-n3
+
+# 查看容器状态：正常
+root@iota-n3:~# docker ps | grep dac
+
+
+...
+f52f068a425e        repository.anxinyun.cn/iota/dac              "./dac"                  5 days ago          Up 5 days                               k8s_iota-dac_iota-dac-6_iota_263e5a76-8990-11ec-8c30-c81f66cfe365_27
+...
+# 查看容器对应宿主机进程ID，发现进程ID丢失
+root@iota-n3:~# docker inspect -f '{{.State.Pid}} {{.Id}}' $(docker ps -a -q) | grep f52f068a425e
+10823 f52f068a425e0a41ab4dcf72169b2e67121900aad6c4b1317108520068320102
+root@iota-n3:~# ps -ef | grep 10823
+root     32580 15338  0 11:10 pts/10   00:00:00 grep --color=auto 10823
+```

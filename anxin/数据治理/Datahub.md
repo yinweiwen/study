@@ -391,6 +391,10 @@ Debezium（[DOC](https://materialize.com/docs/guides/cdc-postgres/)） 是一个
 
 https://github.com/ververica/flink-cdc-connectors
 
+[FlinkCDC实践](https://www.cnblogs.com/wh984763176/p/14803725.html)
+
+
+
 是一个集成Debezium CDC的Flink Connector组件。
 
 第一个例子：
