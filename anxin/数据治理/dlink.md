@@ -28,20 +28,49 @@
 
 ## Dlink实操
 
+### 安装运行
+
 解压运行
 
 > `sh auto.sh start`执行报错的话，执行
 >
-> java "-Dloader.path=./lib,./plugins -Ddruid.mysql.usePingMethod=false" -jar -Xms512M -Xmx2048M -XX:PermSize=512M -XX:MaxPermSize=1024M "./dlink-admin-0.6.0.jar"
+> java -Dloader.path=./lib,./plugins -Ddruid.mysql.usePingMethod=false -jar -Xms512M -Xmx2048M -XX:PermSize=512M -XX:MaxPermSize=1024M "./dlink-admin-0.6.0.jar"
 
 
 
 Jar包准备：
 
 > 1. Postgres数据库驱动postgresql-42.1.1.jar，安装到 $DLINK_HOME/lib
-> 2. 插件包安装到 $DLINK_HOME/plugins 。具体参考 
+> 2. 插件包安装到 $DLINK_HOME/plugins 。具体参考 [附录](#附录)
+> 3. 注意：flink-shaded-hadoop-3-uber.jar 需要将jar中javax/srvlet文件夹删除
 
 
+
+### 运行截图
+
+数据血缘：
+
+![image-20220406152104580](imgs/dlink/image-20220406152104580.png)
+
+
+
+### 远程调试
+
+https://mp.weixin.qq.com/s/1MwJ6cJZmVWWzMk3z_ETKQ
+
+启动命令中添加 
+
+```sh
+java -Dloader.path=./lib,./plugins -Ddruid.mysql.usePingMethod=false -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=50001 -jar -Xms512M -Xmx2048M -XX:PermSize=512M -XX:MaxPermSize=1024M "./dlink-admin-0.6.0.jar"
+```
+
+
+
+IDEA中设置
+
+![image-20220406134611128](imgs/dlink/image-20220406134611128.png)
+
+启动后即可在代码中进行debug：
 
 
 
