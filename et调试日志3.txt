@@ -1,3 +1,8 @@
+手动安装hadoop可以参考：
+https://phoenixnap.com/kb/install-hadoop-ubuntu
+
+
+
 set host:
 # Iota-Anxin start
 192.168.0.201 iota-m1
