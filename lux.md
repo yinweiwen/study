@@ -703,3 +703,11 @@ Cannot register host with not supported os type, hostname=test-n2, serverOsType=
 尝试在os_family.json文件中增加ubuntu20项，从起server和agent：
 
 发现节点是心跳丢失情况。
+
+
+
+
+
+## GIT Tortoirs保存密码
+
+![image-20220414213321543](imgs/lux/image-20220414213321543.png)
