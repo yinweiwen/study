@@ -28,6 +28,8 @@
 
 ## Dlink实操
 
+> 最终执行任务提交时失败，最终切换到 StreamX
+
 ### 安装运行
 
 解压运行
@@ -48,9 +50,28 @@ Jar包准备：
 
 ### 运行截图
 
+首先在 注册中心>添加集群实例
+
+执行SQL：
+
+![image-20220407095445286](imgs/dlink/image-20220407095445286.png)
+
 数据血缘：
 
 ![image-20220406152104580](imgs/dlink/image-20220406152104580.png)
+
+
+
+### 运行SQL
+
+报错：
+
+解决方式：
+
+1. 类加载顺序问题，flink默认是child-first，在flink的flink-conf.yaml文件中添加`classloader.resolve-order: parent-first` 改成parent-first，重启集群即可。（https://github.com/ververica/flink-cdc-connectors/discussions/644） 【未解决】
+2. 
+
+
 
 
 
@@ -71,6 +92,273 @@ IDEA中设置
 ![image-20220406134611128](imgs/dlink/image-20220406134611128.png)
 
 启动后即可在代码中进行debug：
+
+
+
+
+
+## StreamX
+
+StreamX V.S. DLink
+
+| StreamX                               | DLink                               | FlinkX                             |
+| ------------------------------------- | ----------------------------------- | ---------------------------------- |
+| https://github.com/streamxhub/streamx | https://github.com/DataLinkDC/dlink | https://github.com/DTStack/chunjun |
+| starts 1k                             | 700                                 | 2.9k                               |
+|                                       |                                     |                                    |
+
+> 首先是 StreamX，它定义为 Make Spark|Flink easier ，即使 Spark 和 Flink 的开发和应用更加便捷，与近期较火的 SeaTunnel 较为相似，均是架构与 Spark 和 Flink 之上，其区别是 StreamX 更偏重于 Flink 的支持，Spark 的支持还在孵化，此外StreamX 提供 Yarn 和 K8S 的 Application 部署模式的 Jar 任务和 FlinkSQL 任务定义及运维，其更适合作为久驻的 Flink 流任务的运维，而 SeaTunnel 则更专注于依赖 Spark 的数据同步，2.0 也支持了 Flink 的架构。
+>
+> 那 Dlink 和他们相比又有什么不同呢？首先，Dlink 更侧重于 FlinkSQL 的开发交互过程，尽管其具备较为齐全的任务提交能力与集群交互能力，但其未进行平台化功能的设计，在平台运维方面功能缺乏；其次 Dlink 的 K8S 起步较晚，由于其敏捷 FlinkSQL 提交的设计增加了部署门槛，目前需要人工提前搭建好需求的镜像才能自动化提交 FlinkSQL，而 StreamX 则可以通过 Flink 任务的定义来自动化部署 K8S 的任务；最后其实现思路与架构设计区别较大，StreamX 使用 Java 和 Scala 的混合开发以及前端更适合开源参与的 Vue 框架，后端门槛较高，Dlink 则完全使用 Java 开发，其前端为更偏企业应用的 Ant Design Pro 的 React 框架，前端门槛较高。
+>
+> 那二者选择哪个更好呢？其实，他们之间的关系目前并不是互相竞争的关系，两者可以互相协作生产，即 Dlink 负责 FlinkSQL 的开发与调试，StreamX 负责 Flink 任务的运维。然而，在两者的 Roadmap 上却发现，StreamX 将实现 Data Studio 来支撑 FlinkSQL 的开发，而 Dlink 则将实现专门的运维中心来支持任务的运维需求，或许后续两者的应用场景会出现冲突。
+>
+> 那为什么不融合在一起做强做大呢？因为 Dlink 与 StreamX 在底层 Flink 任务提交的实现完全不同，扩展架构也完全不兼容，导致他们难以融合在一块。不如让其各自发展，或许可以达到更好的效果与成绩。
+>
+> by dlink作者
+
+
+
+环境准备：
+
+down下源码进行编译，环境要求如下
+
+- Maven 3.6+
+- npm 7.11.2 ( https://nodejs.org/en/ )
+- JDK 1.8+
+
+```sh
+# 下载maven 3.8
+https://maven.apache.org/download.cgi
+mvn -version
+mvn clean install -DskipTests
+
+# 升级npm
+nvm install 16.14.2
+npm install -g npm
+>npm -version
+8.6.0
+
+
+npm cache clean --force
+npm install 
+```
+
+数据库准备：
+
+```sh
+# mysql
+create database streamx
+执行 script/final.sql
+```
+
+配置
+
+`conf/application.yml` 中修改数据库地址
+
+```yaml
+datasource:
+        # 数据源-1，名称为 primary
+        primary:
+          username: root
+          password: 123456
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://10.8.30.37:3306/streamx?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8
+
+streamx:
+  # HADOOP_USER_NAME
+  hadoop-user-name: hdfs
+  # 本地的工作空间,用于存放项目源码,构建的目录等.
+  workspace:
+    local: /opt/streamx_workspace
+    remote: hdfs:///streamx   # support hdfs:///streamx/ 、 /streamx 、hdfs://host:ip/streamx/
+
+```
+
+启动
+
+```sh
+cd streamx-console-service-1.0.0/bin
+bash startup.sh
+```
+
+
+
+通过官方二进制文件安装
+
+http://www.streamxhub.com/docs/user-guide/deployment/
+
+> 必须在linux环境安装
+
+![image-20220414191255701](imgs/dlink/image-20220414191255701.png)
+
+默认密码: **admin / streamx**
+
+设置`flinkhome` `maven私服地址`  `Flink Cluster`
+
+![image-20220414191507017](imgs/dlink/image-20220414191507017.png)
+
+![image-20220414193317890](imgs/dlink/image-20220414193317890.png)
+
+![image-20220414193329210](imgs/dlink/image-20220414193329210.png)
+
+
+
+### 运行官网sql例子
+
+> 准备本机docker-compose kafka环境。需要在 windows机器中访问ubuntu中的kafka，需要进行如下设置
+>
+> ```yaml
+> version: '3.8'
+> services:
+> zookeeper:
+> image: confluentinc/cp-zookeeper:5.4.0
+> env_file: zookeeper/env/docker.env
+> hostname: zookeeper
+> container_name: zookeeper
+> ports:
+>       - "2181:2181"
+>     volumes:
+>       - zkdata2:/var/opt/zookeeper
+> 
+>   broker:
+>     image: confluentinc/cp-kafka:5.4.0
+>     env_file: broker/env/docker.env
+>     hostname: broker
+>     container_name: broker
+>     environment:
+>       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+>       KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
+>       KAFKA_ADVERTISED_LISTENERS: INTERNAL://192.168.1.9:9092,OUTSIDE://localhost:9094
+>       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+>       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+>     depends_on:
+>       - zookeeper
+>     ports:
+>       - "29092:29092"
+>       - "9092:9092"
+>     volumes:
+>       - broker2:/var/lib/kafka/data/
+> ```
+>
+> 这里的volume后面的数字，是因为kafka重新启动后提示
+>
+> kafka.common.InconsistentClusterIdException: The Cluster ID YJp5qd4NQF2WCrx1C8aY0w doesn't match stored clusterId Some(VMwp9k2GR_6EHZsMpdAwTA) in meta.properties. The broker is trying to join the wrong cluster. Configured zookeeper.connect may be wrong.
+> 	at kafka.server.KafkaServer.startup(KafkaServer.scala:220)
+> 	at io.confluent.support.metrics.SupportedServerStartable.startup(SupportedServerStartable.java:114)
+>
+> 
+
+创建mysql表
+
+```sql
+create table test.pvuv_sink
+(
+	dt varchar(100) null,
+	pv bigint null,
+	uv bigint null
+);
+```
+
+创建sql Application
+
+![image-20220414200023168](imgs/dlink/image-20220414200023168.png)
+
+Flink SQL:
+
+```sql
+CREATE TABLE user_log (
+    user_id VARCHAR,
+    item_id VARCHAR,
+    category_id VARCHAR,
+    behavior VARCHAR,
+    ts TIMESTAMP(3)
+ ) WITH (
+  'connector' = 'kafka',
+  'topic' = 'user_behavior',
+  'properties.bootstrap.servers' = '192.168.1.9:9092',
+  'properties.group.id' = 'testGroup',
+  'scan.startup.mode' = 'earliest-offset',
+  'value.format' = 'debezium-json',
+  'value.debezium-json.ignore-parse-errors' = 'true'
+ );
+
+CREATE TABLE pvuv_sink (
+    dt VARCHAR,
+    pv BIGINT,
+    uv BIGINT
+ ) WITH (
+'connector.type' = 'jdbc', -- 使用 jdbc connector
+'connector.url' = 'jdbc:mysql://192.168.1.9:3306/test?createDatabaseIfNotExist=true&useSSL=false', -- jdbc url
+'connector.table' = 'pvuv_sink', -- 表名
+'connector.username' = 'root', -- 用户名
+'connector.password' = 'root', -- 密码
+'connector.write.flush.max-rows' = '1' -- 默认 5000 条，为了演示改为 1 条
+ );
+
+INSERT INTO pvuv_sink
+SELECT
+  DATE_FORMAT(ts, 'yyyy-MM-dd HH:00') dt,
+  COUNT(*) AS pv,
+  COUNT(DISTINCT user_id) AS uv
+FROM user_log
+GROUP BY DATE_FORMAT(ts, 'yyyy-MM-dd HH:00');
+```
+
+Kafka消息
+
+```shell
+{"user_id": "543462", "item_id":"1715", "category_id": "1464116", "behavior": "pv", "ts":"2021-02-01T01:00:00Z"}
+{"user_id": "662867", "item_id":"2244074","category_id":"1575622","behavior": "pv", "ts":"2021-02-01T01:00:00Z"}
+{"user_id": "662867", "item_id":"2244074","category_id":"1575622","behavior": "pv", "ts":"2021-02-01T01:00:00Z"}
+{"user_id": "662867", "item_id":"2244074","category_id":"1575622","behavior": "learning flink", "ts":"2021-02-01T01:00:00Z"}
+```
+
+maven
+
+```xml
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.48</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-sql-connector-kafka_2.11</artifactId>
+    <version>1.13.6</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-connector-jdbc_2.11</artifactId>
+    <version>1.13.6</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-json</artifactId>
+    <version>1.13.6</version>
+</dependency>
+```
+
+
+
+点击提交，进入任务列表界面，点击执行：
+
+![image-20220414200504392](imgs/dlink/image-20220414200504392.png)
+
+![image-20220414211709740](imgs/dlink/image-20220414211709740.png)
+
+
+
+如果报错，可以进入详细查看
+
+![image-20220414202919352](imgs/dlink/image-20220414202919352.png)
+
+
+
+
 
 
 
@@ -102,7 +390,30 @@ sudo apt-get install autoconf automake libtool autopoint
 # 编译doris
 bash ./build.sh
 
+# 这里构建会现在很多github上的库宝
+# 在ubuntu上设置网络代理超简单，只需要执行：export http_proxy="10.8.30.183:7890"
+
+
+export http_proxy=""
+apt  install protobuf-compiler
+
+# 重新安装需要删除 thirdparty/installed目录
+
+# 这个方式安装最终还是报错了
+# 参考下节：使用docker编译
 ```
+
+通过docker安装 【[ref](https://doris.apache.org/installing/compilation.html#developing-mirror-compilation-using-docker-recommended)】
+
+```sh
+docker run --rm -v /home/dragon/services/doris/docker/docker2:/root/workspace -v /root/.m2:/root/.m2 -it apache/incubator-doris:build-env-for-0.15.0
+
+sh build.sh --clean --be --fe --ui
+```
+
+
+
+
 
 Doris是通过MySQL协议通信的，可以用MySQL客户端连接其：
 
@@ -171,6 +482,45 @@ PROPERTIES("replication_num" = "1");
 
 
 
+
+
+## ClickHouse
+
+安装：
+
+```shell
+sudo apt-get install apt-transport-https ca-certificates dirmngr
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 8919F6BD2B48D754
+
+echo "deb https://packages.clickhouse.com/deb stable main" | sudo tee \
+    /etc/apt/sources.list.d/clickhouse.list
+sudo apt-get update
+
+sudo apt-get install -y clickhouse-server clickhouse-client
+
+sudo service clickhouse-server start
+clickhouse-client # or "clickhouse-client --password" if you set up a password.
+
+Start clickhouse-server with:
+ sudo clickhouse start
+
+Start clickhouse-client with:
+ clickhouse-client
+
+```
+
+
+
+## Data Mesh
+
+https://martinfowler.com/articles/data-mesh-principles.html
+
+
+
+
+
+
+
 ## 附录
 
 ### 依赖的jar包
@@ -184,6 +534,110 @@ PROPERTIES("replication_num" = "1");
 | jar包 | 描述 |
 | ----- | ---- |
 |       |      |
-|       |      |
-|       |      |
+
+版本1 (2022.04.07)
+
+![image-20220407134559333](imgs/dlink/image-20220407134559333.png)
+
+
+
+### 报错堆栈
+
+1. 提交dlink sql后jobmanager报错
+
+```
+Job failed during initialization of JobManager
+org.apache.flink.runtime.client.JobInitializationException: Could not start the JobMaster.
+	at org.apache.flink.runtime.jobmaster.DefaultJobMasterServiceProcess.lambda$new$0(DefaultJobMasterServiceProcess.java:97)
+	at java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:774)
+	at java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:750)
+	at java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:488)
+	at java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1609)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: java.util.concurrent.CompletionException: java.lang.RuntimeException: org.apache.flink.runtime.JobException: Cannot instantiate the coordinator for operator Source: TableSourceScan(table=[[default_catalog, default_database, orders]], fields=[order_id, order_date, customer_name, price, product_id, order_status])
+	at java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:273)
+	at java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:280)
+	at java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1606)
+	... 7 more
+Caused by: java.lang.RuntimeException: org.apache.flink.runtime.JobException: Cannot instantiate the coordinator for operator Source: TableSourceScan(table=[[default_catalog, default_database, orders]], fields=[order_id, order_date, customer_name, price, product_id, order_status])
+	at org.apache.flink.util.ExceptionUtils.rethrow(ExceptionUtils.java:316)
+	at org.apache.flink.util.function.FunctionUtils.lambda$uncheckedSupplier$4(FunctionUtils.java:114)
+	at java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1604)
+	... 7 more
+Caused by: org.apache.flink.runtime.JobException: Cannot instantiate the coordinator for operator Source: TableSourceScan(table=[[default_catalog, default_database, orders]], fields=[order_id, order_date, customer_name, price, product_id, order_status])
+	at org.apache.flink.runtime.executiongraph.ExecutionJobVertex.<init>(ExecutionJobVertex.java:217)
+	at org.apache.flink.runtime.executiongraph.DefaultExecutionGraph.attachJobGraph(DefaultExecutionGraph.java:792)
+	at org.apache.flink.runtime.executiongraph.DefaultExecutionGraphBuilder.buildGraph(DefaultExecutionGraphBuilder.java:196)
+	at org.apache.flink.runtime.scheduler.DefaultExecutionGraphFactory.createAndRestoreExecutionGraph(DefaultExecutionGraphFactory.java:107)
+	at org.apache.flink.runtime.scheduler.SchedulerBase.createAndRestoreExecutionGraph(SchedulerBase.java:342)
+	at org.apache.flink.runtime.scheduler.SchedulerBase.<init>(SchedulerBase.java:190)
+	at org.apache.flink.runtime.scheduler.DefaultScheduler.<init>(DefaultScheduler.java:122)
+	at org.apache.flink.runtime.scheduler.DefaultSchedulerFactory.createInstance(DefaultSchedulerFactory.java:132)
+	at org.apache.flink.runtime.jobmaster.DefaultSlotPoolServiceSchedulerFactory.createScheduler(DefaultSlotPoolServiceSchedulerFactory.java:110)
+	at org.apache.flink.runtime.jobmaster.JobMaster.createScheduler(JobMaster.java:340)
+	at org.apache.flink.runtime.jobmaster.JobMaster.<init>(JobMaster.java:317)
+	at org.apache.flink.runtime.jobmaster.factories.DefaultJobMasterServiceFactory.internalCreateJobMasterService(DefaultJobMasterServiceFactory.java:107)
+	at org.apache.flink.runtime.jobmaster.factories.DefaultJobMasterServiceFactory.lambda$createJobMasterService$0(DefaultJobMasterServiceFactory.java:95)
+	at org.apache.flink.util.function.FunctionUtils.lambda$uncheckedSupplier$4(FunctionUtils.java:112)
+	... 8 more
+Caused by: java.io.StreamCorruptedException: unexpected block data
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1686)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.readArray(ObjectInputStream.java:2094)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1657)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2311)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2431)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2355)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2213)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1669)
+	at java.io.ObjectInputStream.readObject(ObjectInputStream.java:503)
+	at java.io.ObjectInputStream.readObject(ObjectInputStream.java:461)
+	at org.apache.flink.util.InstantiationUtil.deserializeObject(InstantiationUtil.java:615)
+	at org.apache.flink.util.InstantiationUtil.deserializeObject(InstantiationUtil.java:600)
+	at org.apache.flink.util.InstantiationUtil.deserializeObject(InstantiationUtil.java:587)
+	at org.apache.flink.util.SerializedValue.deserializeValue(SerializedValue.java:67)
+	at org.apache.flink.runtime.operators.coordination.OperatorCoordinatorHolder.create(OperatorCoordinatorHolder.java:431)
+	at org.apache.flink.runtime.executiongraph.ExecutionJobVertex.<init>(ExecutionJobVertex.java:211)
+	... 21 more
+```
 
