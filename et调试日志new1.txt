@@ -1355,3 +1355,12 @@ root@iota-n3:~# docker inspect -f '{{.State.Pid}} {{.Id}}' $(docker ps -a -q) | 
 root@iota-n3:~# ps -ef | grep 10823
 root     32580 15338  0 11:10 pts/10   00:00:00 grep --color=auto 10823
 ```
+
+81. Docker : How to avoid Operation not permitted in Docker Container?
+web:
+  image: an_image-image:1.0
+  container_name: my-container
+  privileged: true
+  entrypoint: ["/usr/sbin/init"]
+  ports:
+    - "8280:8280"

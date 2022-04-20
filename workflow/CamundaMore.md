@@ -4,7 +4,7 @@
 
 可以直接定义java类
 
- ![image-20210630144938550](H:/coding/study/imgs/Camunda/image-20210630144938550.png)
+ ![image-20210630144938550](./imgs/Camunda/image-20210630144938550.png)
 
 或者通过注解attach到对应的任务实例：
 

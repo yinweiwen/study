@@ -645,26 +645,13 @@ convert_csv.conf
 ```yml
 input {
  elasticsearch {
-    hosts => "localhost:9200"
-    index => "anxinyun_weather"
-    query => '{  
-    "query": {
-        "bool": {
-		  "must": [
-			{"term": {
-			  "cityName.keyword": {
-				"value": "南昌"
-			  }
-			}},
-			{
-			  "term": {
-				"dataType.keyword": {
-				  "value": "hour"
-				}
-			  }
-			}
-		  ]
-		}
+    hosts => "10.8.25.250:19201"
+    index => "anxinyun_api-logs"
+    query => '{
+      "query": {
+        "exists": {
+          "field": "action_log"
+        }
       }
     }'
   }
@@ -675,8 +662,8 @@ output {
     # This is the fields that you would like to output in CSV format.
     # The field needs to be one of the fields shown in the output when you run your
     # Elasticsearch query
- 
-    fields => ["cityName", "precip", "time"]
+    # nested json fields
+    fields => ["log_time", "[action_log][app]", "[action_log][event]", "[action_log][wx]", "[action_log][user]", "[action_log][appType]", "[action_log][object]"]
   
     # This is where we store output. We can use several files to store our output
     # by using a timestamp to determine the filename where to store output.    
@@ -684,7 +671,7 @@ output {
   }
 }
 ```
-docker run --rm -ti -v /home/anxinyun/logstash/data:/tmp -v /home/anxinyun/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml -v /home/anxinyun/logstash/conf.d/:/usr/share/logstash/conf.d/ logstash:6.8.2
+docker run --rm -ti -v /home/anxin/tools/logstash/data:/tmp -v /home/anxin/tools/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml -v /home/anxin/tools/logstash/conf.d/:/usr/share/logstash/conf.d/ logstash:6.8.2
 
 
 ## kibana 使用的lucene语法：

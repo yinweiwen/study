@@ -509,6 +509,50 @@ Start clickhouse-client with:
 
 ```
 
+注意修改 /etc/clickhouse-server/config.xml中监听地址改成 0.0.0.0 ,重启clickhouse服务
+
+浏览器进入http://10.8.30.184:8123/play，亦可执行sql查询指令
+
+```sql
+SHOW DATABASES
+
+SHOW TABLES IN system
+
+CREATE DATABASE demo
+
+CREATE TABLE demo.stream (
+    name String,
+    time_stamp Date,
+    source_id UInt64
+)
+ENGINE = MergeTree()
+Order by (time_stamp);
+
+INSERT INTO demo.stream values('customer1','2022-04-15',93289);
+```
+
+![image-20220415161012457](imgs/dlink/image-20220415161012457.png)
+
+
+
+Clickhouse@是列式存储数据库，类似的库有Vertica/Paraccel/kdb+等
+
+适用于以下OLAP场景：
+
++ The vast majority of requests are for read access.
++ Data is updated in fairly large batches (> 1000 rows), not by single rows; or it is not updated at all.
++ Data is added to the DB but is not modified.
++ For reads, quite a large number of rows are extracted from the DB, but only a small subset of columns.
++ Tables are “wide,” meaning they contain a large number of columns.
++ Queries are relatively rare (usually hundreds of queries per server or less per second).
++ For simple queries, latencies around 50 ms are allowed.
++ Column values are fairly small: numbers and short strings (for example, 60 bytes per URL).
++ Requires high throughput when processing a single query (up to billions of rows per second per server).
++ Transactions are not necessary.
++ Low requirements for data consistency.
++ There is one large table per query. All tables are small, except for one.
++ A query result is significantly smaller than the source data. In other words, data is filtered or aggregated, so the result fits in a single server’s RAM.
+
 
 
 ## Data Mesh
@@ -516,6 +560,367 @@ Start clickhouse-client with:
 https://martinfowler.com/articles/data-mesh-principles.html
 
 
+
+## 修改Flink-connector-jdbc支持SQLSERVER
+
+> Flink JDBC Connector官方没有支持SQLSERVER数据库；同时Flink-CDC支持SQLSERVER版本必须大于14；
+>
+> 拟修改Flink-connector代码实现该需求（以下基于flink 1.13.6版本修改）
+
+下载代码
+
+```sh
+# 因为是在tag上修改，需要本地创建分支，提交后重建该分支，最后同步到remote
+# git config --global http.proxy http://127.0.0.1:7890
+git clone https://github.com/yinweiwen/flink.git
+git branch mssql-branch release-1.13.6
+git checkout mssql-branch
+
+git add .
+git ci -m 'some log'
+
+git tag -d release-1.13.6
+git tag release-1.13.6
+
+git push origin :release-1.13.6
+git push origin release-1.13.6
+
+git fetch --tags
+```
+
+
+
+切换到项目目录下 `flink-release-1.13.6\flink-connectors\flink-connector-jdbc`
+
+修改 `pom.xml`
+
+```xml
+
+<!-- 配置项目发布到私库 -->
+	<repositories>
+		<repository>
+			<id>fs-releases</id>
+			<name>fs-releases</name>
+			<url>http://10.8.30.22:8081/repository/fs-releases/</url>
+		</repository>
+	</repositories>
+
+
+	<distributionManagement>
+		<repository>
+			<id>fs-releases</id>
+			<name>fs-releases</name>
+			<url>http://10.8.30.22:8081/repository/fs-releases/</url>
+		</repository>
+	</distributionManagement>
+
+
+
+<!-- 配置跳过代码样式检查 -->
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+```
+
+新增sqlserver方言处理类
+
+```java
+package org.apache.flink.connector.jdbc.dialect;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.connector.jdbc.internal.converter.JdbcRowConverter;
+import org.apache.flink.connector.jdbc.internal.converter.MSSQLRowConverter;
+import org.apache.flink.table.types.logical.LogicalTypeRoot;
+import org.apache.flink.table.types.logical.RowType;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+public class MSSQLDialect extends AbstractDialect {
+
+    private static final long serialVersionUID = 1L;
+
+    // Define MAX/MIN precision of TIMESTAMP type according to Mysql docs:
+    // https://dev.mysql.com/doc/refman/8.0/en/fractional-seconds.html
+    private static final int MAX_TIMESTAMP_PRECISION = 6;
+    private static final int MIN_TIMESTAMP_PRECISION = 1;
+
+    // Define MAX/MIN precision of DECIMAL type according to Mysql docs:
+    // https://dev.mysql.com/doc/refman/8.0/en/fixed-point-types.html
+    private static final int MAX_DECIMAL_PRECISION = 65;
+    private static final int MIN_DECIMAL_PRECISION = 1;
+    @Override
+    public String dialectName() {
+        return "MSSQL";
+    }
+
+    @Override
+    public boolean canHandle(String url) {
+        return url.startsWith("jdbc:sqlserver:");
+    }
+
+    @Override
+    public JdbcRowConverter getRowConverter(RowType rowType) {
+        return new MSSQLRowConverter(rowType);
+    }
+
+    @Override
+    public Optional<String> defaultDriverName() {
+        return Optional.of("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+    }
+
+    @Override
+    public String getLimitClause(long limit) {
+        return "#SELECT TOP " + limit;
+    }
+    @Override
+    public String quoteIdentifier(String identifier) {
+        return "[" + identifier + "]";
+    }
+
+    @Override
+    public Optional<String> getUpsertStatement(
+        String tableName, String[] fieldNames, String[] uniqueKeyFields) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(
+            "MERGE INTO "
+                + tableName
+                + " T1 USING "
+                + "("
+                + buildDualQueryStatement(fieldNames)
+                + ") T2 ON ("
+                + buildConnectionConditions(uniqueKeyFields)
+                + ") ");
+
+        String updateSql = buildUpdateConnection(fieldNames, uniqueKeyFields, true);
+
+        if (StringUtils.isNotEmpty(updateSql)) {
+            sb.append(" WHEN MATCHED THEN UPDATE SET ");
+            sb.append(updateSql);
+        }
+
+        sb.append(
+            " WHEN NOT MATCHED THEN "
+                + "INSERT ("
+                + Arrays.stream(fieldNames)
+                .map(this::quoteIdentifier)
+                .collect(Collectors.joining(","))
+                + ") VALUES ("
+                + Arrays.stream(fieldNames)
+                .map(col -> "T2." + quoteIdentifier(col))
+                .collect(Collectors.joining(","))
+                + ")");
+        sb.append(";");
+        return Optional.of(sb.toString());
+    }
+
+    /**
+     * build T1."A"=T2."A" or T1."A"=nvl(T2."A",T1."A")
+     *
+     * @param fieldNames
+     * @param uniqueKeyFields
+     * @param allReplace
+     * @return
+     */
+    private String buildUpdateConnection(
+        String[] fieldNames, String[] uniqueKeyFields, boolean allReplace) {
+        List<String> uniqueKeyList = Arrays.asList(uniqueKeyFields);
+        return Arrays.stream(fieldNames)
+            .filter(col -> !uniqueKeyList.contains(col))
+            .map(
+                col -> {
+                    return allReplace
+                        ? quoteIdentifier("T1")
+                        + "."
+                        + quoteIdentifier(col)
+                        + " ="
+                        + quoteIdentifier("T2")
+                        + "."
+                        + quoteIdentifier(col)
+                        : quoteIdentifier("T1")
+                        + "."
+                        + quoteIdentifier(col)
+                        + " =ISNULL("
+                        + quoteIdentifier("T2")
+                        + "."
+                        + quoteIdentifier(col)
+                        + ","
+                        + quoteIdentifier("T1")
+                        + "."
+                        + quoteIdentifier(col)
+                        + ")";
+                })
+            .collect(Collectors.joining(","));
+    }
+
+    private String buildConnectionConditions(String[] uniqueKeyFields) {
+        return Arrays.stream(uniqueKeyFields)
+            .map(col -> "T1." + quoteIdentifier(col) + "=T2." + quoteIdentifier(col))
+            .collect(Collectors.joining(","));
+    }
+
+    /**
+     * build select sql , such as (SELECT ? "A",? "B" FROM DUAL)
+     *
+     * @param column destination column
+     * @return
+     */
+    public String buildDualQueryStatement(String[] column) {
+        StringBuilder sb = new StringBuilder("SELECT ");
+        String collect =
+            Arrays.stream(column)
+                .map(col -> ":" + quoteIdentifier(col) + " " + quoteIdentifier(col))
+                .collect(Collectors.joining(", "));
+        sb.append(collect);
+        return sb.toString();
+    }
+
+    @Override
+    public int maxDecimalPrecision() {
+        return MAX_DECIMAL_PRECISION;
+    }
+
+    @Override
+    public int minDecimalPrecision() {
+        return MIN_DECIMAL_PRECISION;
+    }
+
+    @Override
+    public int maxTimestampPrecision() {
+        return MAX_TIMESTAMP_PRECISION;
+    }
+
+    @Override
+    public int minTimestampPrecision() {
+        return MIN_TIMESTAMP_PRECISION;
+    }
+
+    @Override
+    public List<LogicalTypeRoot> unsupportedTypes() {
+        return Arrays.asList(
+            LogicalTypeRoot.BINARY,
+            LogicalTypeRoot.TIMESTAMP_WITH_LOCAL_TIME_ZONE,
+            LogicalTypeRoot.TIMESTAMP_WITH_TIME_ZONE,
+            LogicalTypeRoot.INTERVAL_YEAR_MONTH,
+            LogicalTypeRoot.INTERVAL_DAY_TIME,
+            LogicalTypeRoot.ARRAY,
+            LogicalTypeRoot.MULTISET,
+            LogicalTypeRoot.MAP,
+            LogicalTypeRoot.ROW,
+            LogicalTypeRoot.DISTINCT_TYPE,
+            LogicalTypeRoot.STRUCTURED_TYPE,
+            LogicalTypeRoot.NULL,
+            LogicalTypeRoot.RAW,
+            LogicalTypeRoot.SYMBOL,
+            LogicalTypeRoot.UNRESOLVED);
+    }
+}
+```
+
+get使用的地方做修改
+
+```java
+if (limit >= 0) {
+            String limitClause = dialect.getLimitClause(limit);
+            if (limitClause.startsWith("#")) {
+                String changed = limitClause.substring(1);
+                String replace = changed.split(" ")[0];
+                query = query.replaceFirst(replace, changed);
+            } else {
+                query = String.format("%s %s", query, limitClause);
+            }
+        }
+```
+
+最后JdbcDialects.java中添加sqlserver方言的引用
+
+
+
+执行构建部署
+
+```sh
+E:\Github\flink-release-1.13.6\flink-connectors\flink-connector-jdbc>mvn clean deploy -Dcheckstyle.skip=true -DskipTests
+```
+
+
+
+### 使用案列：
+
+`pom.xml`
+
+```xml
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-jdbc_2.11</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>7.4.1.jre8</version>
+        </dependency>
+```
+
+main.scala
+
+```scala
+package com.fs
+
+import comm.utils.Loader
+import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.flink.runtime.state.filesystem.FsStateBackend
+import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.table.api.{EnvironmentSettings, TableEnvironment}
+import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
+
+/**
+  * Created by yww08 on 2022/4/14.
+  */
+object SqlserverDemo {
+    private val JDBC_URl: String = "jdbc:sqlserver://10.8.30.32:1433;DatabaseName=trunk;"
+    private val JDBC_USER: String = "sa"
+    private val JDBC_PASSWORD: String = "123"
+    private val JDBC_DRIVER_CLASS: String = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+
+    def main(args: Array[String]): Unit = {
+        val props = Loader.from("/config.properties", args: _*)
+        val env = ExecutionEnvironment.getExecutionEnvironment
+        val bsSetting = EnvironmentSettings.newInstance().useBlinkPlanner().inBatchMode().build()
+        val tenv = TableEnvironment.create(bsSetting)
+
+        val sql =
+            s"""CREATE TABLE if not exists `T_THEMES_ENVI_TEMP_HUMI` (
+              |`SENSOR_ID` INT
+              |) WITH (
+              |   'connector' = 'jdbc',
+              |   'url' = '$JDBC_URl',
+              |   'table-name' = 'T_THEMES_ENVI_TEMP_HUMI',
+              |   'driver'='$JDBC_DRIVER_CLASS',
+              |   'username'='$JDBC_USER',
+              |   'password'='$JDBC_PASSWORD'
+              |)""".stripMargin
+
+        tenv.executeSql(sql)
+
+        val tb = tenv.sqlQuery("select * from `T_THEMES_ENVI_TEMP_HUMI`")
+        tb.execute().print()
+    }
+}
+
+```
 
 
 
