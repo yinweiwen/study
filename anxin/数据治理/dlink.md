@@ -486,7 +486,7 @@ PROPERTIES("replication_num" = "1");
 
 ## ClickHouse
 
-安装：
+### 安装
 
 ```shell
 sudo apt-get install apt-transport-https ca-certificates dirmngr
@@ -552,6 +552,30 @@ Clickhouse@是列式存储数据库，类似的库有Vertica/Paraccel/kdb+等
 + Low requirements for data consistency.
 + There is one large table per query. All tables are small, except for one.
 + A query result is significantly smaller than the source data. In other words, data is filtered or aggregated, so the result fits in a single server’s RAM.
+
+
+
+### 概念语法
+
+[建表语法](https://clickhouse.com/docs/zh/sql-reference/statements/create/)
+
+```sql
+-- 基础语法
+CREATE TABLE [IF NOT EXISTS] [db.]table_name [ON CLUSTER cluster]
+(
+    name1 [type1] [DEFAULT|MATERIALIZED|ALIAS expr1] [compression_codec] [TTL expr1],
+    name2 [type2] [DEFAULT|MATERIALIZED|ALIAS expr2],
+    ...,
+     CONSTRAINT constraint_name_1 CHECK boolean_expr_1, -- 约束
+) ENGINE = engine
+
+-- 临时表 CREATE TEMPORARY TABLE
+-- 视图 CREATE VIEW view AS SELECT ..
+```
+
+[表引擎](https://clickhouse.com/docs/zh/engines/table-engines/)
+
+
 
 
 
@@ -921,6 +945,129 @@ object SqlserverDemo {
 }
 
 ```
+
+
+
+## 修改Flink-connector-jdbc支持Clickhouse
+
+同上,其中clickhouseDialect.java如下：
+
+```java
+package org.apache.flink.connector.jdbc.dialect;
+
+
+import org.apache.flink.connector.jdbc.internal.converter.ClickHouseRowConverter;
+import org.apache.flink.connector.jdbc.internal.converter.JdbcRowConverter;
+import org.apache.flink.table.types.logical.LogicalTypeRoot;
+import org.apache.flink.table.types.logical.RowType;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * JDBC dialect for ClickHouse.
+ */
+public class ClickHouseDialect extends AbstractDialect {
+
+    private static final long serialVersionUID = 1L;
+
+    private static final String SQL_DEFAULT_PLACEHOLDER = " :";
+    private static final int MAX_TIMESTAMP_PRECISION = 6;
+    private static final int MIN_TIMESTAMP_PRECISION = 1;
+    private static final int MAX_DECIMAL_PRECISION = 65;
+    private static final int MIN_DECIMAL_PRECISION = 1;
+
+
+    @Override
+    public String dialectName() {
+        return "ClickHouse";
+    }
+
+    @Override
+    public boolean canHandle(String url) {
+        return url.startsWith("jdbc:clickhouse:");
+    }
+
+    @Override
+    public JdbcRowConverter getRowConverter(
+        RowType rowType) {
+        return new ClickHouseRowConverter(rowType);
+    }
+
+    @Override
+    public String getLimitClause(long limit) {
+        return "LIMIT " + limit;
+    }
+
+    @Override
+    public Optional<String> defaultDriverName() {
+        return Optional.of("ru.yandex.clickhouse.ClickHouseDriver");
+    }
+
+    @Override
+    public String quoteIdentifier(String identifier) {
+        return "`" + identifier + "`";
+    }
+
+    @Override
+    public Optional<String> getUpsertStatement(
+        String tableName, String[] fieldNames, String[] uniqueKeyFields) {
+        String updateClause =
+            Arrays.stream(fieldNames)
+                .map(f -> quoteIdentifier(f) + "=VALUES(" + quoteIdentifier(f) + ")")
+                .collect(Collectors.joining(", "));
+        return Optional.of(
+            getInsertIntoStatement(tableName, fieldNames)
+                + " ON DUPLICATE KEY UPDATE "
+                + updateClause);
+    }
+
+    @Override
+    public int maxDecimalPrecision() {
+        return MAX_DECIMAL_PRECISION;
+    }
+
+    @Override
+    public int minDecimalPrecision() {
+        return MIN_DECIMAL_PRECISION;
+    }
+
+    @Override
+    public int maxTimestampPrecision() {
+        return MAX_TIMESTAMP_PRECISION;
+    }
+
+    @Override
+    public int minTimestampPrecision() {
+        return MIN_TIMESTAMP_PRECISION;
+    }
+
+    @Override
+    public List<LogicalTypeRoot> unsupportedTypes() {
+        return Arrays.asList(
+            LogicalTypeRoot.BINARY,
+            LogicalTypeRoot.TIMESTAMP_WITH_LOCAL_TIME_ZONE,
+            LogicalTypeRoot.TIMESTAMP_WITH_TIME_ZONE,
+            LogicalTypeRoot.INTERVAL_YEAR_MONTH,
+            LogicalTypeRoot.INTERVAL_DAY_TIME,
+            LogicalTypeRoot.ARRAY,
+            LogicalTypeRoot.MULTISET,
+            LogicalTypeRoot.MAP,
+            LogicalTypeRoot.ROW,
+            LogicalTypeRoot.DISTINCT_TYPE,
+            LogicalTypeRoot.STRUCTURED_TYPE,
+            LogicalTypeRoot.NULL,
+            LogicalTypeRoot.RAW,
+            LogicalTypeRoot.SYMBOL,
+            LogicalTypeRoot.UNRESOLVED
+        );
+    }
+}
+```
+
+
 
 
 

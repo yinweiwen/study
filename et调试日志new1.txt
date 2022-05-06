@@ -1364,3 +1364,7 @@ web:
   entrypoint: ["/usr/sbin/init"]
   ports:
     - "8280:8280"
+    
+    
+82.nodejs内存溢出
+    node --max-old-space-size=4096 server.js

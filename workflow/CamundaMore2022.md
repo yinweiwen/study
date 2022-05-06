@@ -4,6 +4,18 @@
 
 
 
+概念，转https://wenku.baidu.com/view/96434d2d75c66137ee06eff9aef8941ea76e4b83.html
+
++ Process Definition 流程定义
++ Process Instance 流程实例
++ Execution 执行实例（并行网关，可能出现多个执行实例）（执行树状图，ProcessInstance是根结点）
++ Activity Instance  活动实例，活动实例概念与执行概念类似，但采用了不同的视角。虽然可以将执行想象为在流程中移动的令牌，但活动实例表示活动(任务、子流程等)的单个实例。因此，活动实例的概念更面向状态。
++ Process Variable 流程变量
++ `Tasklist` 任务列表（待办任务）
++ Job 异步任务
+
+
+
 1. ACT_RE_*: 'RE’表示流程资源存储，这个前缀的表包含了流程定义和流程静态资源（图片，规则等），共5张表。
 2. ACT_RU_*: 'RU’表示流程运行时。 这些运行时的表，包含流程实例，任务，变量，Job等运行中的数据。 Camunda只在流程实例执行过程中保存这些数据，在流程结束时就会删除这些记录， 这样运行时表的数据量最小，可以最快运行。共15张表。
 3. ACT_ID_*: 'ID’表示组织用户信息，比如用户，组等，共6张表。
@@ -267,3 +279,90 @@
 | VERSION_TAG_        | varchar(64)   | NULL     | 版本标签                |
 | HISTORY_TTL_        | int(11)       | NULL     |                         |
 | STARTABLE_          | tinyint(1)    |          | 是否是可启动流程        |
+
+
+
+### act_ru_event_subscr（流程事件订阅表）
+
+### act_ru_execution（流程运行时表）
+
+BPMN流程运行时记录表。该表时整个流程引擎的核心表，它包括流程定义、父级执行、当前活动和有关执行状态的不同元数据等信息。
+
+| 字段名称           | 字段类型     | 可否为空 | 描述                 |
+| ------------------ | ------------ | -------- | -------------------- |
+| ID_                | varchar(64)  |          | 主键                 |
+| REV_               | int(11)      | NULL     | 版本                 |
+| ROOT_PROC_INST_ID_ | varchar(64)  | NULL     | 流程实例根ID         |
+| PROC_INST_ID_      | varchar(64)  | NULL     | 流程实例ID           |
+| BUSINESS_KEY_      | varchar(255) | NULL     | 业务KEY              |
+| PARENT_ID_         | varchar(64)  | NULL     | 流程父实例ID         |
+| PROC_DEF_ID_       | varchar(64)  | NULL     | 流程定义ID           |
+| SUPER_EXEC_        | varchar(64)  | NULL     | 父流程实例对应的执行 |
+| SUPER_CASE_EXEC_   | varchar(64)  | NULL     | 父案例实例对应的执行 |
+| CASE_INST_ID_      | varchar(64)  | NULL     | 案例实例ID           |
+| ACT_ID_            | varchar(255) | NULL     | 节点ID               |
+| ACT_INST_ID_       | varchar(64)  | NULL     | 节点实例ID           |
+| IS_ACTIVE_         | tinyint(4)   | NULL     | 是否**               |
+| IS_CONCURRENT_     | tinyint(4)   | NULL     | 是否并行             |
+| IS_SCOPE_          | tinyint(4)   | NULL     | 是否多实例范围       |
+| IS_EVENT_SCOPE_    | tinyint(4)   | NULL     | 是否事件多实例范围   |
+| SUSPENSION_STATE_  | int(11)      | NULL     | 挂起状态             |
+| CACHED_ENT_STATE_  | int(11)      | NULL     | 缓存状态             |
+| SEQUENCE_COUNTER_  | bigint(20)   | NULL     | 序列计数器           |
+| TENANT_ID_         | varchar(64)  | NULL     | 租户ID               |
+
+
+
+### act_ru_task（ 流程运行时任务表）
+
+流程运行时任务表，包含所有正在运行的流程实例的所有打开的任务，包括诸如相应的流程实例、执行以及元数据（如创建时间、办理人或到期时间）等信息。
+
+| 字段名称           | 字段类型      | 可否为空 | 描述        |
+| ------------------ | ------------- | -------- | ----------- |
+| ID_                | varchar(64)   |          | 主键        |
+| REV_               | int(11)       | NULL     | 版本        |
+| EXECUTION_ID_      | varchar(64)   | NULL     | 流程执行ID  |
+| PROC_INST_ID_      | varchar(64)   | NULL     | 流程实例ID  |
+| PROC_DEF_ID_       | varchar(64)   | NULL     | 流程定义ID  |
+| CASE_EXECUTION_ID_ | varchar(64)   | NULL     | 案例执行ID  |
+| CASE_INST_ID_      | varchar(64)   | NULL     | 案例实例ID  |
+| CASE_DEF_ID_       | varchar(64)   | NULL     | 案例定义ID  |
+| NAME_              | varchar(255)  | NULL     | 名称        |
+| PARENT_TASK_ID_    | varchar(64)   | NULL     | 父任务ID    |
+| DESCRIPTION_       | varchar(4000) | NULL     | 描述        |
+| TASK_DEF_KEY_      | varchar(255)  | NULL     | 任务定义KEY |
+| OWNER_             | varchar(255)  | NULL     | 委托人      |
+| ASSIGNEE_          | varchar(255)  | NULL     | 办理人      |
+| DELEGATION_        | varchar(64)   | NULL     | 委托状态    |
+| PRIORITY_          | int(11)       | NULL     | 优先级      |
+| CREATE_TIME_       | datetime      | NULL     | 创建时间    |
+| DUE_DATE_          | datetime      | NULL     | 截止时间    |
+| FOLLOW_UP_DATE_    | datetime      | NULL     | 跟踪时间    |
+| SUSPENSION_STATE_  | int(11)       | NULL     | 挂起状态    |
+| TENANT_ID_         | varchar(64)   | NULL     | 租户ID      |
+
+### act_ru_variable（ 流程运行时变量表）
+
+流程运行时变量表，包含当前运行中所有流程或任务变量，包括变量的名称、类型和值以及有关相应流程实例或任务的信息。
+
+| 字段名称              | 字段类型      | 可否为空 | 描述         |
+| --------------------- | ------------- | -------- | ------------ |
+| ID_                   | varchar(64)   |          | 主键         |
+| REV_                  | int(11)       | NULL     | 版本         |
+| TYPE_                 | varchar(255)  |          | 变量类型     |
+| NAME_                 | varchar(255)  |          | 变量名称     |
+| EXECUTION_ID_         | varchar(64)   | NULL     | 流程执行ID   |
+| PROC_INST_ID_         | varchar(64)   | NULL     | 流程实例ID   |
+| CASE_EXECUTION_ID_    | varchar(64)   | NULL     | 案例执行ID   |
+| CASE_INST_ID_         | varchar(64)   | NULL     | 案例实例ID   |
+| TASK_ID_              | varchar(64)   | NULL     | 任务ID       |
+| BYTEARRAY_ID_         | varchar(64)   | NULL     | 二进制内容ID |
+| DOUBLE_               | double        | NULL     | DOUBLE类型值 |
+| LONG_                 | bigint(20)    | NULL     | LONG类型值   |
+| TEXT_                 | varchar(4000) | NULL     | 文本值       |
+| TEXT2_                | varchar(4000) | NULL     | 文本值２     |
+| VAR_SCOPE_            | varchar(64)   |          | 变量范围     |
+| SEQUENCE_COUNTER_     | bigint(20)    | NULL     | 序列计数器   |
+| IS_CONCURRENT_LOCAL _ | tinyint(4)    | NULL     | 是否并发     |
+| TENANT_ID_            | varchar(64)   | NULL     | 租户ID       |
+

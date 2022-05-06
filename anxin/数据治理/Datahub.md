@@ -600,6 +600,28 @@ show max_replication_slots;
 
 
 
+在157环境安装wal2json; （ubuntu20 postgresql-10）
+
+```sh
+
+Import the repository key from https://www.postgresql.org/media/keys/ACCC4CF8.asc:
+
+sudo apt install curl ca-certificates gnupg
+curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg >/dev/null
+Create /etc/apt/sources.list.d/pgdg.list. The distributions are called codename-pgdg. In the example, replace buster with the actual distribution you are using. File contents:
+
+deb http://apt.postgresql.org/pub/repos/apt buster-pgdg main
+(You may determine the codename of your distribution by running lsb_release -c). For a script version of the above file creation, presuming you are using a supported release:
+
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+```
+
+
+
+
+
+
+
 ### 报错记录
 
 1. java.io.StreamCorruptedException: unexpected block data
