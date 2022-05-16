@@ -1368,3 +1368,19 @@ web:
     
 82.nodejs内存溢出
     node --max-old-space-size=4096 server.js
+    
+83. flink-iceberg-hadoop 启动失败
+Exception in thread "main" java.lang.VerifyError: Bad return type
+Exception Details:
+  Location:
+    org/apache/hadoop/hdfs/DFSClient.getQuotaUsage(Ljava/lang/String;)Lorg/apache/hadoop/fs/QuotaUsage; @160: areturn
+  Reason:
+    Type 'org/apache/hadoop/fs/ContentSummary' (current frame, stack[0]) is not assignable to 'org/apache/hadoop/fs/QuotaUsage' (from method signature)
+
+修改Hadoop版本从 2.8.2 -> 2.6.0
+
+怪点：之前用2.8.2是能够正常启动并查询到结果的。是因为目标37上的hadoop环境变化了吗
+
+
+84. 本地调试web localhost自动跳转https
+    chrome://net-internals/#hsts  删除localhost

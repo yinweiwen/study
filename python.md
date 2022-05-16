@@ -108,3 +108,44 @@ timeout = 120
 [install]
 trusted-host=mirrors.aliyun.com
 ```
+
+
+
+
+
+## Flask程序构建发布
+
+```python
+ pip freeze > requirements.txt
+```
+
+start.sh
+
+```sh
+#!/bin/bash
+
+source venv/bin/activate && flask run -h 0.0.0.0 -p 5000
+```
+
+
+
+Dockerfile
+
+```dockerfile
+FROM repository.anxinyun.cn/base-images/python:ubuntu-4.21-04-28
+
+WORKDIR /app
+
+COPY . .
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+RUN source venv/bin/activate && pip install --default-timeout=100 -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
+
+RUN chmod u+x ./start.sh
+
+EXPOSE 5000
+
+CMD ["bash","./start.sh" ]
+```
+

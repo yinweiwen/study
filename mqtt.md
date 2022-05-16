@@ -1,3 +1,5 @@
+## 介绍
+
 https://github.com/mcxiaoke/mqtt/blob/master/mqtt/01-Introduction.md
 
 MQTT是一个客户端服务端架构的发布/订阅模式的消息传输协议。它的设计思想是轻巧、开放、简单、规范，易于实现。这些特点使得它对很多场景来说都是很好的选择，特别是对于受限的环境如机器与机器的通信（M2M）以及物联网环境（IoT）。
@@ -179,8 +181,9 @@ PUBLISH
 				port 1883
 				protocol mqtt
 				<Configuring Bridges> ...
-				
-# EMQX
+
+## EMQX
+
 [offical 4.1](https://docs.emqx.cn/cn/broker/v4.1)
 
 安装 `sudo apt install emqx`
@@ -198,6 +201,7 @@ zone.<Zone Name>.xxx
 ```
 
 ### Dashboard
+
 ![overview](img/emq.dashboard-overview.583aad51.png)
 
 ![topic metrics](img/emq.topic.metrics.png)
@@ -268,7 +272,7 @@ module.rewrite.pub.rule.<number> = 主题过滤器 正则表达式 目标表达�
 
 
 2.  [warning] <<"savoir.receive.xsx">>@10.244.0.0:57644 [Session] Dropped msg due to mqueue is full: Message(Id=xx, QoS=2, Topic=savoir_data, From=<<"iota_data_sender">>, Flags=[], Headers=#{peerhost => {10,244,0,0},
-  proto_ver => 3,protocol => mqtt,username => undefined})
+    proto_ver => 3,protocol => mqtt,username => undefined})
 
 修改后的deploy.yaml文件如下：
   ```yaml
@@ -289,9 +293,9 @@ spec:
             value: "0"
 
   ```
-  
-  
+
 ## Apache Apollo
+
 ```shell
 # ./mybroker/bin/apollo-broker run  
 
@@ -318,3 +322,8 @@ INFO  | Administration interface available at: http://127.0.0.1:61680/
 ```
 
 管理界面：http://127.0.0.1:61680/ 默认 admin password
+
+
+
+## SSL 和 CA签名
+

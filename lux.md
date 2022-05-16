@@ -1,3 +1,11 @@
+## Windows下编辑的sh文件无法在linux下执行
+
+bash: ./start.sh: /bin/bash^M: bad interpreter: No such file or directory
+
+![image-20220511141207766](imgs/lux/image-20220511141207766.png)
+
+
+
 ## 安装nodejs
 
 ```sh
