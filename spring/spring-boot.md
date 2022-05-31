@@ -301,3 +301,39 @@ C:\Users\Administrator>curl http://localhost:8080/api/employees/4
 
 
 
+
+
+## JPA
+
+REFER https://blog.csdn.net/qq_42495847/article/details/107991361
+
+全英文名叫`Java Persistence API`，就是java持久化[api](https://so.csdn.net/so/search?q=api&spm=1001.2101.3001.7020)，是SUN公司推出的一套基于`ORM`的规范;
+
+Spring-Data-JPA则是在JPA之上添加另一层抽象（Repository层的实现）；
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200813205947249.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNDk1ODQ3,size_16,color_FFFFFF,t_70#)
+
+- 标准的MVC结构，有助于解耦的实现；
+- 实体类放在 `pojo/entity` 下
+- dao（数据访问对象 data access object）在JPA中叫做`repository`，请遵守这个规范，就像mybaits的dao叫`mapper`一样。
+
+> @Resource和@Autowired注解都是用来实现依赖注入的。只是@Autowired按by type自动注入，而@Resource默认按by name自动注入
+
+
+
+> 连接postgresql jpa需要设置hibernate方言类型：
+>
+> ```
+> spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL10Dialect
+> ```
+
+> 不支援 10 验证类型。请核对您已经组态 pg_hba.conf 文件包含客户端的IP位址或网
+>
+> 解决：更新postgresql jar到最新
+
+> Circular view path
+>
+> 解决：@Controller` → `@RestController
+
+
+
