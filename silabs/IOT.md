@@ -45,9 +45,67 @@ python pyboard.py --device COM3 -f cp main.py :
 
 ![image-20220531214231936](imgs/IOT/image-20220531214231936.png)
 
+> 进入REPL后无法输入
+>
+> https://github.com/micropython/micropython/issues/587
+>
+> 使用SecureCRT连上之后也无法进行交互输入。通过 `flowcontrol = none`解决
+>
+> > I re uploaded the micropython firmware and, just for fun, i tried to open with the arduino serial monitor. And it worked.
+> > Back to `minicom` and check settings... `Hardware Flow Control `was on... Once I turned it `off` it works!
+> >
+> > Sorry for the wasted time.
+>
+> still important in 2020 (putty flowcontrol = none)
 
 
 
+编写main.py，复制到开发板上：
+
+> 1. 使用`pyboard.py` 工具： https://docs.micropython.org/en/latest/reference/pyboard.py.html
+> 2. 必须用python3执行
+> 3. pip装包时报`SSL`错误需关掉梯子
+> 4.  module 'serial' has no attribute '__version__'
+
+```sh
+set PYBOARD_DEVICE=COM3
+python3 pyboard.py -f cp main.py :
+
+# or
+python3 pyboard.py --device COM3 -f cp main.py :
+
+# 说明
+ -f, --filesystem      perform a filesystem action: cp local :device | cp
+                        :device local | cat path | ls [path] | rm path | mkdir
+                        path | rmdir path
+```
+
+首先`pip install serial`
+
+![image-20220601000559151](imgs/IOT/image-20220601000559151.png)
+
+
+
+main.py
+
+```python
+import machine
+import time
+
+# 指明 GPIO2 管脚
+pin = machine.Pin(2, machine.Pin.OUT)
+
+# 循环执行
+while True:
+    time.sleep(2)   # 等待 2 秒
+    pin.on()        # 控制 LED 状态
+    time.sleep(2)   # 等待 2 秒
+    pin.off()       # 切换 LED 状
+```
+
+
+
+[Micro.python ESP8266 API](https://docs.micropython.org/en/latest/esp8266/quickref.html)
 
 
 
