@@ -133,7 +133,7 @@ while True:
 
 
 
-## 设备开发
+### 设备开发
 
 使用 PWM （Pulse Width Modulation，脉冲宽度调制）来实现控制 LED 的颜色和亮度的。
 
@@ -141,7 +141,7 @@ PWM 信号是一个方波信号，通过调节占空比来调节输出的平均�
 
 ![img](imgs/IOT/dde075941211c591c44ea46cf4673861.png)
 
-## NodeMCU 连接WiFi
+### NodeMCU 连接WiFi
 
 > Wi-Fi模块https://nodemcu.readthedocs.io/en/release/modules/wifi/#wifigetchannel
 >
@@ -149,52 +149,42 @@ PWM 信号是一个方波信号，通过调节占空比来调节输出的平均�
 >
 > ![ESP8266 operating in station mode](imgs/IOT/WiFi-station-mode.png)
 >
-> ```sh
-> >>> import network
-> >>> wifi = network.WLAN(network.STA_IF)
-> >>> wifi.active(True) 
-> >>> wifi.scan() 
-> >>> wifi.isconnected() 
-> >>> wifi.connect('FuckYou', 'nimei:123456_') 
-> >>> wifi.isconnected() 
-> ```
->
 > 官网：
->
+> 
 > The [`network`](https://docs.micropython.org/en/latest/library/network.html#module-network) module:
->
+> 
 > ```
 > import network
 > 
 > wlan = network.WLAN(network.STA_IF) # create station interface
 > wlan.active(True)       # activate the interface
-> wlan.scan()             # scan for access points
+>wlan.scan()             # scan for access points
 > wlan.isconnected()      # check if the station is connected to an AP
-> wlan.connect('FuckYou', 'nimei:123456_') # connect to an AP
+>wlan.connect('FuckYou', 'nimei:123456_') # connect to an AP
 > wlan.config('mac')      # get the interface's MAC address
-> wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
+>wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 > 
 > ap = network.WLAN(network.AP_IF) # create access-point interface
 > ap.active(True)         # activate the interface
 > ap.config(essid='ESP-AP') # set the ESSID of the access point
 > ```
->
+> 
 > A useful function for connecting to your local WiFi network is:
->
+> 
 > ```
 > def do_connect():
->     import network
->     wlan = network.WLAN(network.STA_IF)
->     wlan.active(True)
->     if not wlan.isconnected():
->         print('connecting to network...')
->         wlan.connect('essid', 'password')
->         while not wlan.isconnected():
->             pass
->     print('network config:', wlan.ifconfig())
+>  import network
+>  wlan = network.WLAN(network.STA_IF)
+>  wlan.active(True)
+>  if not wlan.isconnected():
+>      print('connecting to network...')
+>     wlan.connect('essid', 'password')
+>      while not wlan.isconnected():
+>         pass
+>  print('network config:', wlan.ifconfig())
 > ```
->
-> Once the network is established the [`socket`](https://docs.micropython.org/en/latest/library/socket.html#module-socket) module can be used to create and use TCP/UDP sockets as usual.
+>    
+>    Once the network is established the [`socket`](https://docs.micropython.org/en/latest/library/socket.html#module-socket) module can be used to create and use TCP/UDP sockets as usual.
 
 
 
@@ -208,6 +198,20 @@ PWM 信号是一个方波信号，通过调节占空比来调节输出的平均�
 > ```
 
 通过[网页工具](https://iot-exp-individual-1258344699.cos.ap-guangzhou.myqcloud.com/password%E7%94%9F%E6%88%90%E5%B7%A5%E5%85%B7.zip)计算腾讯云三元组
+
+源代码见 [代码解析](src\iot-led\main.py)
+
+调试工具和最终文件树界面：
+
+![image-20220609210622224](imgs/IOT/image-20220609210622224.png)
+
+实体连线界面：
+
+![image-20220609210128623](imgs/IOT/image-20220609210128623.png)
+
+可通过腾讯连连小程序调节：
+
+  <img src="imgs/IOT/image-20220609210227879.png" width=200/>
 
 
 
