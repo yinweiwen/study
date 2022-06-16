@@ -1387,3 +1387,6 @@ Exception Details:
     
 85. iota网站数据不实时推送
     WS的域名证书忘了更新
+    
+86. 写入Iceberg报错
+some thing went wrong!!! org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$GetFileInfoRequestProto cannot be cast to com.google.protobuf.Message

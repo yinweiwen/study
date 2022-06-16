@@ -725,3 +725,43 @@ FROM
       AND ccu.table_schema = tc.table_schema
 WHERE tc.constraint_type = 'FOREIGN KEY' AND ccu.table_name='t_structure' AND ccu.column_name='id';
 ```
+
+
+跨库查询
+```sql
+CREATE EXTENSION dblink;
+
+SELECT * 
+FROM  (
+   SELECT *
+   FROM   dblink('host=iota-m1 port=5433 user=postgres password=ROOT dbname=SavoirCloud','select id,iota_thing_id,name from t_structure where org=87')
+   AS     tb1(id int, iota_thing_id varchar,name varchar)
+) AS tb1
+LEFT JOIN "Thing" tb2 ON tb2.id = tb1.iota_thing_id where tb2.id is null;
+```
+
+还有一个办法：postgres-fdw
+https://www.postgresql.org/docs/current/postgres-fdw.html
+```sql
+Here is an example of creating a foreign table with postgres_fdw. First install the extension:
+
+CREATE EXTENSION postgres_fdw;
+Then create a foreign server using CREATE SERVER. In this example we wish to connect to a PostgreSQL server on host 192.83.123.89 listening on port 5432. The database to which the connection is made is named foreign_db on the remote server:
+
+CREATE SERVER foreign_server
+        FOREIGN DATA WRAPPER postgres_fdw
+        OPTIONS (host '192.83.123.89', port '5432', dbname 'foreign_db');
+A user mapping, defined with CREATE USER MAPPING, is needed as well to identify the role that will be used on the remote server:
+
+CREATE USER MAPPING FOR local_user
+        SERVER foreign_server
+        OPTIONS (user 'foreign_user', password 'password');
+Now it is possible to create a foreign table with CREATE FOREIGN TABLE. In this example we wish to access the table named some_schema.some_table on the remote server. The local name for it will be foreign_table:
+
+CREATE FOREIGN TABLE foreign_table (
+        id integer NOT NULL,
+        data text
+)
+        SERVER foreign_server
+        OPTIONS (schema_name 'some_schema', table_name 'some_table');
+```

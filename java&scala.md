@@ -1,7 +1,5 @@
-JAVA&SCALA
-=====
-
 ## JAVA引用webservice:
+
 wsdl2java.bat -p wsdl.jiangsu -d wsdljiangsu  -encoding utf-8 -client http://58.213.116.130:9001/MonitorService-1.0/services/MonitorService?wsdl
 
 wsdl2java.bat -p wsdl.jiangsu -d wsdljiangsutest  -encoding utf-8 -client http://61.132.52.36:9001/MonitorService-1.0/services/MonitorService?wsdl
@@ -430,3 +428,48 @@ Main函数处:
 
 >**云原生 = 微服务 + DevOps + 持续交付 + 容器化**
 
+
+
+## VisualVM 远程
+
+
+
+java -Dcom.sun.management.jmxremote.port=28080 -Dcom.sun.management.jmxremote.ssl=false  -Dcom.sun.management.jmxremote.authenticate=false -Xms8024m -Xmx8024m -cp et-statistics-3.0.jar com.freesun.StatisticsApp
+
+
+
+
+
+```java
+java -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=28080 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=218.3.126.18 -Xms8024m -Xmx8024m -cp et-statistics-3.0.jar com.freesun.StatisticsApp 
+```
+
+```java
+service:jmx:rmi:///jndi/rmi://218.3.126.18:28080/jmxrmi
+```
+
+
+
+通过Jconsole进行连接：
+
+![image-20220531105617326](imgs/java&scala/image-20220531105617326.png)
+
+
+
+通过VisualVM进行连接
+
+![image-20220531105649106](imgs/java&scala/image-20220531105649106.png)
+
+
+
+我的问题？
+
+> 业务流程：缓存4000+设备最新数据；实时处理Kafka数据接入，json反序列化后更新最新信息
+
+![image-20220531143019737](imgs/java&scala/image-20220531143019737.png)
+
+
+
+内存稳定增长到5G左右后重启：
+
+![image-20220601085745212](imgs/java&scala/image-20220601085745212.png)

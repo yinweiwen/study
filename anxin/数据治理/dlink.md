@@ -204,6 +204,14 @@ http://www.streamxhub.com/docs/user-guide/deployment/
 
 
 
+184环境安装位置：
+
+/home/dragon/services/streamx/streamx-console-service-1.2.2
+
+http://10.8.30.184:10000/
+
+
+
 ### 运行官网sql例子
 
 > 准备本机docker-compose kafka环境。需要在 windows机器中访问ubuntu中的kafka，需要进行如下设置
@@ -573,9 +581,9 @@ CREATE TABLE [IF NOT EXISTS] [db.]table_name [ON CLUSTER cluster]
 -- 视图 CREATE VIEW view AS SELECT ..
 ```
 
-[表引擎](https://clickhouse.com/docs/zh/engines/table-engines/)
+### [表引擎](https://clickhouse.com/docs/zh/engines/table-engines/)
 
-
+### [数据类型](https://clickhouse.com/docs/en/sql-reference/data-types/)
 
 
 

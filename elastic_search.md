@@ -273,6 +273,7 @@ GET iota-log-2021.05.10/_search?_source=log
 ## ES-DUMP
 
 ```
+# 导出，服务器上执行
 docker run --rm -ti -v /data:/tmp elasticdump/elasticsearch-dump \
   --input=http://10.8.25.211:9200/raw_data \
   --output=/tmp/my_index_mapping.json \
@@ -280,6 +281,7 @@ docker run --rm -ti -v /data:/tmp elasticdump/elasticsearch-dump \
   --searchBody='{"query": { "bool": { "must": [{"term": {"deviceId": {"value": "e155b882-d2df-4092-b57d-0a02fae8fca6"}}}, { "range": { "triggerTime": { "lt": "2020-10-24T00:00:00.000+08:00","gt":"2020-10-01T00:00:00.000+08:00" } } } ] } } }'
   
 
+# 测试环境导入
 docker run --rm -ti  -v /data:/tmp elasticdump/elasticsearch-dump --input=./data1.json --output=http://10.8.30.36:9200 --type=data
 ```
 
