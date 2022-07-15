@@ -285,6 +285,24 @@ docker run --rm -ti -v /data:/tmp elasticdump/elasticsearch-dump \
 docker run --rm -ti  -v /data:/tmp elasticdump/elasticsearch-dump --input=./data1.json --output=http://10.8.30.36:9200 --type=data
 ```
 
+例子2
+```json
+docker run --rm -ti -v /data:/tmp elasticdump/elasticsearch-dump \
+  --input=http://10.8.25.250:19201/dzy_data \
+  --output=/tmp/dzy.json \
+  --type=data \
+  --limit=10000 \
+  --searchBody='{"query":{"range":{"_time":{"gte":"2022-06-29T18:00:00.000+0800","lte":"2022-06-30T00:00:00.000+0800"}}}}'
+  
+  docker run --rm -ti -v /data:/tmp elasticdump/elasticsearch-dump \
+  --input=/tmp/dzy.json \
+  --output=http://10.8.30.155:9200/dzy_data \
+  --type=data \
+  --limit=10000 
+  
+  docker run --rm -ti  -v /data:/tmp elasticdump/elasticsearch-dump --input=/tmp/dzy1.json --output=http://10.8.30.155:9200/dzy_data --type=data
+```
+
 
 
 ```shell
