@@ -568,6 +568,7 @@ t.Name="yinweiwen" // 支持匿名字段中属性的直接调用
 [作者的小网站](http://gowalker.org)
 
 ## 方法 method
+
 - 通过显示说明`receiver`来实现与某个类型的组合 （receiver语法糖，他是函数的第一个参数）
 - Receiver可以是类型的值或者指针
 - 不存在方法重载

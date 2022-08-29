@@ -1390,3 +1390,44 @@ Exception Details:
     
 86. 写入Iceberg报错
 some thing went wrong!!! org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$GetFileInfoRequestProto cannot be cast to com.google.protobuf.Message
+
+root@iota-m2:/# find . -xdev -type f -size +100M -print
+./tmp/iota20211206.bk
+./tmp/iota220523.sql
+./usr/bin/kubeadm
+./usr/bin/kubelet
+./usr/hdp/share/hst/smartsense-activity-explorer-1.4.0.2.5.1.0-159.tar.gz
+./usr/hdp/2.6.1.0-129/storm-slider-client/contrib/storm-starter/storm-starter-topologies-1.1.0.2.6.1.0-129.jar
+./usr/hdp/2.6.1.0-129/hadoop/mapreduce.tar.gz
+./usr/lib/firefox/libxul.so
+./usr/lib/thunderbird/libxul.so
+./var/log/ambari-metrics-monitor/ambari-metrics-monitor.out
+./var/log/hadoop-yarn/yarn/yarn-yarn-timelineserver-iota-m2.log
+./var/log/hadoop-yarn/yarn/yarn-yarn-timelineserver-iota-m2.log.1
+./var/log/ambari-agent/ambari-agent.out
+./var/log/hadoop-mapreduce/mapred/mapred-mapred-historyserver-iota-m2.log
+./var/lib/docker/overlay2/a833abde2fc657fe6b693bb9729cbb0af5d1979c76dce78ba8ad45c046952117/diff/tmp/blobStore-f0433c46-fd1f-4a21-b633-ac1a374345fd/job_e1e0f3104565236e0c03e5b2565664b1/blob_p-09ef3911203d748b3107f3c6e563d03551abcf72-958a7e237b5dd74ad9ece80da176788e
+./var/lib/docker/overlay2/a833abde2fc657fe6b693bb9729cbb0af5d1979c76dce78ba8ad45c046952117/diff/tmp/flink-web-e5dd74bd-3e09-4ed0-9af9-750c09319a27/flink-web-upload/16a1e878-ef26-48bf-b41e-ad97868d91b7_et-flink0808.jar
+./var/lib/docker/overlay2/a833abde2fc657fe6b693bb9729cbb0af5d1979c76dce78ba8ad45c046952117/diff/tmp/flink-web-e5dd74bd-3e09-4ed0-9af9-750c09319a27/flink-web-upload/9e6d03e2-7293-4566-93be-f98ac0121793_et-flink0808.jar
+./var/lib/docker/overlay2/5c4e24f893b7efc649f5767a668ebfd7135d09c5ef88c492c04022e4dea38c39/diff/usr/local/lib/python3.6/site-packages/tensorflow/python/_pywrap_tensorflow_internal.so
+./var/lib/docker/overlay2/2c3968cc69e400b8ec420e9153501f4bac6efb7a5a3499fbf6669ba7163b4080/diff/home/fs/app/et-upload.jar
+./var/lib/docker/containers/e0d29ef5857b6d62e950aee0dd225de3e6b8a0228734c7fcb8b3085ff919d89a/e0d29ef5857b6d62e950aee0dd225de3e6b8a0228734c7fcb8b3085ff919d89a-json.log
+./var/lib/docker/containers/4a92adcb2676a4c14f061a372861f9a1728d39e9569c743a2faa5ca4de9c8fad/4a92adcb2676a4c14f061a372861f9a1728d39e9569c743a2faa5ca4de9c8fad-json.log
+./var/lib/docker/containers/964e0388a26c1b0e28879f277cc7f1b1af202f549158e36b129584850411261f/964e0388a26c1b0e28879f277cc7f1b1af202f549158e36b129584850411261f-json.log
+./var/lib/docker/containers/7afc1364bcdce03eca7763c1f669584085992bc8a463dcf974b2749b9d5094fa/7afc1364bcdce03eca7763c1f669584085992bc8a463dcf974b2749b9d5094fa-json.log
+./var/lib/docker/containers/426728dd4d9214ac07d4a9b13ad783cf64b54bedf0110260624d7a6a530a8f56/426728dd4d9214ac07d4a9b13ad783cf64b54bedf0110260624d7a6a530a8f56-json.log
+./var/lib/docker/containers/ec60f8fbda1f37f1284c42a6d1a91b6b05db4671d5f44aae6b00ab2c19ce13ce/ec60f8fbda1f37f1284c42a6d1a91b6b05db4671d5f44aae6b00ab2c19ce13ce-json.log
+./var/lib/docker/containers/fee12bafe89e4d1cad72c73a571619a270bdce7891898fb194bff103d07fa959/fee12bafe89e4d1cad72c73a571619a270bdce7891898fb194bff103d07fa959-json.log
+
+
+./home/iota/es/elasticsearch-5.5.1
+
+./home/databasebak/savoir20220808.gz
+./home/databasebak/savoir20220803.gz
+./home/databasebak/savoir20220725.gz
+./home/databasebak/savoir20220721.gz
+./home/databasebak/savoir20220801.gz
+./kafka-logs/
+
+
+

@@ -237,6 +237,7 @@ values(1,1,'2019-12-15','{1,2,3}') ON CONFLICT(sensor_id)
  
  备份所有表结构DLL
  pg_dump -h 10.8.30.32 -U postgres --dbname="haiwen20200401" --no-owner --schema='public' --oids --schema-only --file="/tmp/schema.sql"
+ pg_dump -U postgres --dbname="Anxinyun0726" --no-owner --schema='public' --oids -T 't_user_token' --file="/tmp/data.sql"
  
  指定表数据备份
   pg_dump -h 10.8.30.32 -U postgres --dbname="haiwen20200401" --no-owner --schema='public' --data-only --table=public.\"T_ALARM_PUSHPOLICY\" --table=public.\"T_ALARM_PUSHPOLICY_DETAIL\" --table=public.\"T_ALARM_RECEIVER\" --table=public.\"T_ALARM_RECEIVER_STRUCTURE\" --table=public.\"T_BIM\" --table=public.\"T_BIM_STATIONS\" --table=public.\"T_BRIDGE_COMPONENT\" --table=public.\"T_BRIDGE_EVALUATE\" --table=public.\"T_BRIDGE_EVALUATE_SCORE\" --table=public.\"T_BRIDGE_MEMBER\" --table=public.\"T_BRIDGE_PART\" --table=public.\"T_CONSTRUCTION_LOG_DETAIL\" --table=public.\"T_DATA_AGGREGATION\" --table=public.\"T_DATA_FILE_TYPE\"   --table=public.\"T_DATA_OVERLOAD_STATISTIC\" --table=public.\"T_DATA_RATIONAL_FILTER_CONFIG\" --table=public.\"T_DIM_AGG_CONFIG\" --table=public.\"T_DIM_AGG_TYPE\" --table=public.\"T_DIM_AGG_WAY\" --table=public.\"T_DIM_CALCULATION_METHOD\" --table=public.\"T_DIM_CONSTRUCTION_LOG_ITEM\" --table=public.\"T_DIM_CONSTRUCTION_LOG_TEMPLATE\" --table=public.\"T_DIM_CONSTRUCTION_TEMPLATE_ITEM\" --table=public.\"T_DIM_DATETIME\" --table=public.\"T_DIM_DEVICE_STATUS_LATEST\" --table=public.\"T_DIM_DIRECTION\" --table=public.\"T_DIM_DTU\" --table=public.\"T_DIM_DTU_ACCESS\" --table=public.\"T_DIM_DTU_PRODUCT\" --table=public.\"T_DIM_ETHERNET\" --table=public.\"T_DIM_FACTOR_AGG_CONFIG\" --table=public.\"T_DIM_FACTOR_PRODUCT_TYPE\" --table=public.\"T_DIM_FACTOR_UNIT_INT\" --table=public.\"T_DIM_FATIGUE_DAMAGE_CONFIG\" --table=public.\"T_DIM_FATIGUE_DAMAGE_INFO\" --table=public.\"T_DIM_FORMULAID\" --table=public.\"T_DIM_FORMULAID_SET\" --table=public.\"T_DIM_FORMULA_PARA\" --table=public.\"T_DIM_FORMULA_PARA_NAME\" --table=public.\"T_DIM_GROUP\" --table=public.\"T_DIM_GROUP_TYPE\" --table=public.\"T_DIM_GROUP_TYPE_SAFE_FACTOR\"  --table=public.\"T_DIM_IDAU_DIAGNOSIS_ATTRIBUTES\" --table=public.\"T_DIM_LOCAL_FILE\" --table=public.\"T_DIM_NETWORK\" --table=public.\"T_DIM_NVR_FACTORY\" --table=public.\"T_DIM_PHONE_VALIDATE_CODE\" --table=public.\"T_DIM_PRODUCTCATAGORY_ORIGINALDATA\" --table=public.\"T_DIM_PRODUCT_CATEGORY\" --table=public.\"T_DIM_PRODUCT_TYPE\" --table=public.\"T_DIM_PROTOCOL_TYPE\" --table=public.\"T_DIM_REGION\" --table=public.\"T_DIM_REGION_TYPE\" --table=public.\"T_DIM_REMOTE_DTU\" --table=public.\"T_DIM_RESOURCE\" --table=public.\"T_DIM_ROLE\" --table=public.\"T_DIM_ROLE_RESOURCE\" --table=public.\"T_DIM_SAFETY_FACTOR_TYPE\" --table=public.\"T_DIM_SENSOR\" --table=public.\"T_DIM_SENSORPRODUCT_SAFETYFACTORTYPE\" --table=public.\"T_DIM_SENSOR_CORRENT\" --table=public.\"T_DIM_SENSOR_EXT\" --table=public.\"T_DIM_SENSOR_FATIGUE_DAMAGE\" --table=public.\"T_DIM_SENSOR_GPS\" --table=public.\"T_DIM_SENSOR_GROUP\" --table=public.\"T_DIM_SENSOR_GROUP_CEXIE\" --table=public.\"T_DIM_SENSOR_GROUP_CHENJIANG\" --table=public.\"T_DIM_SENSOR_GROUP_JINRUNXIAN\" --table=public.\"T_DIM_SENSOR_PRODUCT\" --table=public.\"T_DIM_SENSOR_TIME_BATCH\" --table=public.\"T_DIM_SERIAL_PORT\" --table=public.\"T_DIM_STRUCTUER_LINE\" --table=public.\"T_DIM_STRUCTUER_PROGRESS\" --table=public.\"T_DIM_STRUCTURE\" --table=public.\"T_DIM_STRUCTURE_CONSTRUCTION_LOG_CONFIG\" --table=public.\"T_DIM_STRUCTURE_FACTOR\" --table=public.\"T_DIM_STRUCTURE_TYPE\" --table=public.\"T_DIM_STRUCTURE_TYPE_FACTOR\" --table=public.\"T_DIM_STRUCT_DTU\" --table=public.\"T_DIM_STRUCT_FACTOR_UNIT\" --table=public.\"T_DIM_USER\" --table=public.\"T_DIM_USER_STRUCTURE\" --table=public.\"T_DIM_VEHICLE_CATEGORY\" --table=public.\"T_DIM_VEHICLE_OVERLOAD\" --table=public.\"T_DIM_VIBRATION_CHANNEL\" --table=public.\"T_DIM_VIBRATION_MODULE\" --table=public.\"T_DIM_VIDEOPOINT_SENSOR\" --table=public.\"T_DIM_VIDEO_FACTOR\" --table=public.\"T_DIM_VIDEO_MONITORING_POINTS\" --table=public.\"T_DIM_VIDEO_NVR\" --table=public.\"T_DIM_VIDEO_PUSH_SERVER_ADDRESS\" --table=public.\"T_DIM_VIDEO_STRUCTURE\" --table=public.\"T_DIM_WARNING_DEVICETYPE\" --table=public.\"T_DIM_WARNING_TYPE\" --table=public.\"T_EXTRACT_SENSOR_MAP\" --table=public.\"T_EXTRACT_TABLE_MAP\" --table=public.\"T_EXTRACT_TIME\" --table=public.\"T_FACT_CHANGE_RATE_THRESHOLD\" --table=public.\"T_FACT_SENSOR_THRESHOLD\" --table=public.\"T_REPORT_CONFIG\" --table=public.\"T_REPORT_CONFIG_TEMPLATE\" --table=public.\"T_REPORT_TEMPLATE\" --table=public.UserToken  --file="/tmp/data.sql"
@@ -764,4 +765,53 @@ CREATE FOREIGN TABLE foreign_table (
 )
         SERVER foreign_server
         OPTIONS (schema_name 'some_schema', table_name 'some_table');
+```
+
+# vacuum
+http://www.45fan.com/article.php?aid=1yh1pEcdfr3BmvDD
+
+xmin界限: 仍活跃的事务ID
+
+解决xmin界限问题：
+1、 查找长时间运行事务 pg_terminate_backend
+2、查找复制槽
+3、查找准备好的事务
+
+vacuum的效果
+1.1释放,再利用 更新/删除的行所占据的磁盘空间.
+1.2更新POSTGRESQL查询计划中使用的统计数据
+1.3防止因事务ID的重置而使非常老的数据丢失。
+
+可以用vacuumdb --help查询。
+-a/--all vacuum所有的数据库
+-d dbname 只vacuum dbname这个数据库
+-f/--full 执行full的vacuum
+-t table 只vacuum table这个数据表
+
+
+VACUUM 命令：
+https://www.postgresql.org/docs/current/sql-vacuum.html
+
+
+
+```shell
+SELECT relname, age(relfrozenxid) as xid_age, pg_size_pretty(pg_table_size(oid)) as table_size FROM pg_class WHERE relkind = 'r' and pg_table_size(oid) > 1073741824
+ORDER BY age(relfrozenxid) DESC LIMIT 20;
+
+relname	xid_age	table_size
+t_worker	35963498	2738 MB
+
+
+VACUUM (VERBOSE, ANALYZE) t_worker;
+
+#或者
+su postgres
+vacuumdb --analyze --verbose --table 't_worker' "SiteDemo"
+
+#进度查询
+https://dba.stackexchange.com/questions/44657/how-much-time-will-a-vacuum-autovacuum-operation-take
+I get table's disk size using pg_total_relation_size() - this includes indexes and TOAST size, which is what VACUUM processes. This gives me the idea of how many bytes the VACUUM has to read.
+I run VACUUM on the table.
+I find the pid of the VACUUM process (in pg_catalog.pg_stat_activity).
+In Linux shell I run while true; do cat /proc/123/io | grep read_bytes; sleep 60; done (where 123 is the pid) - this shows me bytes read by the process from the disk so far.
 ```
