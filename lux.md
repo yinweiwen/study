@@ -1,3 +1,30 @@
+## Ubuntu文件服务
+
+https://ubuntu.com/server/docs/samba-file-server
+
+```sh
+sudo apt install samba
+root@iZuf69j4skaou5p4tq5il9Z:~# vi /etc/samba/smb.conf
+
+[share]
+    comment = Ubuntu File Server Share
+    path = /srv/samba/share
+    browsable = yes
+    guest ok = yes
+    read only = no
+    create mask = 0755
+
+
+
+root@iZuf69j4skaou5p4tq5il9Z:~# sudo mkdir -p /srv/samba/share
+root@iZuf69j4skaou5p4tq5il9Z:~# sudo chown nobody:nogroup /srv/samba/share/
+root@iZuf69j4skaou5p4tq5il9Z:~# vi /srv/samba/share/a.txt
+
+sudo systemctl restart smbd.service nmbd.service
+```
+
+
+
 ## Windows下编辑的sh文件无法在linux下执行
 
 bash: ./start.sh: /bin/bash^M: bad interpreter: No such file or directory

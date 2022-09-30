@@ -803,6 +803,9 @@ t_worker	35963498	2738 MB
 
 
 VACUUM (VERBOSE, ANALYZE) t_worker;
+VACUUM (ANALYZE, VERBOSE, FULL) t_worker; (最终生效)
+
+
 
 #或者
 su postgres
@@ -814,4 +817,33 @@ I get table's disk size using pg_total_relation_size() - this includes indexes a
 I run VACUUM on the table.
 I find the pid of the VACUUM process (in pg_catalog.pg_stat_activity).
 In Linux shell I run while true; do cat /proc/123/io | grep read_bytes; sleep 60; done (where 123 is the pid) - this shows me bytes read by the process from the disk so far.
+```
+
+# PG 查询表类型、所有表
+```sql
+select nsp.nspname as object_schema,
+       cls.relname as object_name,
+       rol.rolname as owner,
+       case cls.relkind
+         when 'r' then 'TABLE'
+         when 'm' then 'MATERIALIZED_VIEW'
+         when 'i' then 'INDEX'
+         when 'S' then 'SEQUENCE'
+         when 'v' then 'VIEW'
+         when 'c' then 'TYPE'
+         else cls.relkind::text
+       end as object_type,
+       CASE relreplident
+          WHEN 'd' THEN 'default'
+          WHEN 'n' THEN 'nothing'
+          WHEN 'f' THEN 'full'
+          WHEN 'i' THEN 'index'
+       END AS replica_identity
+from pg_class cls
+  join pg_roles rol on rol.oid = cls.relowner
+  join pg_namespace nsp on nsp.oid = cls.relnamespace
+where nsp.nspname not in ('information_schema', 'pg_catalog')
+  and cls.relkind='r'
+  and rol.rolname = current_user  --- remove this if you want to see all objects
+order by nsp.nspname, cls.relname;
 ```

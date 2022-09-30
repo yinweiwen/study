@@ -1354,6 +1354,8 @@ root@iota-n3:~# docker inspect -f '{{.State.Pid}} {{.Id}}' $(docker ps -a -q) | 
 10823 f52f068a425e0a41ab4dcf72169b2e67121900aad6c4b1317108520068320102
 root@iota-n3:~# ps -ef | grep 10823
 root     32580 15338  0 11:10 pts/10   00:00:00 grep --color=auto 10823
+
+docker inspect -f '{{.State.Pid}} {{.Id}} {{.Name}}' $(docker ps -a -q)  | grep k8s_iota-dac_iota-dac
 ```
 
 81. Docker : How to avoid Operation not permitted in Docker Container?
@@ -1431,3 +1433,49 @@ root@iota-m2:/# find . -xdev -type f -size +100M -print
 
 
 
+87.Clickhouse整理
+查看日志
+tail -n 1000 /var/log/clickhouse-server/clickhouse-server.err.log
+
+[1002] ClickHouse exception, message: Code: 521. DB::ErrnoException: Cannot rename /var/lib/clickhouse/metadata/pepca10.sql.tmp to /var/lib/clickhouse/metadata/pepca10.sql because the second path already exists, errno: 17, strerror: File exists. (ATOMIC_RENAME_FAIL) (version 22.8.4.7 (official build)) , host: 10.8.30.71, port: 30123;
+
+rm /var/lib/clickhouse/metadata/pepca10.sql
+rm /var/lib/clickhouse/metadata/pepca10.sql.tmp
+
+# 查看当前
+select * from pg_replication_slots;
+# 删除槽
+select * from  pg_drop_replication_slot('flink_xq1_workflow_action_journal');
+
+
+2022/09/29 18:02:34.065291 [W] [source] unmarshal data error: {"initial_level":3,"alarm_count":10,"alarm_type_code":"3004","current_level":1,"end_time":"2019-03-20T01:54:28.095Z","structure_id":101,"source_type_id":1,"alarm_code":"3008","start_time":"2018-11-19T08:17:55.510+0800","alarm_content":"数据解析错误","source_id":"3bb016cf-cec2-4e42-810f-33464086f386","state":3,"source_name":"微功耗扬尘","alarm_type_id":4} parsing time "\"2018-11-19T08:17:55.510+0800\"" as "\"2006-01-02T15:04:05Z07:00\"": cannot parse "+0800\"" as "Z07:00"
+
+
+88. ElasticSearch Distinct
+cardinality
+
+GET anxinyun_vbraws/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"range": {
+          "collect_time": {
+              "gte": "2022-01-01T00:00:00.000+0800",
+              "lte": "2022-12-31T00:00:00.000+0800"
+          }
+        }}
+      ]
+    }
+  },
+  "size": 0
+  , "aggs": {
+    "Devices": {
+      "cardinality": {
+        "field": "iota_device"
+      }
+    }
+  }
+}
+
+89.
