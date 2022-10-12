@@ -52,7 +52,7 @@ PyTorch适用于新手和研究员，以下是pytorch的一些生态。
 
 Anaconda官网下载安装（略）：清华镜像 https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/
 
-Cuda官网下载及安装：
+Cuda官网下载及安装：https://developer.nvidia.com/cuda-toolkit
 
 ![image-20220829150721920](imgs/PyTorch/image-20220829150721920.png)
 
@@ -69,6 +69,17 @@ mvcc -V
 https://pytorch.org/get-started/locally/
 
 ![image-20220829151204263](imgs/PyTorch/image-20220829151204263.png)
+
+> ```shell
+> conda clean --all --yes
+> # CondaValueError: Malformed version string '~': invalid character(s).
+> conda upgrade -n base conda
+> 
+> conda install pytorch torchvision torchaudio cudatoolkit=11.7 -c pytorch -c conda-forge
+> 
+> ```
+
+
 
 验证
 
