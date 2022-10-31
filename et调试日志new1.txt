@@ -1478,4 +1478,189 @@ GET anxinyun_vbraws/_search
   }
 }
 
-89.
+89. Flink 优化建议
+https://cwiki.apache.org/confluence/display/FLINK/FLIP-171%3A+Async+Sink
+
+
+90. Kafka broker启动失败
+[2022-10-11 14:34:28,829] FATAL Fatal error during KafkaServer startup. Prepare to shutdown (kafka.server.KafkaServer)
+java.lang.NumberFormatException: For input string: "lk-RawData-4"
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.lang.Long.parseLong(Long.java:589)
+	at java.lang.Long.parseLong(Long.java:631)
+	at scala.collection.immutable.StringLike$class.toLong(StringLike.scala:230)
+	at scala.collection.immutable.StringOps.toLong(StringOps.scala:31)
+	at kafka.log.Log$$anonfun$loadSegments$4.apply(Log.scala:195)
+	at kafka.log.Log$$anonfun$loadSegments$4.apply(Log.scala:179)
+	at scala.collection.TraversableLike$WithFilter$$anonfun$foreach$1.apply(TraversableLike.scala:772)
+	at scala.collection.IndexedSeqOptimized$class.foreach(IndexedSeqOptimized.scala:33)
+	at scala.collection.mutable.ArrayOps$ofRef.foreach(ArrayOps.scala:108)
+	at scala.collection.TraversableLike$WithFilter.foreach(TraversableLike.scala:771)
+	at kafka.log.Log.loadSegments(Log.scala:179)
+	at kafka.log.Log.<init>(Log.scala:108)
+	at kafka.log.LogManager$$anonfun$loadLogs$2$$anonfun$3$$anonfun$apply$10$$anonfun$apply$1.apply$mcV$sp(LogManager.scala:151)
+	at kafka.utils.CoreUtils$$anon$1.run(CoreUtils.scala:58)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+[2022-10-11 14:34:28,833] INFO shutting down (kafka.server.KafkaServer)
+[2022-10-11 14:34:28,840] INFO Recovering unflushed segment 0 in log savoir_raw-2. (kafka.log.Log)
+[2022-10-11 14:34:28,844] INFO Completed load of log savoir_raw-2 with 1 log segments and log end offset 0 in 17 ms (kafka.log.Log)
+[2022-10-11 14:34:28,852] WARN Found a corrupted index file due to requirement failed: Corrupt index found, index file (/kafka-logs/__consumer_offsets-12/00000000000028472468.index) has non-zero size but the last offset is 28472468 which is no larger than the base offset 28472468.}. deleting /kafka-logs/__consumer_offsets-12/00000000000028472468.timeindex, /kafka-logs/__consumer_offsets-12/00000000000028472468.index and rebuilding index... (kafka.log.Log)
+[2022-10-11 14:34:28,853] INFO shut down completed (kafka.server.KafkaServer)
+[2022-10-11 14:34:28,854] FATAL Fatal error during KafkaServerStartable startup. Prepare to shutdown (kafka.server.KafkaServerStartable)
+java.lang.NumberFormatException: For input string: "lk-RawData-4"
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.lang.Long.parseLong(Long.java:589)
+	at java.lang.Long.parseLong(Long.java:631)
+	at scala.collection.immutable.StringLike$class.toLong(StringLike.scala:230)
+	at scala.collection.immutable.StringOps.toLong(StringOps.scala:31)
+	at kafka.log.Log$$anonfun$loadSegments$4.apply(Log.scala:195)
+	at kafka.log.Log$$anonfun$loadSegments$4.apply(Log.scala:179)
+	at scala.collection.TraversableLike$WithFilter$$anonfun$foreach$1.apply(TraversableLike.scala:772)
+	at scala.collection.IndexedSeqOptimized$class.foreach(IndexedSeqOptimized.scala:33)
+	at scala.collection.mutable.ArrayOps$ofRef.foreach(ArrayOps.scala:108)
+	at scala.collection.TraversableLike$WithFilter.foreach(TraversableLike.scala:771)
+	at kafka.log.Log.loadSegments(Log.scala:179)
+	at kafka.log.Log.<init>(Log.scala:108)
+	at kafka.log.LogManager$$anonfun$loadLogs$2$$anonfun$3$$anonfun$apply$10$$anonfun$apply$1.apply$mcV$sp(LogManager.scala:151)
+	at kafka.utils.CoreUtils$$anon$1.run(CoreUtils.scala:58)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+[2022-10-11 14:34:28,855] INFO shutting down (kafka.server.KafkaServer)
+
+解决方法：一直没法恢复，重置zk和kafka数据，重启进程
+rm -rf /kafka-logs
+rm -rf /hadoop/zookeeper/version-2
+
+
+90. Clickhouse断电重启失败
+Application: DB::Exception: Suspiciously many (32) broken parts to remove.****
+
+ref: https://segmentfault.com/a/1190000042179953
+
+单表配置方式
+在创建MergeTree表的时候特别配置一下max_suspicious_broken_parts参数
+
+CREATE TABLE foo
+(
+    `A` Int64
+)
+ENGINE = MergeTree
+ORDER BY tuple()
+SETTINGS max_suspicious_broken_parts = 1000;
+
+或使用ALTER TABLE ... MODIFY SETTING命令修改
+
+新建文件max_suspicious_broken_parts.xml写入如下内容
+
+<?xml version="1.0"?>
+<yandex>
+     <merge_tree>
+         <max_suspicious_broken_parts>1000</max_suspicious_broken_parts>
+     </merge_tree>
+</yandex>
+
+方法二：运行以下命令：
+
+sudo -u clickhouse touch /var/lib/clickhouse/flags/force_restore_data
+注意这里flage目录可以是你安装时指定的具体clickhouse根目录。然后重启CK服务，CK会从另外一个备份中恢复数据。
+这里是CK自带的故障恢复机制，前提是使用复制表（Replicated开头），本质是告诉CK，强制重建数据。建议使用此方法。
+
+如果数据完全丢失的情况，进行restore时，CK本身没有带宽限制，表很多或数据量很大的话，需要做好网络压力以及时间评估。
+
+作者：EdgeE
+链接：https://www.jianshu.com/p/06b79e8db75c
+来源：简书
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+【未解决】
+
+91.failed to re-find parent key in index "act_idx_hi_detail_proc_def_key" for split pages 8978/9035
+REINDEX INDEX act_idx_hi_detail_proc_def_key;
+
+92. clickhouse PG同步时区问题
+-- 2022-04-26 06:55:13.431000 in clickhouse
+                -- ^
+                -- ^
+                -- ^
+-- 2022-04-26 11:55:13.431000 +00:00 in pg
+
+
+INSERT INTO public.workflow_process_history (id, procinst_id, form_data, create_at, version_id, apply_user, apply_department, submit_form_data)
+VALUES (1112359, 'bb1206b3-c557-11ec-b4cd-0a94055aa690', '{"Dm3TerRxaR":"","JH7F48i27P":"2022-04-26","sY6XrYGNex":"2022-04-26 18:00:00","X4wGC4GkHa":"2022-04-26 22:00:00","NDB3s3m757":"4","zAth85kMQc":"加班事项：项企绩效表单修改\n预计时间：3小时\n加班时间：2022-04-26 18:00 - 2022-04-26 21:00","apBBfJhR3h":{"Dr6n4SmeS3":4,"aTwj4kkpFk":"wTaTbAezs","tp4hX5jMR8":4},"mwPHPZAxPf":[{"name":"2022-04-26加班.png","uid":"rc-upload-1651065482283-2","status":"done","url":"/assets/files/common/1651065545498_2022-04-26加班.png"}]}',
+        '2022-04-26 11:55:13.431000 +08:00', 3598, 731, 123, null);
+
+
+-- 2022-04-25 22:55:13.431000
+-- 2022-04-26 03:55:13.431000 +08:00
+-- 莫斯科时区
+
+-- 不过暂时商用环境没问题  
+-- 那可能是容器时区的问题
+
+
+93.unexpected chunk size in pg_toast
+Clickhouse使用MaterializedPostgreSQL Postgresql数据库物化视图时出错。很多表没能进行同步，调整办法：
+https://stackoverflow.com/questions/68193710/postgres-i-am-getting-error-unexpected-chunk-number-0-expected-1-for-toast-v
+有部分索引出现问题。
+
+2022.10.21 21:45:43.435593 [ 28338 ] {} <Error> void DB::DatabaseMaterializedPostgreSQL::startSynchronization(): std::exception. Code: 1001, type: pqxx::sql_error, e.what() = Failure during '[END COPY]': ERROR:  unexpected chunk size 1996 (expected 236) in final chunk 1 for toast value 5789294 in pg_toast_2482133
+
+查询toast
+SELECT oid::regclass,
+       reltoastrelid::regclass,
+       pg_relation_size(reltoastrelid) AS toast_size
+FROM pg_class
+WHERE relkind = 'r'
+  AND reltoastrelid <> 0
+ORDER BY 3 DESC;
+  
+  oid	reltoastrelid	toast_size
+user_token	pg_toast.pg_toast_2482062	3337756672
+workflow_process_history	pg_toast.pg_toast_2482133	202981376
+
+REINDEX TABLE workflow_process_history;
+REINDEX table pg_toast.pg_toast_2482133;
+VACUUM analyze workflow_process_history;
+
+又出现missing chunk number 0 for toast value 5789294 in pg_toast_2482133
+https://meta.discourse.org/t/how-i-fixed-a-table-from-postgres/218012
+
+pep-ca=# select count(*) from workflow_process_history;
+ count 
+-------
+ 71635
+(1 row)
+
+循环多次执行以下语句，查看大致的区间
+select * from workflow_process_history order by id limit 10000 offset 70000;
+
+#!/bin/sh
+j=70000
+while [ $j -lt 71635 ]
+do
+  psql -U postgres -d pep-ca -c "SELECT * FROM workflow_process_history LIMIT 1 offset $j" >/dev/null || echo $j
+  j=$(($j+1))
+done
+
+pep-ca=# select * from workflow_process_history order by id limit 1 offset 70103;
+ERROR:  missing chunk number 0 for toast value 5789294 in pg_toast_2482133
+pep-ca=# select id from workflow_process_history order by id limit 1 offset 70103;
+  id   
+-------
+ 71500
+(1 row)
+
+ delete from workflow_process_history where id=71500;
+在册执行：
+REINDEX TABLE workflow_process_history;
+REINDEX table pg_toast.pg_toast_2482133;
+VACUUM analyze workflow_process_history;
+
+

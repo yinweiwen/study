@@ -847,3 +847,15 @@ where nsp.nspname not in ('information_schema', 'pg_catalog')
   and rol.rolname = current_user  --- remove this if you want to see all objects
 order by nsp.nspname, cls.relname;
 ```
+
+
+# PG_TOAST
+select * from pg_class where relname='pg_toast_16489';
+
+SELECT oid::regclass,
+       reltoastrelid::regclass,
+       pg_relation_size(reltoastrelid) AS toast_size
+FROM pg_class
+WHERE relkind = 'r'
+  AND reltoastrelid <> 0
+ORDER BY 3 DESC;

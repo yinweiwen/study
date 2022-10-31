@@ -1041,3 +1041,18 @@ CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -ldflags
 
 ```
 
+
+
+## GO DEBUG
+
+![image-20221026110622292](imgs/gostudy/image-20221026110622292.png)
+
+
+
+
+
+```sh
+-tags debug
+```
+
+![image-20221026110642049](imgs/gostudy/image-20221026110642049.png)

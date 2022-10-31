@@ -80,7 +80,7 @@ broker.id=1004
   从zk中删除topic
   ./zkCli.sh
   ls /brokers/topics
-  rmr /brokers/topics/anxinyun_data2
+  rmr /brokers/topics/RawData
   删除完成后重启zookeeper和kafka服务；
 
 
@@ -635,3 +635,16 @@ acks
 0	 Producer 往集群发送数据不需要等到集群的返回，不确保消息发送成功。安全性最低但是效率最高。
 1	 Producer 往集群发送数据只要 Leader 应答就可以发送下一条，只确保 Leader 接收成功。
 -1 或 all	 Producer 往集群发送数据需要所有的ISR Follower 都完成从 Leader 的同步才会发送下一条，确保 Leader 发送成功和所有的副本都成功接收。安全性最高，但是效率最低。
+
+
+
+
+
+
+
+
+# 大消息
+Consumer side:fetch.message.max.bytes - this will determine the largest size of a message that can be fetched by the consumer.
+Broker side: replica.fetch.max.bytes - this will allow for the replicas in the brokers to send messages within the cluster and make sure the messages are replicated correctly. If this is too small, then the message will never be replicated, and therefore, the consumer will never see the message because the message will never be committed (fully replicated).
+Broker side: message.max.bytes - this is the largest size of the message that can be received by the broker from a producer.
+Broker side (per topic): max.message.bytes - this is the largest size of the message the broker will allow to be appended to the topic. This size is validated pre-compression. (Defaults to broker's message.max.bytes.)

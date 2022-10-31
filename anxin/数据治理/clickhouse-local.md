@@ -91,6 +91,131 @@ OPTIMIZE TABLE visits PARTITION 201902;
 
 
 
+## 在ARM上部署Local
+
+Clickhouse支持运行在任何支持x86_64,AArch64,PowerPC64LE架构的Linux,FreeBSD,MacOSX。
+
+官方预编译版本 X86_64+SSE 4.2, 查看当前CPU是否支持SSE4.2
+
+```sh
+$ grep -q sse4_2 /proc/cpuinfo && echo "SSE 4.2 supported" || echo "SSE 4.2 not supported"
+```
+
+> 建议CPU使用**Turbo Boost** and **hyper-threading**技术提高性能
+
+手动编译参考：[这里](https://clickhouse.com/docs/en/development/build/#you-dont-have-to-build-clickhouse)
+
+
+
+```sh
+root@forlinx:/home/forlinx# uname -a
+Linux forlinx 4.4.189 #7 SMP Thu Nov 18 04:08:10 UTC 2021 aarch64 aarch64 aarch64 GNU/Linux
+```
+
+
+
+也能通过apt安装linux通用版本
+
+```shell
+sudo apt-get install -y apt-transport-https ca-certificates dirmngr
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 8919F6BD2B48D754
+
+echo "deb https://packages.clickhouse.com/deb stable main" | sudo tee \
+    /etc/apt/sources.list.d/clickhouse.list
+sudo apt-get update
+
+sudo apt-get install -y clickhouse-server clickhouse-client
+
+sudo service clickhouse-server start
+clickhouse-client # or "clickhouse-client --password" if you've set up a password.
+```
+
+安装了以下包:
+
+- `clickhouse-common-static` — 编译的二进制包.
+- `clickhouse-server` — 创建服务的符号链接和默认配置.
+- `clickhouse-client` — 创建客户端的符号链接和默认配置.
+- `clickhouse-common-static-dbg` — 编译的二进制包（带Debug信息）.
+
+
+
+> 删除：
+>
+>  dpkg --list | grep click
+>
+> apt-get purge clickhouse-common-static clickhouse-server clickhouse-client
+>
+> * ```
+>   sudo apt-get autoremove 清理之前remove命令后遗留的无用程序的配置
+>   sudo apt-get clean 清理之前下载的归档文件等
+>   ```
+
+
+
+下载Tgz包
+
+```sh
+LATEST_VERSION=$(curl -s https://packages.clickhouse.com/tgz/stable/ | \
+    grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort -V -r | head -n 1)
+export LATEST_VERSION
+
+case $(uname -m) in
+  x86_64) ARCH=amd64 ;;
+  aarch64) ARCH=arm64 ;;
+  *) echo "Unknown architecture $(uname -m)"; exit 1 ;;
+esac
+
+for PKG in clickhouse-common-static clickhouse-common-static-dbg clickhouse-server clickhouse-client
+do
+  curl -fO "https://packages.clickhouse.com/tgz/stable/$PKG-$LATEST_VERSION-${ARCH}.tgz" \
+    || curl -fO "https://packages.clickhouse.com/tgz/stable/$PKG-$LATEST_VERSION.tgz"
+done
+
+tar -xzvf "clickhouse-common-static-$LATEST_VERSION-${ARCH}.tgz" \
+  || tar -xzvf "clickhouse-common-static-$LATEST_VERSION.tgz"
+sudo "clickhouse-common-static-$LATEST_VERSION/install/doinst.sh"
+
+tar -xzvf "clickhouse-common-static-dbg-$LATEST_VERSION-${ARCH}.tgz" \
+  || tar -xzvf "clickhouse-common-static-dbg-$LATEST_VERSION.tgz"
+sudo "clickhouse-common-static-dbg-$LATEST_VERSION/install/doinst.sh"
+
+tar -xzvf "clickhouse-server-$LATEST_VERSION-${ARCH}.tgz" \
+  || tar -xzvf "clickhouse-server-$LATEST_VERSION.tgz"
+sudo "clickhouse-server-$LATEST_VERSION/install/doinst.sh" configure
+sudo /etc/init.d/clickhouse-server start
+
+tar -xzvf "clickhouse-client-$LATEST_VERSION-${ARCH}.tgz" \
+  || tar -xzvf "clickhouse-client-$LATEST_VERSION.tgz"
+sudo "clickhouse-client-$LATEST_VERSION/install/doinst.sh"
+```
+
+下载文件
+
+```
+drwxr-xr-x  5 forlinx forlinx      4096 Sep 29 08:18 clickhouse-client-22.9.3.18/
+-rw-r--r--  1 root    root        82626 Oct 17 13:44 clickhouse-client-22.9.3.18-arm64.tgz
+drwxr-xr-x  4 forlinx forlinx      4096 Sep 29 08:19 clickhouse-common-static-22.9.3.18/
+-rw-r--r--  1 root    root    164490321 Oct 17 13:42 clickhouse-common-static-22.9.3.18-arm64.tgz
+
+```
+
+### 安装Clickhouse-Local:
+
+ clickhouse-local  -q "CREATE TABLE if not exists test_batch (id Int64,EventTime Date) ENGINE = MergeTree() PARTITION BY toYYYYMM(EventTime) ORDER BY id;INSERT INTO TABLE test_batch (1,'2021-05-05');" --logger.console  --path /tmp/local1
+
+
+
+```sh
+setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/clickhouse
+
+clickhouse-echo -e "1\n2\n3" |  clickhouse-local -S "id Int64" -N "tmp_table" -q "CREATE TABLE if not exists test_batch (id Int64,EventTime Date) ENGINE = MergeTree() PARTITION BY toYYYYMM(EventTime) ORDER BY id;INSERT INTO TABLE test_batch SELECT id,'2021-05-05' FROM tmp_table;" --logger.console  --path /tmp/local
+
+clickhouse-echo -e "1\n2\n3" |  clickhouse-local -S "id Int64" -N "tmp_table" -q "CREATE TABLE if not exists test_batch (id Int64,EventTime Date) ENGINE = MergeTree() PARTITION BY toYYYYMM(EventTime) ORDER BY id;INSERT INTO TABLE test_batch values(1,'2021-05-05');" --logger.console  --path /tmp/local
+
+```
+
+
+
 ## ERRS:
 
 1. ```
