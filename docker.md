@@ -38,6 +38,34 @@ docker-compose rm -s -v yourService
 
 # 删除volumne
 docker-compose down -v
+
+# # Stop and remove container's using the target volume
+docker-compose stop NAME_OF_CONTAINER
+
+# We need the force flag, "-f", as the container is still bound to the volume
+docker-compose rm -f NAME_OF_CONTAINER
+
+# Next find your volume name in the following list
+docker volume ls
+
+# Finally remove the volume
+docker volume rm VOLUME_NAME
+```
+
+
+
+port:
+
+```sh
+ports:
+ - "3000"
+ - "3000-3005"
+ - "8000:8000"
+ - "9090-9091:8080-8081"
+ - "49100:22"
+ - "127.0.0.1:8001:8001"
+ - "127.0.0.1:5000-5010:5000-5010"
+ - "6060:6060/udp"
 ```
 
 
