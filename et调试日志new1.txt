@@ -1664,3 +1664,13 @@ REINDEX table pg_toast.pg_toast_2482133;
 VACUUM analyze workflow_process_history;
 
 
+94. Flink0ET处理时卡住
+https://github.com/elastic/elasticsearch/issues/47599
+
+
+95. 2022.11
+2022-11-17 07:41:33,773 WARN org.apache.flink.runtime.taskmanager.Task - Task 'KeyedProcess -> Flat Map -> Filter -> (Filter -> Map -> Filter -> Sink: Unnamed, Map -> Filter -> Sink: Unnamed) (2/5)' did not react to cancelling signal for 30 seconds, but is stuck in method:
+
+org.elasticsearch.action.bulk.BulkProcessor.internalAdd(BulkProcessor.java:286)
+
+FLINK运行一段时间ES卡住

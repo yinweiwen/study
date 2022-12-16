@@ -707,3 +707,52 @@ https://segmentfault.com/a/1190000002972420
 docker run -p 9000:9000 lmenezes/cerebro
 
 ![image-20210602091818019](imgs/elastic_search/image-20210602091818019.png)
+
+## 刷新数据小数位数
+// 参见Groovy语法：
+// https://www.bootwiki.com/groovy/groovy-environment.html
+
+```json
+POST anxinyun_themes/_doc/_update_by_query
+{
+  "query":
+    {
+  "bool" : {
+    "must" : [
+      {
+        "term" : {
+          "structure" : {
+            "value" : 1021,
+            "boost" : 1.0
+          }
+        }
+      },
+          {
+        "term" : {
+          "sensor" : {
+            "value" : 24686,
+            "boost" : 1.0
+          }
+        }
+      },
+      {
+        "range" : {
+          "collect_time" : {
+            "from" : "2022-11-29T12:58:52.217Z",
+            "to" : "2022-11-30T13:10:52.217Z",
+            "include_lower" : true,
+            "include_upper" : false,
+            "boost" : 1.0
+          }
+        }
+      }
+    ],
+    "adjust_pure_negative" : true,
+    "boost" : 1.0
+  }
+},
+  "script": {
+    "source": "ctx._source.data.displacement = Math.round(ctx._source.data.displacement*1000.0)/1000.0"
+  }
+}
+```

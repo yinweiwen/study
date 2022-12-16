@@ -313,3 +313,45 @@ Containerd是一个轻量级的容器系统
 | 6    | ctr image import nginx.tar            | docker load<nginx.tar.gz              | 导入本地镜像ctr不支持压缩 |
 | 7    | ctr run -d --env 111 nginx-test nginx | docker run -d --name=nginx nginx-test | 运行的一个容器            |
 | 8    | ctr task ls                           | docker ps                             | 查看运行的容器            |
+
+
+
+
+
+## Dockerfile From Image
+
+https://stackoverflow.com/questions/19104847/how-to-generate-a-dockerfile-from-an-image
+
+> How to generate or reverse a Dockerfile from an image?
+
+You can. Mostly.
+
+Notes: It does not generate a `Dockerfile` that you can use directly with `docker build`; the output is just for your reference.
+
+```
+alias dfimage="docker run -v /var/run/docker.sock:/var/run/docker.sock --rm alpine/dfimage"
+dfimage -sV=1.36 nginx:latest
+```
+
+It will pull the target docker image automatically and export `Dockerfile`. Parameter `-sV=1.36` is not always required.
+
+Reference: https://hub.docker.com/repository/docker/alpine/dfimage
+
+Now hub.docker.com shows the image layers with detail commands directly, if you choose a particular tag.
+
+[![enter image description here](imgs/docker/k4A8E.png)](https://i.stack.imgur.com/k4A8E.png)
+
+### Bonus
+
+If you want to know which files are changed in each layer
+
+```
+alias dive="docker run -ti --rm  -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive"
+dive nginx:latest
+```
+
+[![enter image description here](imgs/docker/NlUlw.png)](https://i.stack.imgur.com/NlUlw.png)
+
+On the left, you see each layer's command, on the right (jump with tab), the yellow line is the folder that some files are changed in that layer
+
+(Use SPACE to collapse dir)

@@ -143,4 +143,51 @@ Filebeat是一个日志文件托运工具
 >> Running as a service 
 	systemctl start logstash.service
 
->> 
+>> Examples:
+```yaml
+input {
+    stdin {
+
+    }
+    
+    jdbc {
+        jdbc_driver_library => './logstash-core/lib/jars/postgresql-42.3.5.jar'
+        jdbc_driver_class => 'org.postgresql.Driver'
+        jdbc_connection_string => 'jdbc:postgresql://10.8.30.156:5432/tsydb1'
+        jdbc_user => 'postgres'
+        jdbc_password => 'postgres'
+        use_column_value => 'true'
+        tracking_column => 'acquisition_datetime'
+        tracking_column_type => 'timestamp'
+        record_last_run => 'true' 
+        clean_run => false
+        jdbc_validate_connection => 'true'
+        schedule => '*/5 * * * * *'
+        statement => 'select sensor_id,temperature_value,humility_value,acquisition_datetime from t_themes_envi_temp_humi where agg_type is null and acquisition_datetime > :sql_last_value order by acquisition_datetime ASC'
+        jdbc_paging_enabled => true
+        jdbc_paging_mode => 'auto'
+        jdbc_page_size => '10'
+        tags => 't_themes_envi_temp_humi'
+        last_run_metadata_path => 'last_run'
+    }
+}
+
+output {
+    stdout {
+
+    }
+    
+    http {
+        url=>'http://10.8.30.183:4002/data'
+        http_method=>'post'
+        automatic_retries=>3
+        retry_failed=>'false'
+    }
+    tcp {
+        mode => 'client'
+        host => '10.8.30.183'
+        port => '8888'
+        reconnect_interval => 10
+    }
+}
+```
