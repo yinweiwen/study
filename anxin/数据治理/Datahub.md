@@ -363,7 +363,7 @@ datax_executor 执行器（通过python_path指定datax engine的运行目录）
 + jsonpath  datax json临时文件保存路径
 + pypath datax启动脚本 `xxx/datax/bin/datax.py`
 
-![image-20220223155031469](imgs/Datahub/image-20220223155031469.png)
+![image-20220223155031469](C:/Users/yww08/Desktop/软件认证/数据采集平台-数据库对接采集)
 
 可以在日志管理中查看任务执行情况和日志输出。
 
@@ -1539,7 +1539,7 @@ chmod +x airflow.sh
 
 DAG查看界面：
 
-![image-20220210155752796](imgs/Datahub/image-20220210155752796.png)
+![image-20220210155752796](C:/Users/yww08/Desktop/软件认证/数据采集平台-离线任务处理.png)
 
 分别以树形和图
 

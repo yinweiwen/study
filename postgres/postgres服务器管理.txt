@@ -122,7 +122,7 @@ PGDATA目录下：
 SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND state = 'idle' AND datname='AnxinCloud';
 
 
-SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='SmartSign2' and pid <> pg_backend_pid();
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='SmartSite' and pid <> pg_backend_pid();
 -- 当前活动连接
 select count(1) from pg_stat_activity;
 -- 显示最大连接数
@@ -170,6 +170,40 @@ pg_dump --dbname="Anxinyun0726" --file="anxinyun0726.sql" --create -U FashionAdm
 psql
 
 \copy (Select * From foo) To '/tmp/test.csv' With CSV
+
+psql -h iota-m1 -p 5433 -d iOTA_console -U postgres "\copy ($(<devices.sql)) To '/tmp/devices.csv' With CSV";
+
+
+
+create TEMP VIEW v1 AS
+select m.id,m.name,m.image,m.model,m."desc",m."createdAt" as created_at,m."updatedAt" as updated_at, \
+       c.name as company,
+       dp.dps,u.username as username,
+       i.name iname,it."name" itname,it."desc" itdesc,
+       cm.name cmname,cm."desc" cmdesc,
+       pm.name pmname,pm."desc" pmdesc,pm.resource pmresource,
+       cp.caps,
+
+       r.properties
+from "DeviceMeta" m -- 设备原型
+left join "CompanyCertification" c on m."vendorId"=c.id -- 公司
+join "User" u on c."userId"=u.id -- 用户
+left join (SELECT "deviceMetaId",jsonb_agg((SELECT x FROM (SELECT name,"showName","desc") x)) AS dps FROM "DeviceProperty"
+    GROUP BY "deviceMetaId") dp on dp."deviceMetaId"=m.id -- 设备上的属性
+left join "CapabilityMeta" cm on m.id=cm."deviceMetaId"  -- 能力原型
+left join "ProtocolMeta" pm on cm."protocolMetaId"=pm.id -- 根据能力原型找到协议
+left join "CapabilityMetaInterface" cmi on cmi."capabilityMetaId"=cm.id -- 能力原型接口表（1:n)
+left join "DeviceMetaInterface" dmi on dmi.id=cmi."deviceMetaInterfaceId" -- 接口关系表
+left join "InterfaceMeta" i on dmi."interfaceMetaId"=i.id -- 接口原型
+left join "InterfaceType" it on i."interfaceTypeId"=it.id
+left join (SELECT "capabilityMetaId",jsonb_agg((SELECT x FROM (SELECT name,"showName","desc","unit",category) x)) AS caps FROM "CapabilityProperty"
+    GROUP BY "capabilityMetaId") cp on cp."capabilityMetaId"= cm.id
+inner join "FilteredResource" r on r.key=m.id and r.id= (select id from "FilteredResource" r1 where r1.key=m.id order by r1."createdAt" desc limit 1 );
+
+\copy (select * from v2) To '/tmp/devices2023.csv' With CSV;
+
+DROP VIEW v1;
+
 
 
 # 让自增 Seq (Serial) 跟上ID
@@ -231,6 +265,8 @@ values(1,1,'2019-12-15','{1,2,3}') ON CONFLICT(sensor_id)
 到数据库数据所在目录下查找对应文件夹的大小即可
 
 2.select pg_size_pretty(pg_database_size('NBJJ_1114'));
+
+ pg_dump --dbname="dayawan_ceshi" --no-owner --schema='public' -t "t_sync_equ_orgs" -t "t_sync_risk_orgs" > /tmp/dayaw.sql
 
 
 ## 数据库数据部分备份方法：
@@ -330,7 +366,12 @@ where st.IsDelete=0 and st.ID=sd.StructureId
   and sd.DtuId=d.ID and st.owner=u.USER_NO
 and REMOTE_DTU_SUBSCRIBER is not null and len(replace(REMOTE_DTU_SUBSCRIBER,' ',''))>11;
 
-
+## 更新jsonb中某一个字段
+> use jsonb_set
+UPDATE "Device" SET properties
+    = jsonb_set(properties::jsonb, '{url}', '"http://10.8.40.250:7005/gnss/"'::jsonb, false)  WHERE (properties::json->'url')::varchar like '%http://10.8.25.254:7005/gnss/%';
+    
+    
 ## 数据库自动备份
 
 https://www.cnblogs.com/telwanggs/p/11547370.html
@@ -859,3 +900,4 @@ FROM pg_class
 WHERE relkind = 'r'
   AND reltoastrelid <> 0
 ORDER BY 3 DESC;
+

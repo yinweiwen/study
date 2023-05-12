@@ -212,6 +212,28 @@ http://10.8.30.184:10000/
 
 
 
+##### 2023更新：
+
+[Docker Quick Tutorial | Apache StreamPark (incubating)](https://streampark.apache.org/docs/user-guide/docker-deployment)
+
+```sh
+wget https://github.com/apache/incubator-streampark/blob/dev/deploy/docker/docker-compose.yaml
+wget https://github.com/apache/incubator-streampark/blob/dev/deploy/docker/.env
+docker-compose up -d
+```
+
+http://localhost:10000 and also through http://localhost:8081 to access Flink. Accessing the StreamPark link will redirect you to the login page, where the default user and password for StreamPark are **admin** and **streampark**
+
+配置Flink-Home:  /streampark/flink/flink1.14.5
+
+配置Flink-Cluster：Remote http://10.8.30.37:8081/
+
+提交任务：
+
+![image-20230228135529362](imgs/dlink/image-20230228135529362.png)
+
+
+
 ### 运行官网sql例子
 
 > 准备本机docker-compose kafka环境。需要在 windows机器中访问ubuntu中的kafka，需要进行如下设置

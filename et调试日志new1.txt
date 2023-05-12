@@ -1674,3 +1674,233 @@ https://github.com/elastic/elasticsearch/issues/47599
 org.elasticsearch.action.bulk.BulkProcessor.internalAdd(BulkProcessor.java:286)
 
 FLINK运行一段时间ES卡住
+
+https://blog.csdn.net/lisenyeahyeah/article/details/114573798
+
+解决方法：
+1. 升级flink库>7.3
+    但是7的connect没有flink1.13的版本 ： https://search.maven.org/artifact/org.apache.flink/flink-connector-elasticsearch7/1.16.0/jar
+2. 尝试关闭backoff：esSinkBuilder.setBulkFlushBackoff(false)
+
+
+96. K8S拉取私有库镜像
+kubectl create secret generic zhiwucloud \
+    --from-file=.dockerconfigjson=~/.docker/config.json \
+    --type=kubernetes.io/dockerconfigjson
+    
+    
+    kubectl get secret zhiwucloud --output=yaml
+    kubectl get secret zhiwucloud --output="jsonpath={.data.\.dockerconfigjson}" | base64 --decode
+
+生成yaml后修改namespace，重新创建：
+```yml
+apiVersion: v1
+data:
+  .dockerconfigjson: ewoJImF1dGhzI*******************************X0KCX0KfQ==
+kind: Secret
+metadata:
+  name: zhiwucloudsecret
+  namespace: iota
+type: kubernetes.io/dockerconfigjson
+```
+
+创建基于私有镜像的pod
+```yml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iota-orchestrator
+  labels:
+    iota.service: orchestrator
+  namespace: iota
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        iota.service: orchestrator
+    spec:
+      containers:
+      - image: registry.cn-hangzhou.aliyuncs.com/zhiwucloud/iot-orchestrator:6.22-12-19
+        imagePullPolicy: IfNotPresent
+        name: iota-orchestrator
+        ports:
+        - containerPort: 19300
+        envFrom:
+        - configMapRef:
+            name: iota-orchestrator
+      imagePullSecrets:
+      - name: zhiwucloudsecret
+
+```
+
+97. Akka连接问题
+nc -zv 10.244.7.240 2553
+
+[WARN] [01/12/2023 13:53:22.446] [Client-akka.remote.default-remote-dispatcher-6] [akka.tcp://Client@10.244.3.224:2553/system/endpointManager/reliableEndpointWriter-akka.tcp%3A%2F%2FActorSystem%4010.244.7.240%3A2553-0] Association with remote system [akka.tcp://ActorSystem@10.244.7.240:2553] has failed, address is now gated for [5000] ms. Reason: [Disassociated]
+
+最终发现是因为master程序不是最新，部分类序列值不对等
+
+
+98. Clickhouse使用MaterializedPostgreSQL
+Clickhouse MaterializedPostgreSQL同步一段时间后中断了
+【1】
+2023.01.18 10:18:51.916825 [ 13006 ] {} <Error> void DB::MaterializedPostgreSQLConsumer::syncTables(): Code: 49. DB::Exception: Invalid number of rows in Chunk column DateTime64 position 2: expected 7, got 6. (LOGICAL_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, int, bool) @ 0xce3f77a in /usr/bin/clickhouse
+1. DB::Chunk::checkNumRowsIsConsistent() @ 0x1357f7ad in /usr/bin/clickhouse
+2. DB::MaterializedPostgreSQLConsumer::syncTables() @ 0x11fe5c62 in /usr/bin/clickhouse
+3. DB::MaterializedPostgreSQLConsumer::readFromReplicationSlot() @ 0x11fe7db9 in /usr/bin/clickhouse
+4. DB::MaterializedPostgreSQLConsumer::consume(std::__1::vector<std::__1::pair<int, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >, std::__1::allocator<std::__1::pair<int, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > > >&) @ 0x11fe8719 in /usr/bin/clickhouse
+5. DB::PostgreSQLReplicationHandler::consumerFunc() @ 0x11fc9de4 in /usr/bin/clickhouse
+6. DB::BackgroundSchedulePoolTaskInfo::execute() @ 0x116cf4e1 in /usr/bin/clickhouse
+7. DB::BackgroundSchedulePool::threadFunction() @ 0x116d274a in /usr/bin/clickhouse
+8. ? @ 0x116d356c in /usr/bin/clickhouse
+9. ThreadPoolImpl<std::__1::thread>::worker(std::__1::__list_iterator<std::__1::thread, void*>) @ 0xcefa46c in /usr/bin/clickhouse
+10. ? @ 0xceffbde in /usr/bin/clickhouse
+11. start_thread @ 0x7ea7 in /usr/lib/x86_64-linux-gnu/libpthread-2.31.so
+12. clone @ 0xfcaef in /usr/lib/x86_64-linux-gnu/libc-2.31.so
+ (version 22.10.2.11 (official build))
+2023.01.18 10:18:55.276423 [ 12929 ] {} <Warning> PostgreSQLReplicaConsumer(pep-ca): Got TOAST value, which is not supported, default value will be used instead.
+
+
+【2】
+2023.01.18 10:13:22.653295 [ 581344 ] {fea6faf6-d832-4f1b-8f26-0d5c8f645614} <Error> DynamicQueryHandler: Code: 202. DB::Exception: Too many simultaneous queries. Maximum: 100. (TOO_MANY_SIMULTANEOUS_QUERIES), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, int, bool) @ 0xce3f77a in /usr/bin/clickhouse
+1. DB::ProcessList::insert(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, DB::IAST const*, std::__1::shared_ptr<DB::Context>) @ 0x126f5b13 in /usr/bin/clickhouse
+2. ? @ 0x12977eec in /usr/bin/clickhouse
+3. DB::executeQuery(DB::ReadBuffer&, DB::WriteBuffer&, bool, std::__1::shared_ptr<DB::Context>, std::__1::function<void (std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)>, std::__1::optional<DB::FormatSettings> const&) @ 0x1297e90e in /usr/bin/clickhouse
+4. DB::HTTPHandler::processQuery(DB::HTTPServerRequest&, DB::HTMLForm&, DB::HTTPServerResponse&, DB::HTTPHandler::Output&, std::__1::optional<DB::CurrentThread::QueryScope>&) @ 0x134d99d7 in /usr/bin/clickhouse
+5. DB::HTTPHandler::handleRequest(DB::HTTPServerRequest&, DB::HTTPServerResponse&) @ 0x134dddf0 in /usr/bin/clickhouse
+6. DB::HTTPServerConnection::run() @ 0x1355b48a in /usr/bin/clickhouse
+7. Poco::Net::TCPServerConnection::start() @ 0x1636274f in /usr/bin/clickhouse
+8. Poco::Net::TCPServerDispatcher::run() @ 0x16364adb in /usr/bin/clickhouse
+9. Poco::PooledThread::run() @ 0x16520372 in /usr/bin/clickhouse
+10. Poco::ThreadImpl::runnableEntry(void*) @ 0x1651dafd in /usr/bin/clickhouse
+11. start_thread @ 0x7ea7 in /usr/lib/x86_64-linux-gnu/libpthread-2.31.so
+12. clone @ 0xfcaef in /usr/lib/x86_64-linux-gnu/libc-2.31.so
+ (version 22.10.2.11 (official build))
+
+99. Clickhouse停止同步
+2023.02.15 12:37:38.166872 [ 20110 ] {} <Error> DatabaseMaterializedPostgreSQL (iota): Unable to load replicated tables list
+2023.02.15 12:38:13.457067 [ 20017 ] {} <Fatal> Application: Child process was terminated by signal 9 (KILL). If it is not done by 'forcestop' command or manually, the possible cause is OOM Killer (see 'dmesg' and look at the '/var/log/kern.log' for the details).
+
+
+100. 跨平台编译
+unset GOPROXY
+go env -w GOPROXY=https://goproxy.cn
+go env -w GO111MODULE=on
+CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -ldflags "-extldflags -static " -tags netgo -a -v -o towercrane main.go
+
+
+FROM golang:1.11 AS builder
+
+# Magic line, notice in use that the lib name is different!
+RUN apt-get update && apt-get install -y gcc-aarch64-linux-gnu
+# Add your app and do what you need to for dependencies
+ADD . /go/src/github.com/org/repo
+WORKDIR /go/src/github.com/go/repo
+RUN CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -o app .
+
+# Final stage - pick any old arm64 image you want
+FROM multiarch/ubuntu-core:arm64-bionic
+
+WORKDIR /root/
+
+COPY --from=builder /go/src/github.com/org/repo/app .
+CMD ["./app"]
+
+
+尝试：
+> amd平台无法运行arm版本的容器
+容器：
+alpine registry.cn-hangzhou.aliyuncs.com/fs-devops/golang:2.22-06-22
+alpine amd64:golang:1.18
+alpine arm64v8/golang:1.17.11-alpine
+
+apt-get update && apt-get install -y gcc-aarch64-linux-gnu
+
+Cross-compile aarch64
+
+
+_cgo_export.c:3:10: fatal error: stdlib.h: No such file or directory
+    3 | #include <stdlib.h>
+      |          ^~~~~~~~~~
+
+
+最终是在arm板子上构建成功：
+
+Debian / Ubuntu: sudo apt-get install golang gcc libgl1-mesa-dev xorg-dev
+
+
+报错以下：通过非ROOT用户执行
+2023/02/22 15:42:27 Fyne error:  Unable to connect to session D-Bus
+2023/02/22 15:42:27   Cause: dbus: couldn't determine address of session bus
+2023/02/22 15:42:27   At: /root/go/pkg/mod/fyne.io/fyne/v2@v2.3.1/app/app_xdg.go:39
+No protocol specified
+2023/02/22 15:42:27 PlatformError: X11: Failed to open display :0.0
+
+
+
+101. 
+2023-04-07 00:01:39,496 WARN  org.apache.flink.runtime.taskmanager.Task                    [] - Sink: stationAggDataBefore (2/2)#9 (069e1c23e659fe8762bc43a7c632f01c) switched from RUNNING to FAILED with failure cause: java.lang.RuntimeException: An error occurred in ElasticsearchSink.
+	at org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkBase.checkErrorAndRethrow(ElasticsearchSinkBase.java:427)
+	at org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkBase.checkAsyncErrorsAndRequests(ElasticsearchSinkBase.java:432)
+	at org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkBase.invoke(ElasticsearchSinkBase.java:329)
+	at org.apache.flink.streaming.api.operators.StreamSink.processElement(StreamSink.java:54)
+	at org.apache.flink.streaming.runtime.tasks.OneInputStreamTask$StreamTaskNetworkOutput.emitRecord(OneInputStreamTask.java:205)
+	at org.apache.flink.streaming.runtime.io.AbstractStreamTaskNetworkInput.processElement(AbstractStreamTaskNetworkInput.java:134)
+	at org.apache.flink.streaming.runtime.io.AbstractStreamTaskNetworkInput.emitNext(AbstractStreamTaskNetworkInput.java:105)
+	at org.apache.flink.streaming.runtime.io.StreamOneInputProcessor.processInput(StreamOneInputProcessor.java:66)
+	at org.apache.flink.streaming.runtime.tasks.StreamTask.processInput(StreamTask.java:423)
+	at org.apache.flink.streaming.runtime.tasks.mailbox.MailboxProcessor.runMailboxLoop(MailboxProcessor.java:204)
+	at org.apache.flink.streaming.runtime.tasks.StreamTask.runMailboxLoop(StreamTask.java:684)
+	at org.apache.flink.streaming.runtime.tasks.StreamTask.executeInvoke(StreamTask.java:639)
+	at org.apache.flink.streaming.runtime.tasks.StreamTask.runWithCleanUpOnFail(StreamTask.java:650)
+	at org.apache.flink.streaming.runtime.tasks.StreamTask.invoke(StreamTask.java:623)
+	at org.apache.flink.runtime.taskmanager.Task.doRun(Task.java:779)
+	at org.apache.flink.runtime.taskmanager.Task.run(Task.java:566)
+	at java.lang.Thread.run(Thread.java:750)
+	Suppressed: java.lang.RuntimeException: An error occurred in ElasticsearchSink.
+		at org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkBase.checkErrorAndRethrow(ElasticsearchSinkBase.java:427)
+		at org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkBase.close(ElasticsearchSinkBase.java:366)
+		at org.apache.flink.api.common.functions.util.FunctionUtils.closeFunction(FunctionUtils.java:41)
+		at org.apache.flink.streaming.api.operators.AbstractUdfStreamOperator.dispose(AbstractUdfStreamOperator.java:117)
+		at org.apache.flink.streaming.runtime.tasks.StreamTask.disposeAllOperators(StreamTask.java:864)
+		at org.apache.flink.streaming.runtime.tasks.StreamTask.runAndSuppressThrowable(StreamTask.java:843)
+		at org.apache.flink.streaming.runtime.tasks.StreamTask.cleanUpInvoke(StreamTask.java:756)
+		at org.apache.flink.streaming.runtime.tasks.StreamTask.runWithCleanUpOnFail(StreamTask.java:662)
+		... 4 more
+	Caused by: ElasticsearchException[Elasticsearch exception [type=es_rejected_execution_exception, reason=rejected execution of processing of [15874765360][indices:data/write/bulk[s][p]]: request: BulkShardRequest [[anxinyun_rt_aggregation][4]] containing [7] requests, target allocation id: J7n4QPZbSde9vB6jUmkTpg, primary term: 22 on EsThreadPoolExecutor[name = es-n2/write, queue capacity = 200, org.elasticsearch.common.util.concurrent.EsThreadPoolExecutor@60c85bf1[Running, pool size = 32, active threads = 32, queued tasks = 205, completed tasks = 582788021]]]]
+		at org.elasticsearch.ElasticsearchException.innerFromXContent(ElasticsearchException.java:509)
+		at org.elasticsearch.ElasticsearchException.fromXContent(ElasticsearchException.java:420)
+		at org.elasticsearch.action.bulk.BulkItemResponse.fromXContent(BulkItemResponse.java:139)
+		at org.elasticsearch.action.bulk.BulkResponse.fromXContent(BulkResponse.java:198)
+		at org.elasticsearch.client.RestHighLevelClient.parseEntity(RestHighLevelClient.java:1793)
+		at org.elasticsearch.client.RestHighLevelClient.lambda$performRequestAsyncAndParseEntity$11(RestHighLevelClient.java:1621)
+		at org.elasticsearch.client.RestHighLevelClient$1.onSuccess(RestHighLevelClient.java:1721)
+		at org.elasticsearch.client.RestClient$FailureTrackingResponseListener.onSuccess(RestClient.java:842)
+		at org.elasticsearch.client.RestClient$1.completed(RestClient.java:543)
+		at org.elasticsearch.client.RestClient$1.completed(RestClient.java:531)
+		at org.apache.http.concurrent.BasicFuture.completed(BasicFuture.java:119)
+		at org.apache.http.impl.nio.client.DefaultClientExchangeHandlerImpl.responseCompleted(DefaultClientExchangeHandlerImpl.java:177)
+		at org.apache.http.nio.protocol.HttpAsyncRequestExecutor.processResponse(HttpAsyncRequestExecutor.java:436)
+		at org.apache.http.nio.protocol.HttpAsyncRequestExecutor.inputReady(HttpAsyncRequestExecutor.java:326)
+		at org.apache.http.impl.nio.DefaultNHttpClientConnection.consumeInput(DefaultNHttpClientConnection.java:265)
+		at org.apache.http.impl.nio.client.InternalIODispatch.onInputReady(InternalIODispatch.java:81)
+		at org.apache.http.impl.nio.client.InternalIODispatch.onInputReady(InternalIODispatch.java:39)
+		at org.apache.http.impl.nio.reactor.AbstractIODispatch.inputReady(AbstractIODispatch.java:114)
+		at org.apache.http.impl.nio.reactor.BaseIOReactor.readable(BaseIOReactor.java:162)
+		at org.apache.http.impl.nio.reactor.AbstractIOReactor.processEvent(AbstractIOReactor.java:337)
+		at org.apache.http.impl.nio.reactor.AbstractIOReactor.processEvents(AbstractIOReactor.java:315)
+		at org.apache.http.impl.nio.reactor.AbstractIOReactor.execute(AbstractIOReactor.java:276)
+		at org.apache.http.impl.nio.reactor.BaseIOReactor.execute(BaseIOReactor.java:104)
+		at org.apache.http.impl.nio.reactor.AbstractMultiworkerIOReactor$Worker.run(AbstractMultiworkerIOReactor.java:588)
+		... 1 more
+Caused by: [CIRCULAR REFERENCE: ElasticsearchException[Elasticsearch exception [type=es_rejected_execution_exception, reason=rejected execution of processing of [15874765360][indices:data/write/bulk[s][p]]: request: BulkShardRequest [[anxinyun_rt_aggregation][4]] containing [7] requests, target allocation id: J7n4QPZbSde9vB6jUmkTpg, primary term: 22 on EsThreadPoolExecutor[name = es-n2/write, queue capacity = 200, org.elasticsearch.common.util.concurrent.EsThreadPoolExecutor@60c85bf1[Running, pool size = 32, active threads = 32, queued tasks = 205, completed tasks = 582788021]]]]]
+
+
+102. docker目录磁盘空间不足了
+docker system prune -a
+https://blog.fundebug.com/2018/01/10/how-to-clean-docker-disk/

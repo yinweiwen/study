@@ -1,3 +1,45 @@
+## Ubuntu NTP时间服务器
+
+```sh
+#对比两台服务器的时间差(不精确)
+echo $(($(ssh machine1 date +%s) - $(ssh machine2 date +%s)))
+```
+
+使用 ntpdate 和 ntpd 来同步时间的。
+
+```sh
+sudo apt install ntp
+
+root@test-n9:/home/anxinyun# ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+ 0.debian.pool.n .POOL.          16 p    -   64    0    0.000   +0.000   0.000
+ 1.debian.pool.n .POOL.          16 p    -   64    0    0.000   +0.000   0.000
+ 2.debian.pool.n .POOL.          16 p    -   64    0    0.000   +0.000   0.000
+ 3.debian.pool.n .POOL.          16 p    -   64    0    0.000   +0.000   0.000
+-ntp6.flashdance 192.36.143.152   2 u    2   64    1  214.019   +5.775  13.777
+-makaki.miuku.ne 144.126.242.176  3 u    1   64    1  221.823  -49.504   0.626
+*tick.ntp.infoma .GPS.            1 u    -   64    1  189.314   +0.045   5.129
++119.28.183.184  100.122.36.196   2 u    2   64    1   52.775   -8.438   0.262
+ ernie.gerger-ne 213.172.96.14    2 u    1   64    1  254.927  +11.990   0.221
++139.199.214.202 100.122.36.196   2 u    1   64    1   35.768   -1.540   0.390
+-nono.com        35.73.197.144    2 u    -   64    1  244.312  +24.993   0.639
+ nsb.lds.net.ua  194.190.168.1    2 u    -   64    1  413.894  +33.037   1.610
+-202.118.1.81 (t .PTP.            1 u    1   64    1   51.360   -7.967   0.658
+ sv1.ggsrv.de    192.53.103.103   2 u    -   64    1  295.938  +30.421   0.361
+ 139.199.215.251 100.122.36.196   2 u    1   64    1   32.488   +0.476   0.344
+ time2.ethz.ch   .PPS.            1 u    -   64    1  231.270   +6.209   2.974
+ 
+# 对比两台服务器之间的时间差 
+root@test-n9:/home/anxinyun# ntpdate -q test-n3
+server 10.8.30.155, stratum 3, offset -0.002097, delay 0.02869
+14 Feb 15:44:25 ntpdate[3076068]: adjust time server 10.8.30.155 offset -0.002097 sec
+```
+
+
+
+
+
 ## Ubuntu文件服务
 
 https://ubuntu.com/server/docs/samba-file-server
