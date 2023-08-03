@@ -209,7 +209,7 @@ ip link delete flannel.1
 apt purge -y kubelet kubeadm kubectl kubernetes-cni 
 systemctl daemon-reload
 apt install kubernetes-cni=0.5.1-00 kubelet=1.8.2-00 kubeadm=1.8.2-00 kubectl=1.8.2-00
-		
+		sudo wget http://218.3.126.49:18088/dist/install-towercrane.sh -O install.sh && chmod +x install.sh && ./install.sh
 		修改配置
 		vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
@@ -1904,3 +1904,41 @@ Caused by: [CIRCULAR REFERENCE: ElasticsearchException[Elasticsearch exception [
 102. docker目录磁盘空间不足了
 docker system prune -a
 https://blog.fundebug.com/2018/01/10/how-to-clean-docker-disk/
+或者执行
+docker image prune -a -f
+https://www.cnblogs.com/quanxiaoha/p/10542278.html
+
+
+
+103. Redis BigKey
+
+redis-cli --bigkeys
+# ANXINYUN
+0 lists with 0 items (00.00% of keys, avg size 0.00)
+244 hashs with 357 fields (00.12% of keys, avg size 1.46)
+201561 strings with 925 689 350 bytes (97.99% of keys, avg size 4592.60)
+0 streams with 0 entries (00.00% of keys, avg size 0.00)
+3886 sets with 50511 members (01.89% of keys, avg size 13.00)
+0 zsets with 0 members (00.00% of keys, avg size 0.00)
+
+# EMIS
+0 lists with 0 items (00.00% of keys, avg size 0.00)
+0 hashs with 0 fields (00.00% of keys, avg size 0.00)
+17 strings with 11 408 113 bytes (100.00% of keys, avg size 671065.47)
+0 streams with 0 entries (00.00% of keys, avg size 0.00)
+0 sets with 0 members (00.00% of keys, avg size 0.00)
+0 zsets with 0 members (00.00% of keys, avg size 0.00)
+
+1.安心云iota-proxy单独redis部署  api-redis.ops
+2.pep单独redis部署  emis-redis.smart-xxx
+3.其他应用单独使用一个    opt-redis.ops
+
+
+
+
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/web
+                    operator: Exists

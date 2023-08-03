@@ -694,6 +694,74 @@ output {
 docker run --rm -ti -v /home/anxin/tools/logstash/data:/tmp -v /home/anxin/tools/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml -v /home/anxin/tools/logstash/conf.d/:/usr/share/logstash/conf.d/ logstash:6.8.2
 
 
+          "cityCode" : "101240101",
+          "cityName" : "南昌",
+          "pressure" : "1002",
+          
+          "cityCode" : "101240103",
+          "cityName" : "南昌县",
+          
+          date
+          precip
+
+
+convert_csv
+```conf
+input {
+ elasticsearch {
+    hosts => "10.8.25.250:19201"
+    index => "anxinyun_weather"
+    query => '{
+      "query": {
+        "bool": {
+      "must": [
+      {
+          "terms": {
+            "cityName.keyword": [
+              "南昌县",
+              "南昌"
+            ]
+          }
+        },
+        {
+          "term": {
+            "dataType.keyword": {
+              "value": "hour"
+            }
+          }
+        },
+        {
+          "range": {
+            "time": {
+              "gte": "2023-06-01T00:00:00.000+0800"
+            }
+          }
+        }
+      ]
+    }
+      }
+    },
+    "_source": ["cityName","precip","time"]'
+  }
+}
+ 
+output {
+  csv {
+    # This is the fields that you would like to output in CSV format.
+    # The field needs to be one of the fields shown in the output when you run your
+    # Elasticsearch query
+    fields => ["cityName","precip","time"]
+    # This is where we store output. We can use several files to store our output
+    # by using a timestamp to determine the filename where to store output.    
+    path => "/tmp/nanchangYL202306.csv"
+  }
+}
+
+```
+./bin/logstash -f ./convert_csv.conf
+
+
+
 ## kibana 使用的lucene语法：
 https://zhuanlan.zhihu.com/p/33791813
 https://segmentfault.com/a/1190000002972420
