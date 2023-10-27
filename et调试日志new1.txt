@@ -1942,3 +1942,168 @@ redis-cli --bigkeys
               - matchExpressions:
                   - key: node-role.kubernetes.io/web
                     operator: Exists
+                    
+                    
+104. 磁盘满了，docker起不来。no space left
+# 大文件
+sudo find . -xdev -type f -size +100M
+# 大目录
+du -ahx . | sort -rh | head -5
+
+docker system prune --all --force
+
+105. edge-backend无法ssh
+因为edge上的frp客户端无法连接frps。因为无法访问外网,固定到可以访问的节点上
+nodeSelector:
+        kubernetes.io/hostname: iota-n1
+        
+        重启后
+        route add default gw 10.8.10.1
+        
+        sudo chown clickhouse:clickhouse /home/clickhouse-server/clickhouse-server.log
+sudo chmod 644 /home/clickhouse-server/clickhouse-server.log
+
+106. 手动启动hdfs
+由于ambari未恢复，需要手动启动hdfs。
+一共有以下几个hdfs节点：
+hdfs-namenode
+hdfs-snamenode
+hdfs-d1~d3
+
+在hdfs-namenode节点上执行
+sudo -u hdfs hdfs --daemon start namenode
+在hdfs-snamenode节点上执行
+sudo -u hdfs hdfs --daemon start secondarynamenode
+在其他data节点上：
+root@hdfs-d3:/home/anxinyun# mkdir /var/run/hadoop
+root@hdfs-d3:/home/anxinyun# chown hdfs /var/run/hadoop/
+sudo -u hdfs hdfs --daemon start datanode
+
+
+107. Evicted
+通过kubernetes启动Flink，其中 Taskmanager 一直重启，容器报错Evicted
+查看 kubectl describe pod ...
+```
+ Warning  Evicted                 27m        kubelet, anxinyun-n6     The node was low on resource: memory. Container taskmanager-13 was using 13902500Ki, which exceeds its request of 0. Container iota-filebeat was using 7128Ki, which exceeds its request of 0.
+```
+或者
+```
+Message:        Pod The node had condition: [MemoryPressure]
+```
+或者：
+```
+Message:        The node was low on resource: memory. Container taskmanager-13 was using 13344796Ki, which exceeds its request of 0. Container iota-filebeat was using 7820Ki, which exceeds its request of 0. 
+```
+
+您可以使用 Kubernetes Dashboard 或者命令行工具 kubectl top nodes 来查看节点资源使用情况。
+ Pod 的 YAML 文件中设置资源请求和限制
+```
+ resources:
+  requests:
+    memory: "2Gi"   # 根据您的需求调整内存请求
+  limits:
+    memory: "4Gi"   # 根据您的需求调整内存限制
+```
+删除所有未evicted状态的容器
+
+ kubectl delete pods --field-selector=status.phase=Failed  -n ops --force --grace-period=0
+ 
+ 
+108. mediapush自动启动
+[root@10-020-xbw-base push]# cat /etc/systemd/system/media.service
+[Unit]
+Description=Media pusher
+After=network.target
+
+[Service]
+WorkingDirectory=/installdir/sp/0319mediapusherbin/push
+Type=simple
+ExecStart=/installdir/sp/0319mediapusherbin/push/0320mediaPusher03
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+
+[root@10-020-xbw-base push]# systemctl enable media.service
+/usr/bin/pkttyagent: error while loading shared libraries: libpcre.so.3: cannot open shared object file: No such file or directory
+[root@10-020-xbw-base push]# systemctl start media.service
+/usr/bin/pkttyagent: error while loading shared libraries: libpcre.so.3: cannot open shared object file: No such file or directory
+[root@10-020-xbw-base push]# systemctl status media.service
+● media.service - Media pusher
+   Loaded: loaded (/etc/systemd/system/media.service; enabled; vendor preset: disabled)
+   Active: active (running) since Wed 2023-10-11 22:56:59 CST; 2min 34s ago
+ Main PID: 2541 (0320mediaPusher)
+   CGroup: /system.slice/media.service
+           └─2541 /installdir/sp/0319mediapusherbin/push/0320mediaPusher03
+
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: async : false
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: BeatsStream 1697036303865 successful.
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: [2023-10-11 22:59:24] Incomming call [GET][/STREAM/1697036304044/BEATS]  list headers are below:
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: Accept-Encoding : gzip, deflate
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: Connection : close
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: Content-Type : application/json
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: Host : 10.10.10.20:9090
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: User-Agent : node-superagent/1.8.5
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: async : false
+Oct 11 22:59:24 10-020-xbw-base 0320mediaPusher03[2541]: BeatsStream 1697036304044 successful.
+
+
+109. 如何查看本机.NetFramework的版本
+```bash
+reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" /v Release
+```
+版本值参考：
+https://learn.microsoft.com/zh-cn/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
+
+.NET Framework 版本	Release 的值
+.NET Framework 4.5	所有 Windows 操作系统：378389
+.NET Framework 4.5.1	在 Windows 8.1 和 Windows Server 2012 R2 上：378675
+在所有其他 Windows 操作系统上：378758
+.NET Framework 4.5.2	所有 Windows 操作系统：379893
+.NET Framework 4.6	在 Windows 10 上：393295
+在所有其他 Windows 操作系统上：393297
+.NET Framework 4.6.1	在 Windows 10 11 月更新系统上：394254
+在所有其他 Windows 操作系统（包括 Windows 10）上：394271
+.NET Framework 4.6.2	在 Windows 10 周年更新和 Windows Server 2016 上：394802
+在所有其他 Windows 操作系统（包括其他 Windows 10 操作系统）上：394806
+.NET Framework 4.7	在 Windows 10 创意者更新上：460798
+在所有其他 Windows 操作系统（包括其他 Windows 10 操作系统）上：460805
+.NET Framework 4.7.1	在 Windows 10 Fall Creators Update 和 Windows Server 版本 1709 上：461308
+在所有其他 Windows 操作系统（包括其他 Windows 10 操作系统）上：461310
+.NET Framework 4.7.2	在 Windows 10 2018 年 4 月更新和 Windows Server 版本 1803 上：461808
+在除 Windows 10 2018 年 4 月更新和 Windows Server 版本 1803 之外的所有 Windows 操作系统上：461814
+.NET Framework 4.8	在 Windows 10 2019 年 5 月更新和 Windows 10 2019 年 11 月更新上：528040
+在 Windows 10 2020 年 5 月更新、2020 年 10 月更新、2021 年 5 月更新、2021 年 11 月更新和 2022 年更新上：528372
+在 Windows 11 和 Windows Server 2022 上：528449
+在所有其他 Windows 操作系统（包括其他 Windows 10 操作系统）上：528049
+.NET Framework 4.8.1	在 Windows 11 2022 年更新上：533320
+所有其他 Windows 操作系统：533325
+
+
+110. 共享chatgpt
+root@node38:/home/anxin# tail ~/.bashrc 
+fi
+
+
+export http_proxy=http://10.8.30.183:7890
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+#if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+#    . /etc/bash_completion
+#fi
+root@node38:/home/anxin# source ~/.bashrc 
+
+docker run --name chatgpt-web --rm -it -p 3002:3002 --env OPENAI_ACCESS_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJ5d3cwODI4QDEyNi5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sImh0dHBzOi8vYXBpLm9wZW5haS5jb20vYXV0aCI6eyJwb2lkIjoib3JnLUtNZVRyd1pFb0dnMEVVVUZZWGlWenZDMSIsInVzZXJfaWQiOiJ1c2VyLWJaZEN1WnlwU2FuSkV6UjNTNFducElLWiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiYXV0aDB8NjNlMWI2N2MxZTMzNTM1NGMyNTlmMmMzIiwiYXVkIjpbImh0dHBzOi8vYXBpLm9wZW5haS5jb20vdjEiLCJodHRwczovL29wZW5haS5vcGVuYWkuYXV0aDBhcHAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTY5ODI5OTMzMiwiZXhwIjoxNjk5MTYzMzMyLCJhenAiOiJUZEpJY2JlMTZXb1RIdE45NW55eXdoNUU0eU9vNkl0RyIsInNjb3BlIjoib3BlbmlkIGVtYWlsIHByb2ZpbGUgbW9kZWwucmVhZCBtb2RlbC5yZXF1ZXN0IG9yZ2FuaXphdGlvbi5yZWFkIG9yZ2FuaXphdGlvbi53cml0ZSBvZmZsaW5lX2FjY2VzcyJ9.Q3sOAVRjmC4D0HVRsQ_tkV0BK6U8PUPrkwvqeWX58d11vClSi9OQYWt7jJC2SlS_eMPS_xdREczZJ8tFTPpSbvFNr2MTsktIgD0G0pxAdOT1EHpgiG9PjPF-hWvc1Cudyyqnxp2eTOpddom6rHPtG_n6VIl5Vp17zvQFMW3OUM091kowtvvV6CPmy6wZNXfra83b7LSowu9APoU1TnUChsBJoD_loxdSlGDfWSOYvQ-IuvxynFjRaThBy7SSm-rM5kPmq-WwzQIOh-cNWBh-9MJ1AKbPj5oV7QXLLKt6--HVOObnLvou5jilD92ShsO5ZhYAsWG8eOC7RInbiLH5eA chenzhaoyu94/chatgpt-web
+
+111. svn log日志导出到excel
+Use the following Subversion command to create an xml file out of the repository's log:
+
+svn log -v --xml > repository_log.xml
+
+Import the xml file into an Excel spreadsheet (not sure if it will work with LibreOffice/OpenOffice), e.g. from cmd:
+
+start excel repository_log.xml
+
+You can then save it as a spreadsheet.

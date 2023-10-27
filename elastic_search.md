@@ -758,6 +758,67 @@ output {
 }
 
 ```
+
+
+```conf
+input {
+ elasticsearch {
+    hosts => "10.8.25.250:19201"
+    index => "pep_api-logs"
+    query => '{
+      "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "user_id": 504
+          }
+        },
+        {
+          "match": {
+            "method": "POST"
+          }
+        },
+        {
+          "match_phrase": {
+            "content": "流程部署"
+          }
+        },
+        {
+          "range": {
+            "log_time": {
+              "gte": "2023-10-01T05:49:31.666Z"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "sort": [
+    {
+      "log_time": {
+        "order": "desc"
+      }
+    }
+  ]
+    },
+    "_source": ["log_time","content","parameter"]'
+  }
+}
+ 
+output {
+  csv {
+    # This is the fields that you would like to output in CSV format.
+    # The field needs to be one of the fields shown in the output when you run your
+    # Elasticsearch query
+    fields => ["log_time","content","parameter"]
+    # This is where we store output. We can use several files to store our output
+    # by using a timestamp to determine the filename where to store output.    
+    path => "/tmp/bushulog2023.csv"
+  }
+}
+
+```
 ./bin/logstash -f ./convert_csv.conf
 
 

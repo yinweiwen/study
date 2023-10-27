@@ -106,15 +106,15 @@ Filebeat是一个日志文件托运工具
 	 ./logstash -f first-pipeline.conf --config.reload.automatic	// 配置文件改变后会自动重新载入
 	 // filebeat 重新加载日志文件
 	 sudo rm data/registry
-	 
+
 >> HOW LOGSTASH WORK
 	INPUT (https://www.elastic.co/guide/en/logstash/current/input-plugins.html)
 		file/syslog/redis/beats:
-		
+
 	FILTER (https://www.elastic.co/guide/en/logstash/current/filter-plugins.html)
 		grok: **
 		mutate/drop/clone/geoip
-
+	
 	OUTPUTS (https://www.elastic.co/guide/en/logstash/current/output-plugins.html)
 		elasticsearch/file/graphite/statsd
 	
@@ -122,7 +122,7 @@ Filebeat是一个日志文件托运工具
 		json/msgpack/plain/multiline
 		
 	Each input stage in the Logstash pipeline runs in its own thread(java SynchronousQueue)
-	
+
 >>Settings
 	logstash.yml
 	写法：支持继承模式(hierarchical)和平铺模式(flag), bash-style的环境变量设置
@@ -139,7 +139,7 @@ Filebeat是一个日志文件托运工具
 	path.queue  queue类型为persist时文件存储路径
 	http.host/port REST终端地址
 	log.level 日志级别
-	
+
 >> Running as a service 
 	systemctl start logstash.service
 
@@ -191,3 +191,10 @@ output {
     }
 }
 ```
+
+
+
+## LogStash Windows 自启动
+
+https://www.elastic.co/guide/en/logstash/current/running-logstash-windows.html
+
