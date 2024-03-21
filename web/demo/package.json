@@ -43,7 +43,7 @@
     "superagent-jsonp": "^0.2.1",
     "webpack": "^3.11.0",
     "webpack-bundle-analyzer": "^2.11.1",
-    "webpack-dev-server": "^2.5.0"
+    "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {
     "args": "^3.0.8",
