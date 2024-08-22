@@ -2095,7 +2095,7 @@ export http_proxy=http://10.8.30.183:7890
 #fi
 root@node38:/home/anxin# source ~/.bashrc 
 
-docker run --name chatgpt-web --rm -it -p 3002:3002 --env OPENAI_ACCESS_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJ5d3cwODI4QDEyNi5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sImh0dHBzOi8vYXBpLm9wZW5haS5jb20vYXV0aCI6eyJwb2lkIjoib3JnLUtNZVRyd1pFb0dnMEVVVUZZWGlWenZDMSIsInVzZXJfaWQiOiJ1c2VyLWJaZEN1WnlwU2FuSkV6UjNTNFducElLWiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiYXV0aDB8NjNlMWI2N2MxZTMzNTM1NGMyNTlmMmMzIiwiYXVkIjpbImh0dHBzOi8vYXBpLm9wZW5haS5jb20vdjEiLCJodHRwczovL29wZW5haS5vcGVuYWkuYXV0aDBhcHAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTY5ODI5OTMzMiwiZXhwIjoxNjk5MTYzMzMyLCJhenAiOiJUZEpJY2JlMTZXb1RIdE45NW55eXdoNUU0eU9vNkl0RyIsInNjb3BlIjoib3BlbmlkIGVtYWlsIHByb2ZpbGUgbW9kZWwucmVhZCBtb2RlbC5yZXF1ZXN0IG9yZ2FuaXphdGlvbi5yZWFkIG9yZ2FuaXphdGlvbi53cml0ZSBvZmZsaW5lX2FjY2VzcyJ9.Q3sOAVRjmC4D0HVRsQ_tkV0BK6U8PUPrkwvqeWX58d11vClSi9OQYWt7jJC2SlS_eMPS_xdREczZJ8tFTPpSbvFNr2MTsktIgD0G0pxAdOT1EHpgiG9PjPF-hWvc1Cudyyqnxp2eTOpddom6rHPtG_n6VIl5Vp17zvQFMW3OUM091kowtvvV6CPmy6wZNXfra83b7LSowu9APoU1TnUChsBJoD_loxdSlGDfWSOYvQ-IuvxynFjRaThBy7SSm-rM5kPmq-WwzQIOh-cNWBh-9MJ1AKbPj5oV7QXLLKt6--HVOObnLvou5jilD92ShsO5ZhYAsWG8eOC7RInbiLH5eA chenzhaoyu94/chatgpt-web
+docker run --name chatgpt-web --rm -it -p 3002:3002 --env OPENAI_ACCESS_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJ5d3cwODI4QDEyNi5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sImh0dHBzOi8vYXBpLm9wZW5haS5jb20vYXV0aCI6eyJwb2lkIjoib3JnLUtNZVRyd1pFb0dnMEVVVUZZWGlWenZDMSIsInVzZXJfaWQiOiJ1c2VyLWJaZEN1WnlwU2FuSkV6UjNTNFducElLWiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiYXV0aDB8NjNlMWI2N2MxZTMzNTM1NGMyNTlmMmMzIiwiYXVkIjpbImh0dHBzOi8vYXBpLm9wZW5haS5jb20vdjEiLCJodHRwczovL29wZW5haS5vcGVuYWkuYXV0aDBhcHAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTcwMDA5NTk5MCwiZXhwIjoxNzAwOTU5OTkwLCJhenAiOiJUZEpJY2JlMTZXb1RIdE45NW55eXdoNUU0eU9vNkl0RyIsInNjb3BlIjoib3BlbmlkIGVtYWlsIHByb2ZpbGUgbW9kZWwucmVhZCBtb2RlbC5yZXF1ZXN0IG9yZ2FuaXphdGlvbi5yZWFkIG9yZ2FuaXphdGlvbi53cml0ZSBvZmZsaW5lX2FjY2VzcyJ9.mAQcMh5CLcTBMZpJGUHDJBLvTviEsJWEH6fdHRGd4uc5OyMnhWN-k50FpIrTOz6V4knlaQrpjIJFHvomVdGhHERSanSulwNqw5sWv8BPt5zrA_mLuqGFW0HBERimYud-vBJNrjBm05-DB_1dpMSF33Fb-G3OSFVzMaYDPPBBCR5naErSSHdqL112_Ocw8aiip2baZc-7g3bm1Nx3igOmay1xHb4cdY0zUhgcediMwJ0BfVC7GSCWvKB6uoM9AeYKDOynLExWRjwcIVD1wNZC8Ql7aiuiISIQSW07PIDHyJ-85nRtOUTNaHvUD2NW3COragEGPbTo7pjFLtYVGxdEDA chenzhaoyu94/chatgpt-web
 
 111. svn log日志导出到excel
 Use the following Subversion command to create an xml file out of the repository's log:
@@ -2107,3 +2107,222 @@ Import the xml file into an Excel spreadsheet (not sure if it will work with Lib
 start excel repository_log.xml
 
 You can then save it as a spreadsheet.
+
+
+112. ambari 安装hive
+第一次安装失败后，说
+Failed to download file from http://node1.ambari.com:8080/resources/mysql-connector-java.jar due to HTTP error: HTTP Error 404: Not Found
+
+将对应资源拷贝到 /var/lib/ambari-server/resources目录即可
+
+
+
+113. Flink突然中断，所有任务消失（未解决）
+2023-11-06 16:12:18,379 INFO et.analyze.threshold$ [] - over-threshold [74642-4标7号测点 ] level:3 code:30070003 content:Z方向位移采集值:20.17mm,超3级阈值[20.0~50.0] time:2023-11-06T16:00:00.000+08:00
+
+2023-11-06 16:12:19,092 WARN et.recv.RecvDataHanler$ [] - class et.recv.RecvDataHanler$alarm code not valid: 3002
+
+2023-11-06 16:12:19,092 WARN et.recv.RecvDataHanler$ [] - class et.recv.RecvDataHanler$alarm code not valid: 3002
+
+2023-11-06 16:12:19,357 INFO org.apache.flink.runtime.blob.PermanentBlobCache [] - Shutting down BLOB cache
+
+2023-11-06 16:12:19,358 INFO org.apache.flink.runtime.state.TaskExecutorLocalStateStoresManager [] - Shutting down TaskExecutorLocalStateStoresManager.
+
+2023-11-06 16:12:19,358 INFO org.apache.flink.runtime.blob.TransientBlobCache [] - Shutting down BLOB cache
+
+2023-11-06 16:12:19,376 INFO org.apache.flink.runtime.filecache.FileCache [] - removed file cache directory /tmp/flink-dist-cache-dc1878f0-b507-4d01-bd13-dc97058ac8e1
+
+2023-11-06 16:12:19,379 INFO org.apache.flink.runtime.io.disk.FileChannelManagerImpl [] - FileChannelManager removed spill file directory /tmp/flink-netty-shuffle-1a6ac9e9-2c78-4a29-86d1-38600c85b902
+
+1. 安心云新集群K8S新集群 NotReady
+新集群jump-02 Not Ready导致知物云服务不可用。
+登录节点上，查看日志 journalctl -eu kubelet . 发现连不上k8s的服务接口，报错：apiserver.cluster.local not found.
+进入/etc/hosts 修改如下：【原先注释相反】
+#10.103.97.2 apiserver.cluster.local
+10.8.40.125 apiserver.cluster.local
+
+2. IOTa集群重启后服务启动顺序
+因为IOTA集群服务依赖安心云Kafka集群，所以会导致部分进程启动后无法正常工作。故需确保进程的启动顺序如下：
+KAFKA已就绪 --> 重启代理服务iota-proxy
+            --> 重启编排器 iota-orchestrator     --> 重启所有DAC实例  iota-dac-n
+            --> 重启规则引擎 iota-rule-engine
+            --> 重启API服务 iota-api
+            --> 重启网关转发代理 (savoir命名空间下) anxinyun-http-udp
+            
+114. where is kibana
+查找logs.zhiwucloud.com的部署
+ping后发现服务器地址
+到服务器上找nginx
+root@anxin-m1:/etc/nginx# grep -r 'logs.zhiwucloud' ./
+
+找到发现是转发到内部服务器 anxin-m2:15601
+
+到anxin-m2，查找kibana相关指令
+anxin@anxin-m2:~/SavoirCloud/kibana/config$ history | grep kibana
+发现是docker-compose启动的：
+“
+docker-compose start kibana
+”
+
+> anxin-m2上有两套kibana，还有个kibana.zhiwucloud.com,是通过service kibana start启动的
+
+115. 发邮件
+#邮箱
+
+set from=no-reply@free-sun.com.cn
+
+#默认smtp发送，stmp发送需要在邮箱内配置，允许stmp发送
+
+set smtp=smtp.exmail.qq.com
+
+#邮箱
+
+set smtp-auth-user=no-reply@free-sun.com.cn
+
+#这里填的是邮箱授权码（我的授权码就不在这现眼了）
+
+set smtp-auth-password=Noreply123_
+
+set smtp-auth=login
+
+mail -s "应变数据" -a /home/anxinlocal/static/pan/structure_1/theme/2023/11/结构应变.csv 1596738708@qq.com
+
+
+116. IOTA-API升级方式-容器修改提交方式
+》》目前构建的版本存在问题，回退到老版本，并在此基础上进行修改容器内部内容
+到指定服务器上(iota-m2)：
+docker ps | grep api  找到对应容器id xxx
+docker exec -it xxx /bin/ash
+docker commit xxx registry.ngaiot.com/xxx/xxx:XXX
+这时候修改yaml进行升级。
+需要保存镜像到仓库，执行：
+docker save -o xxx.tar registry.ngaiot.com/iot/iota-api:manual.v240103
+scp xxx.tar anxin@anxin-m1:/home/anxin/
+docker load -i xxx.tar
+docker push registry.ngaiot.com/iot/iota-api:manual.v240103
+
+117. 删除当前目录下所有指定后缀文件
+find . -maxdepth 1 -type f -name "*.csv" -delete
+
+118. 替换文本
+:%s/192.168.0.133:18080/192.168.0.133:32188/g
+:%s/wvp:18080/wvp:32188/g
+:%s/wvp:18080/wvp:32188/g
+:%s/wvp:32188/10.8.40.124:32188/g
+:%s/10.8.40.124:18080/10.8.40.124:32188/g
+:%s/192.168.1.133/192.168.0.133/g
+ kubectl cp -niot /home/cloud/zlmconfig.ini zlm-8dd665c6b-jz7mr:/conf/config.ini
+222.186.227.196
+投：172.30.16.121
+机房：172.30.25.129
+公网：58.252.10.4
+
+119. 视频推流无法播放：
+推送显示RTMP write err
+解决办法：磁盘空间不足
+SRS（Simple-RTMP-Server）是一个开源的 RTMP 服务器，它允许用户将音视频流推送到服务器并进行分发。在 SRS 中，objs/nginx/html/live 目录通常用于存储临时文件或者缓存文件，用于临时存储推流的视频文件或者用于 HLS（HTTP Live Streaming）的分片文件等。
+
+这些临时文件的具体内容取决于你的 SRS 配置以及你所使用的功能。通常情况下，这些临时文件可能包括：
+
+HLS 分片文件：如果你启用了 HLS 功能，并且正在将音视频流转换成 HLS 格式进行分发，那么这些临时文件可能是 HLS 分片文件，用于存储已转换的视频分片。
+FLV 文件：如果你将音视频流存储到文件中（例如录制直播流），那么这些临时文件可能是 FLV 格式的视频文件，用于临时存储推流的音视频数据。
+其他临时文件：除了以上两种情况外，这些临时文件还可能包括其他类型的临时文件，用于缓存或者临时存储与音视频流相关的数据。
+在一般情况下，这些临时文件是可以安全删除的。但在删除之前，你可能需要停止 SRS 服务器的运行，以确保没有文件被正在运行的流使用。删除这些文件不会影响已经推流或者分发的音视频流，但可能会导致一些正在进行的推流操作中断。因此，在删除这些文件之前，请确保你了解 SRS 的工作原理，并且可以在必要时恢复推流操作。
+
+
+120. java直接运行
+unzip DSECryptLibDemo.zip
+javac -cp jna-4.0.0.jar -d bin src/DSECrypt/DSECrypt.java
+java -cp bin/:jna-4.0.0.jar DSECrypt.DSECrypt
+
+121. windows中文件夹大小
+Get-ChildItem -Path "E:" -Recurse | Measure-Object -Property Length -Sum
+
+Get-ChildItem -Path "E:" -File -Recurse | Sort-Object -Property Length -Descending
+
+122. k8s内存分析
+## 查询所有进程的内存消耗
+kubectl top pod --all-namespaces --containers
+返回结果如下：
+tongji                         webapi-deployment-8bb6b5fb5-m9s8x                   yaml-webapi                              1m           77Mi
+tongji                         webconsole-deployment-bc56dbc6c-gzllv               yaml-webconsole                          0m           46Mi
+按内存大小进行排序，列出最大的前10
+root@jumper-02:/home/cloud# kubectl top pod --all-namespaces --containers | awk 'NR==1{print $0; next} {print $0 | "sort -k5 -rh"}' | head -n 20
+```sh
+#!/bin/bash
+
+# 获取所有命名空间中的所有 Pod
+pods=$(kubectl get pods --all-namespaces -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.status.containerStatuses[*].restartCount}{"\n"}{end}')
+
+# 遍历每个 Pod 并获取详细信息
+echo -e "Namespace\tPod Name\tRestart Count\tLast Restart Reason"
+while read -r line; do
+    namespace=$(echo $line | awk '{print $1}')
+    pod_name=$(echo $line | awk '{print $2}')
+    restart_count=$(echo $line | awk '{print $3}')
+    
+    # 获取 Last State 信息
+    last_state=$(kubectl describe pod -n $namespace $pod_name | grep -A 5 "Last State" | grep -E "Reason|Exit Code|Started|Finished")
+    if [ -z "$last_state" ]; then
+        last_state="N/A"
+    fi
+    
+    # 输出结果
+    echo -e "$namespace\t$pod_name\t$restart_count\t$last_state"
+done <<< "$pods"
+```
+
+123. DAC CPU消耗过大
+查看TOP -C后 PID 8858的消耗最大
+
+cat /proc/8858/environ
+
+124. 容器内的pg无法启动
+在容器外面的宿主机上安装pg12
+sudo apt install postgresql-12 postgresql-contrib
+
+如果 pg_resetwal 报告无法为 pg_control 确定有效数据，您可以通过指定 -f（强制）选项强制它继续。在这种情况下，将用合理的值替换丢失的数据。大多数字段预计会匹配，但对于下一个 OID、下一个事务 ID 和纪元、下一个多事务 ID 和偏移量以及 WAL 起始位置字段，可能需要手动协助。这些字段可以使用下面讨论的选项进行设置。如果您无法确定所有这些字段的正确值，仍然可以使用 -f，但恢复的数据库必须比平常更加谨慎对待：立即进行转储和重新加载是必要的。在转储之前，不要在数据库中执行任何数据修改操作，因为任何此类操作都可能使损坏变得更严重。
+
+您可以通过运行以下命令来确定是否存在这种情况：
+
+Postgres >= 10
+pg_resetwal DATADIR
+
+Postgres < 10
+pg_resetxlog DATADIR
+
+sudo -u postgres pg_resetwal /../pgdata
+
+
+#125. 通过命令替换 /conf/config.ini文件中http://10.8.40.124:18080/为http://10.8.40.124:32188/
+
+sed 's|http://10.8.40.124:18080/|http://10.8.40.124:32188/|g' /conf/config.ini
+sed 's|http://wvp:32188/|http://10.8.40.124:32188/|g' /conf/config.ini
+sed 's|fs-zlm-0|fs-zlm-2|g' /conf/config.ini
+
+
+126. 服务器无法访问公网
+route del -net 0.0.0.0 netmask 0.0.0.0 dev eno3
+route add default gw 10.8.10.1
+
+
+127. kibana
+anxin-m2上有两个kibana服务：
+(1) logs.zhiwucloud.com
+root@anxin-m2:/home/anxin/SavoirCloud/kibana# docker-compose start kibana
+Starting kibana ... done
+账号： JustSearch    密码：   S****_logs_Search
+
+(2) 另一个服务:(kibana.zhiwucloud.com)
+service kibana start
+service kibana status
+
+
+kubectl get pods --all-namespaces | grep Terminating | awk '{print $1 " " $2}' | xargs -n2 bash -c 'kubectl delete pod -n $0 $1 --grace-period=0 --force'
+kubectl get pods --all-namespaces | grep ContainerStatusUnknown | awk '{print $1 " " $2}' | xargs -n2 bash -c 'kubectl delete pod -n $0 $1 --grace-period=0 --force'
+
+
+##### Wbo@hi1I
+##### 1mDN3#DSz$
+##### 349 095 503 sm4d26
+##### AT_fwQV5TNeDOiaPvJRUwsC2fcEzfzUiPi1

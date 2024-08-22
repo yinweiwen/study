@@ -885,3 +885,45 @@ POST anxinyun_themes/_doc/_update_by_query
   }
 }
 ```
+
+
+## 更新指定时间告警上的数据
+POST /savoir_alarms/_update_by_query
+{
+  "script": {
+    "source": """
+      for (int i = 0; i < ctx._source.details.size(); i++) {
+        if (ctx._source.details[i].time == params.time) {
+          ctx._source.details[i].alarm_pic = params.alarm_pic;
+        }
+      }
+    """,
+    "params": {
+      "time": "2021-07-31T14:48:24.000Z",
+      "alarm_pic": "https://console.anxinyun.cn/_api/attachments?token=9d7b4108-06a3-4e65-93db-33a943cfa4f7&src=images/eb3189f4-7a18-4bee-b0a1-d69d8ca55dcb/3aa7e54d79d9-image.png&filename=3aa7e54d79d9-image.png"
+    }
+  },
+  "query": {
+    "bool": {
+      "must": [
+        {"term": {
+          "alarm_type_code": {
+            "value": "3007"
+          }
+        }},
+        {
+          "term": {
+            "source_id": {
+              "value": "8391"
+            }
+          }
+        },
+        {
+          "terms": {
+            "state": [0,1,2]
+          }
+        }
+      ]
+    }
+  }
+}
