@@ -33,8 +33,7 @@ import (
    "time"
 )
 
-//var apiKey string = "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"
-var apiKey string = "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"
+var apiKey string = "sk-xxx"
 
 func main() {
    //genImage()
