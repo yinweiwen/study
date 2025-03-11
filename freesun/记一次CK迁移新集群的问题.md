@@ -2,7 +2,7 @@
 
 由于老集群CK性能指标和容量都可能接近瓶颈，建立一个新的CK集群环境，如下：
 
-![image-20240416154857098](file://C:\Users\yww08\Desktop\writer\imgs\网络代理\image-20240416154857098.png?lastModify=1721955273)
+![image-20240416154857098](imgs\网络代理\image-20240416154857098.png?lastModify=1721955273)
 
 然后修改所有应用服务的CK地址到ck-master。
 
@@ -225,4 +225,8 @@
       SYSTEM RESTART REPLICA database.table;
       ```
 
-8. 
+8.  Table is not initialized yet
+
+   ![image-20240924113447537](imgs/记一次CK迁移新集群的问题/image-20240924113447537.png)
+
+9. ss

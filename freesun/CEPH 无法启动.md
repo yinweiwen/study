@@ -395,3 +395,502 @@ Nexus报错:
 修改nexus中`npm` group只代理`npm-old`后 ，能解决部分构建，
 
 ![img](imgs/CEPH 无法启动/企业微信截图_17206795963863.png)
+
+
+
+
+
+rock ceph安装
+https://github.com/rook/rook/blob/release-1.12/Documentation/Getting-Started/quickstart.md
+注意：根据官方文档安装，不同的rock的版本对kubernetes的最小版本也有要求。
+比如安装的版本是v1.12那么对应kubernetes最小的版本是v1.22或者更高。
+
+当前ZWY和安心云有各自都有一个ceph，如果合并集群的话，可以只保留一个，但是数据咋搞？
+商用zwy集群部署的路径：master-01
+远程到196jump-02，ssh到master-01，切换root，进入文件夹root@master-01:~/services/rook-1.10.8/deploy/examples#
+
+\####准备开始Go####
+$ git clone --single-branch --branch v1.12.7 https://github.com/rook/rook.git
+cd rook/deploy/examples
+\####部署rock operator####
+kubectl create -f crds.yaml -f common.yaml -f operator.yaml
+kubectl create -f cluster.yaml
+
+
+\# verify the rook-ceph-operator is in the `Running` state before proceeding
+kubectl -n rook-ceph get pod
+
+cluster.yaml中需要修改：
+resource，根据实际配置修改，如下图所示
+
+nodes
+当前集群中可被使用的服务器名称以及当前服务的devices名称，如下图所示
+
+filesystem.yml修改资源限制，并应用
+
+kubectl apply -f pool.yaml
+ceph配置修改
+root@master-01:cd ~/services/rook-1.10.8/deploy/examples/csi/cephfs
+
+kubectl apply -f storageclass.yaml
+
+
+
+```sh
+ceph osd pool ls detail
+
+[myfs-replicated]
+
+ceph osd pool get myfs-replicated size
+ceph osd pool set myfs-replicated size 2
+ceph osd pool set myfs-metadata size 2
+ceph osd pool set myfs-replicated size 2
+
+
+```
+
+
+
+```sh
+resize2fs 工具不支持在线缩小文件系统。在这种情况下，需要将文件系统卸载，然后再进行缩小操作。具体步骤如下：
+
+umount /home
+
+终止占用 /home 的进程：
+fuser -km /home
+
+3. 缩小文件系统
+
+lsblk
+lvdisplay /dev/node18-vg/home
+
+resize2fs /dev/node18-vg/home 200G
+4. 缩小逻辑卷
+缩小文件系统后，缩小逻辑卷：
+
+lvreduce -L 200G /dev/node18-vg/home
+5. 挂载 /home
+完成后，重新挂载 /home 文件系统：
+
+mount /home
+
+6. 扩展 node18--vg-root
+将释放的空间分配给 vg-root：
+lvextend -l +100%FREE /dev/node18-vg/root
+
+7. 扩展根文件系统
+
+resize2fs /dev/node18--vg-root
+
+8. 验证
+使用 df -h / 和 df -h /home 命令，检查扩展后的空间。
+
+```
+
+
+
+
+
+
+
+
+
+```shell
+bash-4.4$ ceph pg stat
+305 pgs: 2 active+clean+remapped, 13 active+remapped+backfilling, 161 active+clean, 2 active+undersized+degraded+remapped+backfilling, 52 undersized+degraded+remapped+backfilling+peered, 71 undersized+degraded+remapped+backfill_toofull+peered, 4 down; 1.7 TiB data, 2.5 TiB used, 1.6 TiB / 4.1 TiB avail; 639 B/s rd, 3.5 KiB/s wr, 1 op/s; 20818006/41177574 objects degraded (50.557%); 1882597/41177574 objects misplaced (4.572%); 1023 KiB/s, 88 keys/s, 11 objects/s recovering
+bash-4.4$ ceph osd tree
+ID   CLASS  WEIGHT   TYPE NAME         STATUS  REWEIGHT  PRI-AFF
+ -1         5.93968  root default
+ -3         1.09160      host node-01
+  0    hdd  1.09160          osd.0         up   1.00000  1.00000
+ -9         1.09160      host node-02
+  2    hdd  1.09160          osd.2         up   0.85004  1.00000
+ -5         1.09160      host node-03
+  1    hdd  1.09160          osd.1         up   0.85004  1.00000
+-11         1.09160      host node-04
+  4    hdd  1.09160          osd.4       down         0  1.00000
+ -7         1.57329      host node-05
+  3    hdd  0.70000          osd.3        DNE         0
+  5    ssd  0.87329          osd.5         up   1.00000  1.00000
+bash-4.4$ ceph status
+  cluster:
+    id:     a62a9110-a804-4dca-af81-fa8d80031926
+    health: HEALTH_WARN
+            2 clients failing to respond to capability release
+            1 MDSs report slow metadata IOs
+            1 MDSs report slow requests
+            2 MDSs behind on trimming
+            mon b is low on available space
+            2 backfillfull osd(s)
+            1 osds exist in the crush map but not in the osdmap
+            Reduced data availability: 123 pgs inactive, 4 pgs down
+            Low space hindering backfill (add storage if this doesn't resolve itself): 71 pgs backfill_toofull
+            Degraded data redundancy: 20817850/41177574 objects degraded (50.556%), 125 pgs degraded, 125 pgs undersized
+            52 pgs not deep-scrubbed in time
+            52 pgs not scrubbed in time
+            8 pool(s) backfillfull
+            1356 daemons have recently crashed
+
+  services:
+    mon: 3 daemons, quorum b,e,f (age 26h)
+    mgr: b(active, since 16m), standbys: a
+    mds: 1/1 daemons up, 1 hot standby
+    osd: 5 osds: 4 up (since 16m), 4 in (since 16m); 140 remapped pgs
+
+  data:
+    volumes: 1/1 healthy
+    pools:   8 pools, 305 pgs
+    objects: 13.73M objects, 1.7 TiB
+    usage:   2.5 TiB used, 1.6 TiB / 4.1 TiB avail
+    pgs:     41.639% pgs not active
+             20817850/41177574 objects degraded (50.556%)
+             1882540/41177574 objects misplaced (4.572%)
+             161 active+clean
+             71  undersized+degraded+remapped+backfill_toofull+peered
+             52  undersized+degraded+remapped+backfilling+peered
+             13  active+remapped+backfilling
+             4   down
+             2   active+undersized+degraded+remapped+backfilling
+             2   active+clean+remapped
+
+  io:
+    client:   1022 B/s rd, 1 op/s rd, 0 op/s wr
+    recovery: 963 KiB/s, 81 keys/s, 15 objects/s
+
+```
+
+
+
+
+
+删除重建：
+
+```sh
+sudo wipefs -a /dev/sda
+
+
+kubectl delete deploy -n rook-ceph rook-ceph-osd-3
+ceph osd out osd.3
+ceph osd crush remove osd.3
+ceph auth del osd.3
+ceph osd rm osd.3
+
+kubectl -n rook-ceph scale deployment rook-ceph-operator --replicas=0 
+
+ceph osd out <ID>
+ceph osd crush remove osd.<ID>
+ceph osd purge <osd-id> --yes-i-really-mean-it
+ceph auth del osd.<ID>
+ceph osd rm <ID>
+
+kubectl -n rook-ceph scale deployment rook-ceph-operator --replicas=1
+
+
+sudo apt update
+sudo apt install xfsprogs
+mkfs.xfs -V
+mkfs.xfs -f /dev/sda
+
+
+[root@172-17-27-92 ~]# cat ceph.sh
+#!/bin/bash
+DISK="/dev/sdX"
+
+# Zap the disk to a fresh, usable state (zap-all is important, b/c MBR has to be clean)
+sgdisk --zap-all $DISK
+
+# Wipe a large portion of the beginning of the disk to remove more LVM metadata that may be present
+dd if=/dev/zero of="$DISK" bs=1M count=100 oflag=direct,dsync
+
+# SSDs may be better cleaned with blkdiscard instead of dd
+blkdiscard $DISK
+
+# Inform the OS of partition table changes
+partprobe $DISK
+
+
+lsblk -f
+rm  -rf /var/lib/rook/*
+
+
+修改cluster 删除node-04 之后apply
+
+```
+
+
+
+
+
+![image-20240904162229787](imgs/CEPH 无法启动/image-20240904162229787.png)
+
+
+
+
+
+## Slow query排查
+
+查看磁盘属性
+
+```sh
+lsblk -f
+fdisk -l
+```
+
+
+
+重新加入OSD。需要重新格式化OSD磁盘
+
+```sh
+sudo apt update
+sudo apt install xfsprogs
+mkfs.xfs -V
+
+
+```
+
+
+
+排查节点磁盘性能
+
+```sh
+sudo apt-get install sysstat
+iostat -xz 1
+
+# 其中 %wrqm 每秒写请求的合并率（Write Request Merge Percentage）
+其中各个字段的含义如下：
+
+r/s 和 w/s: 每秒读取和写入请求数。
+rkB/s 和 wkB/s: 每秒读取和写入的千字节数。
+await: 每个 I/O 操作的平均等待时间（以毫秒为单位）。
+%util: 磁盘的利用率（100% 表示磁盘已经饱和）。
+排查方法：
+
+如果 await 时间过长，说明磁盘 I/O 等待时间较高，可能存在性能瓶颈。
+如果 %util 接近或等于 100%，说明磁盘已经达到饱和状态。
+
+
+sudo apt-get install iotop
+sudo iotop
+
+```
+
+
+
+网络带宽检查
+
+```sh
+# 安装并使用bmon
+bmon
+
+```
+
+
+
+是ceph配置问题吗
+
+```sh
+bash-4.4$ ceph config get osd osd_recovery_op_priority
+200
+
+
+bash-4.4$ ceph config get osd
+WHO     MASK  LEVEL     OPTION                         VALUE        RO
+global        basic     log_to_file                    true
+global        advanced  mon_allow_pool_delete          true
+global        advanced  mon_allow_pool_size_one        true
+global        advanced  mon_cluster_log_file
+global        advanced  mon_pg_warn_min_per_osd        0
+global        basic     ms_client_mode                 crc secure   *
+global        basic     ms_cluster_mode                crc secure   *
+global        advanced  ms_osd_compress_mode           none
+global        basic     ms_service_mode                crc secure   *
+osd           advanced  osd_client_op_priority         3
+osd           advanced  osd_max_backfills              50
+osd           dev       osd_max_pg_log_entries         10000
+osd           basic     osd_memory_target              10094967296
+osd           dev       osd_min_pg_log_entries         1500
+osd           advanced  osd_recovery_max_active        5
+osd           advanced  osd_recovery_max_active_hdd    5
+osd           advanced  osd_recovery_max_active_ssd    5
+osd           advanced  osd_recovery_max_single_start  5
+osd           advanced  osd_recovery_op_priority       63
+osd           advanced  osd_recovery_priority          63
+osd           advanced  osd_recovery_sleep             0.000000
+
+
+
+```
+
+> 会被配置文件重载，直接配置：
+>
+> ```sh
+> ceph config set osd.5 osd_client_op_priority         3
+> ceph config set osd.5 osd_max_backfills              20
+> ceph config set osd.5 osd_min_pg_log_entries         1500
+> ceph config set osd.5 osd_max_pg_log_entries         10000
+> ceph config set osd.5 osd_memory_target              10094967296
+> ceph config set osd.5 osd_recovery_max_active        10
+> ceph config set osd.5 osd_recovery_max_active_hdd    10
+> ceph config set osd.5 osd_recovery_max_active_ssd    10
+> ceph config set osd.5 osd_recovery_max_single_start  10
+> ceph config set osd.5 osd_recovery_op_priority       63
+> ceph config set osd.5 osd_recovery_priority          63
+> ceph config set osd.5 osd_recovery_sleep             0.000000
+> ```
+
+<html>
+
+<table border="1" cellspacing="0" cellpadding="5">
+  <thead>
+    <tr>
+      <th>级别</th>
+      <th>osd_max_backfills</th>
+      <th>osd_recovery_max_active</th>
+      <th>osd_recovery_max_single_start</th>
+      <th>osd_recovery_sleep</th>
+      <th>osd_min_pg_log_entries</th>
+      <th>osd_max_pg_log_entries</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>5%</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>25%</td>
+      <td>50</td>
+      <td>5</td>
+      <td>5</td>
+      <td>0.25</td>
+      <td>1</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>50%</td>
+      <td>50</td>
+      <td>5</td>
+      <td>5</td>
+      <td>0.15</td>
+      <td>1</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>75%</td>
+      <td>50</td>
+      <td>5</td>
+      <td>5</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>100%</td>
+      <td>50</td>
+      <td>5</td>
+      <td>5</td>
+      <td>0</td>
+      <td>1500</td>
+      <td>10000</td>
+    </tr>
+  </tbody>
+</table>
+
+</html>
+
+> REFER https://blog.51cto.com/wendashuai/2492689
+
+> 官网配置说明： https://docs.ceph.com/en/quincy/rados/configuration/osd-config-ref/#recovery
+
+
+
+> 因为之前在osd.5上单独设置了一些参数，现在需要把这些参数删除
+>
+> ```sh
+> ceph config show osd.5
+> ceph config rm osd.5 osd_recovery_sleep
+> ceph config rm osd.5 osd_max_backfills
+> ceph config rm osd.5 osd_recovery_max_active
+> ```
+>
+> 
+
+查看和设置POOL
+
+```sh
+ceph osd pool ls
+ceph osd pool get myfs-replicated size
+ceph osd pool set myfs-replicated size 2
+```
+
+`ceph osd pool get <pool_name> <param>`
+
+| 参数                          | 含义                                                       |
+| ----------------------------- | ---------------------------------------------------------- |
+| size                          | 池的副本数量。                                             |
+| min_size                      | 允许进行读写操作的最小副本数。                             |
+| pg_num                        | 池的 PG 数量。                                             |
+| pgp_num                       | 对象放置组的数量（Placement Group Pseudo-random Number）。 |
+| crush_rule                    | 池使用的 CRUSH 规则，决定数据如何分布在 OSD 上。           |
+| hashpspool                    | 如果启用，哈希基于池而不是对象。                           |
+| nodelete                      | 禁止删除池。                                               |
+| nopgchange                    | 禁止更改 PG 数量。                                         |
+| nosizechange                  | 禁止更改池的副本数量。                                     |
+| write_fadvise_dontneed        | 如果启用，写操作后不缓存数据。                             |
+| noscrub                       | 禁止 Scrub 操作。                                          |
+| nodeep-scrub                  | 禁止 Deep Scrub 操作。                                     |
+| hit_set_type                  | 命中集合的类型，用于跟踪最近访问的数据。                   |
+| hit_set_period                | 命中集合更新的时间间隔。                                   |
+| hit_set_count                 | 命中集合保留的最大数量。                                   |
+| hit_set_fpp                   | 假阳性概率，用于控制命中集合的精度。                       |
+| use_gmt_hitset                | 是否使用 GMT 时间跟踪命中集合。                            |
+| target_max_objects            | 池中对象的最大目标数量。                                   |
+| target_max_bytes              | 池中最大数据量（以字节为单位）。                           |
+| cache_target_dirty_ratio      | 缓存池的目标脏数据比例。                                   |
+| cache_target_dirty_high_ratio | 缓存池的高水位脏数据比例。                                 |
+| cache_target_full_ratio       | 缓存池的满水位比例。                                       |
+| cache_min_flush_age           | 缓存池数据的最小刷新年龄。                                 |
+| cache_min_evict_age           | 缓存池数据的最小驱逐年龄。                                 |
+| erasure_code_profile          | 使用的纠删码配置文件。                                     |
+| min_read_recency_for_promote  | 多少次读取后将数据提升为热数据。                           |
+| min_write_recency_for_promote | 多少次写入后将数据提升为热数据。                           |
+| fast_read                     | 启用快速读取模式。                                         |
+| scrub_min_interval            | Scrub 操作的最小间隔时间。                                 |
+| scrub_max_interval            | Scrub 操作的最大间隔时间。                                 |
+| deep_scrub_interval           | Deep Scrub 操作的间隔时间。                                |
+| recovery_priority             | 恢复操作的优先级。                                         |
+| compression_mode              | 启用数据压缩模式（none、passive、aggressive）。            |
+| pg_autoscale_mode             | PG 自动扩展模式（on、off、warn）。                         |
+| target_size_bytes             | 池的目标大小（字节）。                                     |
+| eio                           | 错误输入输出策略。                                         |
+
+
+
+查看恢复进度
+
+```sh
+ceph -w
+```
+
+
+
+
+
+```
+ceph osd set norebalance
+ceph osd set norecover
+ceph osd set nobackfill
+```
+
+在业务空闲时，打开数据重建及迁移：
+
+```
+ceph osd unset norebalance
+ceph osd unset norecover
+ceph osd unset nobackfill
+```
