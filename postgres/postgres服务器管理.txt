@@ -131,6 +131,60 @@ show max_connections;
 show superuser_reserved_connections;
 
 PG执行Add column操作阻塞，问题未知；解决方法：重启pg服务
+-- SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND state = 'idle';
+select * from pg_stat_activity where query like 'SELECT typname, typtype, oid, typarray FROM pg_type %';
+select client_addr,count(1) from pg_stat_activity group by client_addr;
+select datname,count(1) from pg_stat_activity group by datname;
+select usename,count(1) from pg_stat_activity group by usename;
+select query,count(1) from pg_stat_activity group by query;
+logisticsadmin:logisticsadmin123
+
+
+CREATE DATABASE iot_registry;
+
+-- 创建用户并设置密码
+CREATE USER harbor WITH PASSWORD 'Harbor12345_';
+
+-- 授予用户对数据库的所有权限
+GRANT ALL PRIVILEGES ON DATABASE iot_registry TO harbor;
+
+
+
+这条 SQL 查询：
+
+sql
+复制代码
+SELECT typname, typtype, oid, typarray 
+FROM pg_type 
+WHERE (typtype = 'b' AND typname IN ('hstore', 'geometry', 'geography')) 
+   OR (typtype = 'e');
+执行的目的是查询 PostgreSQL 数据库中的类型（pg_type 系统表），并返回符合条件的类型信息。具体来说，查询的意思如下：
+
+查询分析
+pg_type 是 PostgreSQL 中的系统表，存储了所有数据类型（包括基本类型、复合类型、枚举类型等）的元数据。
+
+字段说明：
+
+typname：类型名称（例如 integer、text、geometry 等）。
+typtype：类型的类别。不同的类别有不同的字符表示：
+'b' 表示复合类型（如 hstore、geometry、geography 等）。
+'e' 表示枚举类型（Enum types）。
+'p' 表示原始类型（base types，例如 integer）。
+'c' 表示复合类型。
+oid：该类型的对象标识符（Object Identifier）。
+typarray：如果有，返回类型的数组 OID（例如，integer[] 的数组类型）。
+查询条件：
+
+(typtype = 'b' AND typname IN ('hstore', 'geometry', 'geography'))：查询复合类型（typtype = 'b'）中，类型名为 hstore、geometry 或 geography 的类型。
+OR (typtype = 'e')：查询所有的枚举类型（typtype = 'e'）。
+因此，这条查询的目的主要是列出数据库中所有的 hstore、geometry、geography 这三种复合类型和所有的枚举类型（typtype = 'e'）。
+
+为什么查询会出现？
+这个查询通常是由应用程序或数据库组件触发的，它查询类型信息的原因可能是：
+
+数据类型信息检索：可能是某个数据库客户端或连接池正在获取类型元数据，用于后续的操作（如执行动态 SQL 或进行类型转换）。
+数据库扩展或插件：一些 PostgreSQL 扩展（如 PostGIS、Hstore 等）可能会使用此查询来确定是否已安装并使用特定的类型（如 geometry、geography 或 hstore）。
+ORM 框架：某些 ORM（对象关系映射）框架或数据库工具可能会查询数据库的类型信息，以便在进行数据库操作时自动识别和处理数据类型。
 
 
 ## 数据库备份和还原
@@ -1102,3 +1156,11 @@ create index t_themes_deformation_surface_displacement_old_index_sensor_agg
 
 create unique index t_themes_deformation_surface_displacement_2024_id_pk
 	on public.t_themes_deformation_surface_displacement_2024 (id);
+    
+    
+CLUSTER your_table USING your_index;
+REINDEX TABLE latest_status;
+VACUUM FULL latest_status;
+// 查询表大小
+SELECT pg_size_pretty(pg_total_relation_size('your_table_name')) AS total_size;
+

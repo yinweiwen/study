@@ -2205,6 +2205,7 @@ docker push registry.ngaiot.com/iot/iota-api:manual.v240103
 find . -maxdepth 1 -type f -name "*.csv" -delete
 
 118. 替换文本
+:%s/10.8.30.84:18080/10.8.30.84:32188/g
 :%s/192.168.0.133:18080/192.168.0.133:32188/g
 :%s/wvp:18080/wvp:32188/g
 :%s/wvp:18080/wvp:32188/g
@@ -2216,7 +2217,19 @@ find . -maxdepth 1 -type f -name "*.csv" -delete
 投：172.30.16.121
 机房：172.30.25.129
 公网：58.252.10.4
+export HTTP_PROXY="http://10.8.30.183:7890"
+export HTTPS_PROXY="http://10.8.30.183:7890"
 
+/etc/docker/daemon.json
+"proxies": {
+    "default": {
+      "httpProxy": "http://10.8.30.183:7890",
+      "httpsProxy": "http://10.8.30.183:7890",
+      "noProxy": "*.local, 169.254/16"
+    }
+  }
+  
+  
 119. 视频推流无法播放：
 推送显示RTMP write err
 解决办法：磁盘空间不足
@@ -2322,7 +2335,49 @@ kubectl get pods --all-namespaces | grep Terminating | awk '{print $1 " " $2}' |
 kubectl get pods --all-namespaces | grep ContainerStatusUnknown | awk '{print $1 " " $2}' | xargs -n2 bash -c 'kubectl delete pod -n $0 $1 --grace-period=0 --force'
 
 
+128. mqttx
+在ubuntu中订阅mqtt消息
+curl -LO https://www.emqx.com/en/downloads/MQTTX/v1.10.1/mqttx-cli-linux-x64
+sudo install ./mqttx-cli-linux-x64 /usr/local/bin/mqttx
+
+
+
+kubectl get configmap --all-namespaces -o yaml | awk '/^namespace: / {namespace=$2} /^name: / {name=$2} /es-n3/ {print "Namespace:", namespace, "ConfigMap:", name; print $0; print ""; }'
+
+ kubectl get pods --all-namespaces -o json | jq '.items[] | select(.spec.volumes[]?.persistentVolumeClaim?.claimName != null) | {pod: .metadata.name, namespace: .metadata.namespace, pvc: .spec.volumes[]?.persistentVolumeClaim?.claimName}'
+
+
+129. 删除redis keys
+redis-cli keys 'AggThreshold:*' | xargs redis-cli del
+
+130.k8s中删除所有状态为Error的pod
+kubectl get pods --all-namespaces | grep Terminating | awk '{print $1 " " $2}' | xargs -n2 bash -c 'kubectl delete pod -n $0 $1 --grace-period=0 --force'
+kubectl get pods --all-namespaces | grep OutOfpods | awk '{print $1 " " $2}' | xargs -n2 bash -c 'kubectl delete pod -n $0 $1 --grace-period=0 --force'
+
+
+131. kibana报错清理缓存
+kibana_1  |  FATAL  [circuit_breaking_exception] [parent] Data too large, data for [<http_request>] would be [22347345622/20.8gb], which is larger than the limit of [22347094425/20.8gb], usages [request=16440/16kb, fielddata=19143459856/17.8gb, in_flight_requests=0/0b, accounting=3203869326/2.9gb], with { bytes_wanted=22347345622 & bytes_limit=22347094425 } :: {"path":"/.kibana","query":{"include_type_name":true},"statusCode":503,"response":"{\"error\":{\"root_cause\":[{\"type\":\"circuit_breaking_exception\",\"reason\":\"[parent] Data too large, data for [<http_request>] would be [22347345622/20.8gb], which is larger than the limit of [22347094425/20.8gb], usages [request=16440/16kb, fielddata=19143459856/17.8gb, in_flight_requests=0/0b, accounting=3203869326/2.9gb]\",\"bytes_wanted\":22347345622,\"bytes_limit\":22347094425}],\"type\":\"circuit_breaking_exception\",\"reason\":\"[parent] Data too large, data for [<http_request>] would be [22347345622/20.8gb], which is larger than the limit of [22347094425/20.8gb], usages [request=16440/16kb, fielddata=19143459856/17.8gb, in_flight_requests=0/0b, accounting=3203869326/2.9gb]\",\"bytes_wanted\":22347345622,\"bytes_limit\":22347094425},\"status\":503}"}
+
+Clearing the cache alleviates the symptoms for now.
+
+http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-clearcache.html
+
+Clear a single index
+
+curl -XPOST 'http://localhost:9200/twitter/_cache/clear'
+Clear multiple indicies
+
+curl -XPOST 'http://localhost:9200/kimchy,elasticsearch/_cache/clear'
+
+curl -XPOST 'http://localhost:9200/_cache/clear'
+Or as suggested by a user in IRC. This one seems to work the best.
+
+curl -XPOST 'http://localhost:9200/_cache/clear' -d '{ "fielddata": "true" }'
+
+
 ##### Wbo@hi1I
 ##### 1mDN3#DSz$
 ##### 349 095 503 sm4d26
 ##### AT_fwQV5TNeDOiaPvJRUwsC2fcEzfzUiPi1
+
+
